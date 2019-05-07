@@ -10,14 +10,16 @@
       .author {
         margin-top: 5px;
         margin-bottom: 10px;
-        color: white;
+        color: #aaa;
       }
       .date {
         color: white;
         margin: 10px 10px 0 5px !important;
       }
-      .entry-fixed .title {
-        margin-top: 10px;
+      .title {
+        margin-top: 20px;
+        padding-top: 5px;
+        color: #ccc9c9;
       }
     </style>
   </head>
@@ -36,11 +38,12 @@
 
     <div class="container" id="bbs">
       <div class="r-ent entry-fixed">
+        <div class="nrec"><span class="hl f1"> * </span></div>
         <div class="title">
-          <a href="/#">如果你想發文，請在 DEXON Mainnet 送一個交易至：0x663002C4E41E5d04860a76955A7B9B8234475952</a>
+          如果你想發文，請送一個符合格式的交易至：0x663002C4E41E5d04860a76955A7B9B8234475952
         </div>
         <div class="meta">
-          <div class="author">authored by admin @ 2019-05-08</div>
+          <div class="author">admin / 2019-05-08</div>
         </div>
       </div>
     </div>
@@ -60,17 +63,31 @@
         const BBS = new web3js.eth.Contract(ABI, BBSContract);
 
         BBS.getPastEvents({fromBlock : '990000'})
-        .then((events) => {
-          contents = [];
+        .then(function(events) {
           events.slice().reverse().forEach(function(event) {
-            contents.push(event.raw.data)
+            console.log(event);
+            directDisplay(event.returnValues.content, event.transactionHash, event.blockNumber);
           });
-          display(contents);
-        })
+        });
       }
 
-      function display(contents){
-        contents.forEach((content) => {
+      function directDisplay(content, txHash, blockNumber) {
+        content = htmlEntities(content)
+        $('#bbs').append(
+          '<div class="r-ent">' +
+            '<div class="nrec"><span class="hl f1"> 爆 </span></div>' +
+            '<div class="title">' +
+              content +
+            '</div>' +
+            '<div class="meta">' +
+              '<div class="author">#' + blockNumber + ' / <a target="_blank" href="https://dexonscan.app/transaction/' + txHash + '">' + txHash + '</a></div>' +
+            '</div>' +
+          '</div>'
+        )
+      }
+
+      function display(contents) {
+        contents.forEach(function(content) {
             content = '0x' + content.slice(130);
             content = web3js.utils.hexToUtf8(content);
             content = htmlEntities(content)
