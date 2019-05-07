@@ -4,7 +4,7 @@
   "description": "",
   "scripts": {
     "dev": "parcel src/index.html --out-dir dist/",
-    "build": "parcel build --no-source-maps src/*.html --out-dir ."
+    "build": "parcel build --no-source-maps src/*.html --out-dir . --public-url ."
   },
   "repository": {
     "type": "git",
