@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8">
+    <title>cryptoCow front-end</title>
+    <script language="javascript" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+    <script language="javascript" type="text/javascript" src="https://cdn.jsdelivr.net/gh/ethereum/web3.js@1.0.0-beta.36/dist/web3.min.js"></script>
+    <script language="javascript" type="text/javascript" src="abi.js"></script>
+
+  </head>
+  <body>
+    <H1>DEXON BBS</H1>
+    <div id = "bbs"></div>
+    <script>
+      var BBS;
+      var userAccount;
+      var content = [];
+      function startApp(web3js) {
+        var BBSAddress = "0x663002C4E41E5d04860a76955A7B9B8234475952";
+        
+        BBS = new web3js.eth.Contract(ABI, BBSAddress);
+        BBS.getPastEvents({fromBlock : '990000'})
+          .then(function(a){
+            a.forEach(function(b){
+              content.push(b.raw.data)
+              }
+            )
+          }
+        ).then(function(e){
+          display(content);
+        })
+      }
+
+      function display(C){
+        C.forEach(
+          function(c){
+            c = "0x" + c.slice(130);
+            var i;
+            try{
+              i = web3js.utils.hexToUtf8(c);
+            }
+            catch (e) {
+              i = web3js.utils.hexToAscii(c);
+            }
+            $("#bbs").prepend("<div>" + i + "</div><br><br>")
+          }
+        )
+      }
+
+
+      window.addEventListener('load', function() {
+        web3js = new Web3('https://mainnet-rpc.dexon.org');
+        /*
+        if (typeof web3 !== 'undefined') {
+          web3js = new Web3(web3.currentProvider);
+          
+          web3js.eth.net.getId().then(function(id){
+            if(id !== 1)
+              window.alert("wrong network");
+          });
+          
+        } else {
+          window.alert("no web3");
+        }
+        */
+        startApp(web3js)
+
+      })
+    </script>
+  </body>
+</html>
