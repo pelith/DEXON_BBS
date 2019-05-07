@@ -3,14 +3,17 @@
   <head>
     <meta charset="UTF-8">
     <title>cryptoCow front-end</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css" integrity="sha384-MCw98/SFnGE8fJT3GXwEOngsV7Zt27NXFoaoApmYm81iuXoPkFOJwJ8ERdknLPMO" crossorigin="anonymous">
     <script language="javascript" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
     <script language="javascript" type="text/javascript" src="https://cdn.jsdelivr.net/gh/ethereum/web3.js@1.0.0-beta.36/dist/web3.min.js"></script>
     <script language="javascript" type="text/javascript" src="abi.js"></script>
 
   </head>
   <body>
-    <H1>DEXON BBS</H1>
-    <div id = "bbs"></div>
+    
+    <H1 style="text-align: center;"> <img src="https://dexonscan.app/favicon.ico" style="vertical-align: -0.25em;">&nbsp; DEXON BBS</H1>
+    <div id = "poster"></div>
+    <div class="container" id = "bbs"></div>
     <script>
       var BBS;
       var userAccount;
@@ -42,7 +45,7 @@
             catch (e) {
               i = web3js.utils.hexToAscii(c);
             }
-            $("#bbs").prepend("<div>" + i + "</div><br><br>")
+            $("#bbs").prepend('<div class="alert alert-primary">' + i + "</div><br><br>")
           }
         )
       }
