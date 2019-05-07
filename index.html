@@ -53,12 +53,14 @@
             content = web3js.utils.hexToUtf8(content);
             content = htmlEntities(content)
             $('#bbs').prepend('\
-                <div class="r-ent"> \
+              <div class="r-ent"> \
+                <div class="nrec"><span class="hl f1"> 爆 </span></div> \
                 <div class="title"> \
                   <a href="/#"> ' + content + ' </a> \
                 </div> \
                 <div class="meta"> \
                   <div class="author"></div> \
+                  <div class="date"> 5/08</div> \
                 </div> \
               </div> \
             ')
