@@ -42,58 +42,7 @@
     </div>
 
     <script language="javascript" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
-    <script language="javascript" type="text/javascript" src="https://cdn.jsdelivr.net/gh/ethereum/web3.js@1.0.0-beta.36/dist/web3.min.js"></script>
-    <script language="javascript" type="text/javascript" src="abi.js"></script>
-
-    <script>
-      const web3js = new Web3('https://mainnet-rpc.dexon.org')
-
-      function htmlEntities(str) {
-        return String(str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
-      }
-
-      function startApp() {
-        const BBSContract = "0x663002C4E41E5d04860a76955A7B9B8234475952";
-        const BBS = new web3js.eth.Contract(ABI, BBSContract);
-
-        BBS.getPastEvents({fromBlock : '990000'})
-        .then(function(events) {
-
-          events.slice().reverse().forEach(function(event) {
-            web3js.eth.getBlock(event.blockNumber).then(function(block){
-              directDisplay(event.returnValues.content, event.transactionHash, event.blockNumber, (''+new Date(block.timestamp)).substr(0,24))
-            })
-          });
-        });
-      }
-
-      function directDisplay(content, txHash, blockNumber, date) {
-        content = htmlEntities(content)
-        $('.r-list-container.action-bar-margin.bbs-screen').append(
-          '<div class="r-ent">' +
-            '<div class="nrec"><span class="hl f1"> 爆 </span></div>' +
-            '<div class="title">' +
-            '<a>'+
-              content +
-            '</a>'+
-            '</div>' +
-            '<div class="meta">' +
-              '<div class="author">' + 
-                '<a target="_blank" href="https://dexonscan.app/transaction/' + txHash + '">'+
-                   '@'+blockNumber + 
-                '</a>' +
-              '</div>' +
-              '<div class="date">'+
-              date+
-              '</div>' +
-            '</div>' +
-          '</div>'
-        )
-      }
-
-      $(function(){
-        startApp();
-      });
-    </script>
+    <script language="javascript" type="text/javascript" src="https://cdn.jsdelivr.net/gh/ethereum/web3.js@1.0.0-beta.37/dist/web3.min.js"></script>
+    <script language="javascript" type="text/javascript" src="script.js"></script>
   </body>
 </html>
