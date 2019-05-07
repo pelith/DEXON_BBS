@@ -14,39 +14,36 @@ function startApp() {
 
   BBS.getPastEvents({fromBlock : '990000'})
   .then(events => {
-    const pEmit = events.slice().reverse().map(event => {
-      return () => web3js.eth.getBlock(event.blockNumber)
-        .then(block => {
-          directDisplay(event.returnValues.content, event.transactionHash, event.blockNumber, (''+new Date(block.timestamp)).substr(0,24))
-        })
+    events.slice().reverse().forEach(event => {
+      directDisplay(event.returnValues.content, event.transactionHash, event.blockNumber)
     })
-
-    pEmit.reduce((acc, cur) => acc.then(cur), Promise.resolve())
   });
 }
 
-function directDisplay(content, txHash, blockNumber, date) {
+function directDisplay(content, txHash, blockNumber) {
   content = htmlEntities(content)
-  $('.r-list-container.action-bar-margin.bbs-screen').append(
-    '<div class="r-ent">' +
-      '<div class="nrec"><span class="hl f1"> 爆 </span></div>' +
-      '<div class="title">' +
-      '<a>'+
-        content +
-      '</a>'+
+  const elem = $('<div class="r-ent"></div>')
+  elem.html(
+    '<div class="nrec"><span class="hl f1"> 爆 </span></div>' +
+    '<div class="title">' +
+    '<a>'+
+      content +
+    '</a>'+
+    '</div>' +
+    '<div class="meta">' +
+      '<div class="author">' +
+        '<a target="_blank" href="https://dexonscan.app/transaction/' + txHash + '">'+
+           '@'+blockNumber +
+        '</a>' +
       '</div>' +
-      '<div class="meta">' +
-        '<div class="author">' +
-          '<a target="_blank" href="https://dexonscan.app/transaction/' + txHash + '">'+
-             '@'+blockNumber +
-          '</a>' +
-        '</div>' +
-        '<div class="date">'+
-        date+
-        '</div>' +
-      '</div>' +
-    '</div>'
-  )
+      '<div class="date">...</div>' +
+    '</div>')
+
+  $('.r-list-container.action-bar-margin.bbs-screen').append(elem)
+
+  web3js.eth.getBlock(blockNumber).then(block => {
+    $(elem).find('.date').text((''+new Date(block.timestamp)).substr(0,24))
+  })
 }
 
 $(startApp)
