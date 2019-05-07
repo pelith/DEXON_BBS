@@ -2,16 +2,29 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8">
-    <title>cryptoCow front-end</title>
+    <title>DEXON BBS by cryptoCow</title>
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css" integrity="sha384-MCw98/SFnGE8fJT3GXwEOngsV7Zt27NXFoaoApmYm81iuXoPkFOJwJ8ERdknLPMO" crossorigin="anonymous">
     <link rel="stylesheet" type="text/css" href="https://images.ptt.cc/bbs/v2.25/bbs-custom.css">
     <link rel="stylesheet" type="text/css" href="https://images.ptt.cc/bbs/v2.25/bbs-base.css" media="screen">
-    <script language="javascript" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
-    <script language="javascript" type="text/javascript" src="https://cdn.jsdelivr.net/gh/ethereum/web3.js@1.0.0-beta.36/dist/web3.min.js"></script>
-    <script language="javascript" type="text/javascript" src="abi.js"></script>
-
+    <style>
+      .author {
+        margin-top: 5px;
+        margin-bottom: 10px;
+        color: #aaa;
+      }
+      .date {
+        color: white;
+        margin: 10px 10px 0 5px !important;
+      }
+      .title {
+        margin-top: 20px;
+        padding-top: 5px;
+        color: #ccc9c9;
+      }
+    </style>
   </head>
   <body>
+
     <div id="topbar-container">
       <div id="topbar" class="bbs-content">
         <img src="https://dexonscan.app/favicon.ico" style="vertical-align: -0.25em;">
@@ -23,8 +36,21 @@
       </div>
     </div>
 
-    <div class="container" id = "bbs"></div>
+    <div class="container" id="bbs">
+      <div class="r-ent entry-fixed">
+        <div class="nrec"><span class="hl f1"> * </span></div>
+        <div class="title">
+          如果你想發文，請送一個符合格式的交易至：0x663002C4E41E5d04860a76955A7B9B8234475952
+        </div>
+        <div class="meta">
+          <div class="author">admin / 2019-05-08</div>
+        </div>
+      </div>
+    </div>
 
+    <script language="javascript" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+    <script language="javascript" type="text/javascript" src="https://cdn.jsdelivr.net/gh/ethereum/web3.js@1.0.0-beta.36/dist/web3.min.js"></script>
+    <script language="javascript" type="text/javascript" src="abi.js"></script>
     <script>
       const web3js = new Web3('https://mainnet-rpc.dexon.org')
 
@@ -35,24 +61,37 @@
       function startApp() {
         const BBSContract = "0x663002C4E41E5d04860a76955A7B9B8234475952";
         const BBS = new web3js.eth.Contract(ABI, BBSContract);
-        
+
         BBS.getPastEvents({fromBlock : '990000'})
-        .then((events) => {
-          let contents = [];
-          events.forEach((event) => {
-            contents.push(event.raw.data)
-          })
-          
-          display(contents)
-        })
+        .then(function(events) {
+          events.slice().reverse().forEach(function(event) {
+            console.log(event);
+            directDisplay(event.returnValues.content, event.transactionHash, event.blockNumber);
+          });
+        });
       }
 
-      function display(contents){
-        contents.forEach((content) => {
+      function directDisplay(content, txHash, blockNumber) {
+        content = htmlEntities(content)
+        $('#bbs').append(
+          '<div class="r-ent">' +
+            '<div class="nrec"><span class="hl f1"> 爆 </span></div>' +
+            '<div class="title">' +
+              content +
+            '</div>' +
+            '<div class="meta">' +
+              '<div class="author">#' + blockNumber + ' / <a target="_blank" href="https://dexonscan.app/transaction/' + txHash + '">' + txHash + '</a></div>' +
+            '</div>' +
+          '</div>'
+        )
+      }
+
+      function display(contents) {
+        contents.forEach(function(content) {
             content = '0x' + content.slice(130);
             content = web3js.utils.hexToUtf8(content);
             content = htmlEntities(content)
-            $('#bbs').prepend('\
+            $('#bbs').append('\
               <div class="r-ent"> \
                 <div class="nrec"><span class="hl f1"> 爆 </span></div> \
                 <div class="title"> \
@@ -60,17 +99,16 @@
                 </div> \
                 <div class="meta"> \
                   <div class="author"></div> \
-                  <div class="date"> 5/08</div> \
                 </div> \
               </div> \
             ')
-
           }
         )
       }
 
-      $(() => { startApp() })
-
+      $(function(){
+        startApp();
+      });
     </script>
   </body>
 </html>
