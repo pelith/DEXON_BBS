@@ -4,10 +4,6 @@ jobs:
     docker:
       - image: node:8
     working_directory: ~/repo
-    branches:
-      only:
-        - master
-
     steps:
       - checkout
       - restore_cache:
@@ -32,3 +28,12 @@ jobs:
             npm run build
             echo -n "dett.cc" > build/CNAME
             npm run deploy-ghpages
+workflows:
+  version: 2
+  workflow:
+    jobs:
+    - build:
+        filters:
+          branches:
+            only:
+            - master
