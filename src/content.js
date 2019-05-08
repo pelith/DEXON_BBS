@@ -43,8 +43,6 @@ function startApp() {
   const tx = getUrlParameter('tx')
   if (tx){
     web3js.eth.getTransaction(tx).then(transaction => {
-      console.log(transaction)
-
       const content = htmlEntities(web3js.utils.hexToUtf8('0x'+transaction.input.slice(138)))
       const author = '@'+transaction.blockNumber
       const title = getTitle(content.substr(0, 40))

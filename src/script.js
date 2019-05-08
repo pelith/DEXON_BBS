@@ -76,6 +76,7 @@ function directDisplay(content, txHash, blockNumber) {
   web3js.eth.getBlock(blockNumber).then(block => {
     const date = new Date(block.timestamp)
     $(elem).find('.date').text((date.getMonth()+1)+'/'+date.getDate())
+                         .attr('title', date.toLocaleString())
   })
 }
 
