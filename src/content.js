@@ -20,20 +20,20 @@ function getUrlParameter(sParam) {
 
 function getTitle(content) {
   function convert(str) {
-    let tmp='', count = 0; 
-    for(i=0;i<str.length; i++){ 
+    let tmp='', count = 0;
+    for(i=0;i<str.length; i++){
       if (str[i].match(/[\u4e00-\u9fa5]/g)) tmp+=str[i],count+=2
       else if (str[i].match(/[\uff00-\uffff]/g)) tmp+=str[i],count+=2
       else tmp+=str[i],count++
 
-      if (count > 40) break
-    } 
-    return tmp 
-  } 
+      if (count >= 40) break
+    }
+    return tmp
+  }
 
   content = convert(content)
   match = content.match(/^(\[).*(\])/)
-  return { 
+  return {
     match: match,
     title: match ? match[0].substr(1,match[0].length-2) : content
   }
@@ -43,6 +43,8 @@ function startApp() {
   const tx = getUrlParameter('tx')
   if (tx){
     web3js.eth.getTransaction(tx).then(transaction => {
+      console.log(transaction)
+
       const content = htmlEntities(web3js.utils.hexToUtf8('0x'+transaction.input.slice(138)))
       const author = '@'+transaction.blockNumber
       const title = getTitle(content.substr(0, 40))
@@ -57,6 +59,7 @@ function startApp() {
       })
       $('#main-content-href')[0].href = window.location.href
       $('#main-content-href')[0].innerHTML = window.location.href
+      $('#main-content-from').text(transaction.from.replace(/^(0x.{4}).+(.{4})$/, '$1...$2'))
     })
   }
 }
@@ -75,7 +78,7 @@ function initDexon() {
     dexonProvider.enable()
     dexonWeb3 = new Web3()
     dexonWeb3.setProvider(dexonProvider)
-    
+
     dexonWeb3.eth.net.getId().then(networkID => {
       if (networkID === 237) {
         startInteractingWithWeb3()

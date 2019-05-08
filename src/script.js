@@ -30,20 +30,23 @@ function startApp() {
 
 function getTitle(content) {
   function convert(str) {
-    let tmp='', count = 0; 
-    for(i=0;i<str.length; i++){ 
+    let tmp='', count = 0;
+    for(i=0;i<str.length; i++){
       if (str[i].match(/[\u4e00-\u9fa5]/g)) tmp+=str[i],count+=2
       else if (str[i].match(/[\uff00-\uffff]/g)) tmp+=str[i],count+=2
       else tmp+=str[i],count++
 
-      if (count > 40) break
-    } 
-    return tmp 
-  } 
+      if (count >= 40) {
+        tmp += '…'
+        break
+      }
+    }
+    return tmp
+  }
 
   content = convert(content)
   match = content.match(/^(\[).*(\])/)
-  return { 
+  return {
     match: match,
     title: match ? match[0].substr(1,match[0].length-2) : content
   }
@@ -90,7 +93,7 @@ function initDexon() {
     dexonProvider.enable()
     dexonWeb3 = new Web3()
     dexonWeb3.setProvider(dexonProvider)
-    
+
     dexonWeb3.eth.net.getId().then(networkID => {
       if (networkID === 237) {
         startInteractingWithWeb3()
