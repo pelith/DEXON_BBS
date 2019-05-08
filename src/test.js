@@ -1,0 +1,10 @@
+
+
+function main(){
+	pad = '                                              '
+
+}
+
+
+$(main())
+
