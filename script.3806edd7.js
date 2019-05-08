@@ -118,6 +118,14 @@ parcelRequire = (function (modules, cache, entry, globalName) {
 
   return newRequire;
 })({"mpVp":[function(require,module,exports) {
+function _slicedToArray(arr, i) { return _arrayWithHoles(arr) || _iterableToArrayLimit(arr, i) || _nonIterableRest(); }
+
+function _nonIterableRest() { throw new TypeError("Invalid attempt to destructure non-iterable instance"); }
+
+function _iterableToArrayLimit(arr, i) { var _arr = []; var _n = true; var _d = false; var _e = undefined; try { for (var _i = arr[Symbol.iterator](), _s; !(_n = (_s = _i.next()).done); _n = true) { _arr.push(_s.value); if (i && _arr.length === i) break; } } catch (err) { _d = true; _e = err; } finally { try { if (!_n && _i["return"] != null) _i["return"](); } finally { if (_d) throw _e; } } return _arr; }
+
+function _arrayWithHoles(arr) { if (Array.isArray(arr)) return arr; }
+
 var ABIBBS = [{
   "constant": !1,
   "inputs": [{
@@ -200,7 +208,11 @@ var ABIBBSExt = [{
   "name": "Replied",
   "type": "event"
 }];
+var BBSContract = "0x663002C4E41E5d04860a76955A7B9B8234475952";
+var BBSExtContract = "0x9b985Ef27464CF25561f0046352E03a09d2C2e0C";
 var web3js = new Web3('https://mainnet-rpc.dexon.org');
+var dexonWeb3 = '';
+var activeAccount = '';
 var banList = ["0xdc0db75c79308f396ed6389537d4ddd2a36c920bb2958ed7f70949b1f9d3375d"];
 
 function htmlEntities(str) {
@@ -208,8 +220,6 @@ function htmlEntities(str) {
 }
 
 function startApp() {
-  var BBSContract = "0x663002C4E41E5d04860a76955A7B9B8234475952";
-  var BBSExtContract = "0x9b985Ef27464CF25561f0046352E03a09d2C2e0C";
   var BBS = new web3js.eth.Contract(ABIBBS, BBSContract);
   var BBSExt = new web3js.eth.Contract(ABIBBSExt, BBSExtContract);
   BBS.getPastEvents({
@@ -227,9 +237,69 @@ function directDisplay(content, txHash, blockNumber) {
   elem.html('<div class="nrec"><span class="hl f1"> 爆 </span></div>' + '<div class="title">' + '<a href="content.html?tx=' + txHash + '">' + content + '</a>' + '</div>' + '<div class="meta">' + '<div class="author">' + '<a target="_blank" href="https://dexonscan.app/transaction/' + txHash + '">' + '@' + blockNumber + '</a>' + '</div>' + '<div class="date">...</div>' + '</div>');
   $('.r-list-container.action-bar-margin.bbs-screen').append(elem);
   web3js.eth.getBlock(blockNumber).then(function (block) {
-    $(elem).find('.date').text(('' + new Date(block.timestamp)).substr(0, 24));
+    var date = new Date(block.timestamp);
+    $(elem).find('.date').text(date.getMonth() + 1 + '/' + date.getDate());
   });
 }
 
+function startInteractingWithWeb3() {
+  setInterval(function () {
+    dexonWeb3.eth.getAccounts().then(function (_ref) {
+      var _ref2 = _slicedToArray(_ref, 1),
+          account = _ref2[0];
+
+      activeAccount = account;
+    });
+  }, 1000);
+}
+
+function initDexon() {
+  if (window.dexon) {
+    var dexonProvider = window.dexon;
+    dexonProvider.enable();
+    dexonWeb3 = new Web3();
+    dexonWeb3.setProvider(dexonProvider);
+    dexonWeb3.eth.net.getId().then(function (networkID) {
+      if (networkID === 237) {
+        startInteractingWithWeb3();
+        alert('DEXON Wallet connected');
+      } else alert('Wrong network');
+    });
+  } else {
+    alert('DEXON Wallet not detected');
+  }
+}
+
+function newPost(title, content) {
+  if (dexonWeb3 === '') {
+    alert('Please connect to your DEXON Wallet first.');
+    return;
+  }
+
+  if (title.length > 40) {
+    alert('Title\'s length is over 40 characters.');
+    return;
+  }
+
+  var post = '[' + title + ']' + content;
+  var dexBBSExt = new dexonWeb3.eth.Contract(ABIBBSExt, BBSExtContract);
+  dexBBSExt.methods.Post(post).send({
+    from: activeAccount
+  }).then(function (receipt) {
+    window.location.reload();
+  }).catch(function (err) {
+    alert(err);
+  });
+}
+
+$("#post-area").attr('rel', 'gallery').fancybox();
+$('#dexon-wallet').click(function () {
+  initDexon();
+});
+$('#new-post').click(function () {
+  var title = document.getElementById("post-title").value;
+  var content = document.getElementById("post-content").value;
+  newPost(title, content);
+});
 $(startApp);
 },{}]},{},["mpVp"], null)
