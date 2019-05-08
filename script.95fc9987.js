@@ -259,11 +259,11 @@ function getTitle(content) {
 function directDisplay(content, txHash, blockNumber) {
   content = htmlEntities(content);
   var elem = $('<div class="r-ent"></div>');
-  elem.html('<div class="nrec"><span class="hl f1"> 爆 </span></div>' + '<div class="title">' + '<a href="content.html?tx=' + txHash + '">' + content + '</a>' + '</div>' + '<div class="meta">' + '<div class="author">' + '<a target="_blank" href="https://dexonscan.app/transaction/' + txHash + '">' + '@' + blockNumber + '</a>' + '</div>' + '<div class="date">...</div>' + '</div>');
+  elem.html("<div class=\"nrec\"><span class=\"hl f1\"> \u7206 </span></div>\n    <div class=\"title\">\n    <a href=\"content.html?tx=".concat(txHash, "\">\n      ").concat(content, "\n    </a>\n    </div>\n    <div class=\"meta\">\n      <div class=\"author\">\n        <a target=\"_blank\" href=\"https://dexonscan.app/transaction/").concat(txHash, "\">\n           @").concat(blockNumber, "\n        </a>\n      </div>\n      <div class=\"article-menu\"></div>\n      <div class=\"date\">...</div>\n    </div>"));
   $('.r-list-container.action-bar-margin.bbs-screen').append(elem);
   web3js.eth.getBlock(blockNumber).then(function (block) {
     var date = new Date(block.timestamp);
-    $(elem).find('.date').text(date.getMonth() + 1 + '/' + date.getDate()).attr('title', date.toLocaleString());
+    $(elem).find('.date').text(date.getMonth() + 1 + '/' + ('' + date.getDate()).padStart(2, '0')).attr('title', date.toLocaleString());
   });
 }
 
