@@ -50,7 +50,8 @@ function directDisplay(content, txHash, blockNumber) {
   $('.r-list-container.action-bar-margin.bbs-screen').append(elem)
 
   web3js.eth.getBlock(blockNumber).then(block => {
-    $(elem).find('.date').text((''+new Date(block.timestamp)).substr(0,24))
+    const date = new Date(block.timestamp)
+    $(elem).find('.date').text((date.getMonth()+1)+'/'+date.getDate())
   })
 }
 
