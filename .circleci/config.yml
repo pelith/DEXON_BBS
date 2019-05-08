@@ -27,7 +27,6 @@ jobs:
             git config --global user.name $GH_NAME
             npm run build
             echo -n "dett.cc" > build/CNAME
-            cp -r .circleci build
             npm run deploy-ghpages
 workflows:
   version: 2
