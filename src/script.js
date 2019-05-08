@@ -4,18 +4,23 @@ const ABIBBSExt = [{"constant":!1,"inputs":[{"name":"post","type":"bytes32"}],"n
 
 const web3js = new Web3('https://mainnet-rpc.dexon.org')
 
+const banList = ["0xdc0db75c79308f396ed6389537d4ddd2a36c920bb2958ed7f70949b1f9d3375d"]
+
 function htmlEntities(str) {
   return String(str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;')
 }
 
 function startApp() {
   const BBSContract = "0x663002C4E41E5d04860a76955A7B9B8234475952"
+  const BBSExtContract = "0x9b985Ef27464CF25561f0046352E03a09d2C2e0C"
   const BBS = new web3js.eth.Contract(ABIBBS, BBSContract)
+  const BBSExt = new web3js.eth.Contract(ABIBBSExt, BBSExtContract)
 
   BBS.getPastEvents({fromBlock : '990000'})
   .then(events => {
     events.slice().reverse().forEach(event => {
-      directDisplay(event.returnValues.content, event.transactionHash, event.blockNumber)
+      if ( !banList.includes(event.transactionHash) )
+        directDisplay(event.returnValues.content, event.transactionHash, event.blockNumber)
     })
   });
 }
