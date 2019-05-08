@@ -101,13 +101,13 @@ function initDexon() {
     })
   }
   else {
-    alert('DEXON Wallet not detected')
+    alert('DEXON Wallet not detected. (請安裝 DEXON 瀏覽器擴充套件)')
   }
 }
 
 function newPost(title, content) {
   if (dexonWeb3 === ''){
-    alert('Please connect to your DEXON Wallet first.')
+    alert('Please connect to your DEXON Wallet.')
     return
   }
 
@@ -128,7 +128,7 @@ function newPost(title, content) {
 }
 
 
-$("#post-area").attr('rel', 'gallery').fancybox();
+$("#post-area").attr('rel', 'gallery').fancybox()
 
 $('#dexon-wallet').click(() => {
   initDexon()
