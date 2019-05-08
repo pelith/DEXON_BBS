@@ -272,7 +272,7 @@ function initDexon() {
 
 function newPost(title, content) {
   if (dexonWeb3 === '') {
-    alert('Please connect to your DEXON Wallet first.');
+    alert('Please connect to your DEXON Wallet.');
     return;
   }
 
