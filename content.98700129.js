@@ -117,7 +117,7 @@ parcelRequire = (function (modules, cache, entry, globalName) {
   }
 
   return newRequire;
-})({"mpVp":[function(require,module,exports) {
+})({"pILq":[function(require,module,exports) {
 function _slicedToArray(arr, i) { return _arrayWithHoles(arr) || _iterableToArrayLimit(arr, i) || _nonIterableRest(); }
 
 function _nonIterableRest() { throw new TypeError("Invalid attempt to destructure non-iterable instance"); }
@@ -126,27 +126,6 @@ function _iterableToArrayLimit(arr, i) { var _arr = []; var _n = true; var _d = 
 
 function _arrayWithHoles(arr) { if (Array.isArray(arr)) return arr; }
 
-var ABIBBS = [{
-  "constant": !1,
-  "inputs": [{
-    "name": "content",
-    "type": "string"
-  }],
-  "name": "Post",
-  "outputs": [],
-  "payable": !1,
-  "stateMutability": "nonpayable",
-  "type": "function"
-}, {
-  "anonymous": !1,
-  "inputs": [{
-    "indexed": !1,
-    "name": "content",
-    "type": "string"
-  }],
-  "name": "Posted",
-  "type": "event"
-}];
 var ABIBBSExt = [{
   "constant": !1,
   "inputs": [{
@@ -208,27 +187,24 @@ var ABIBBSExt = [{
   "name": "Replied",
   "type": "event"
 }];
-var BBSContract = "0x663002C4E41E5d04860a76955A7B9B8234475952";
 var BBSExtContract = "0x9b985Ef27464CF25561f0046352E03a09d2C2e0C";
 var web3js = new Web3('https://mainnet-rpc.dexon.org');
 var dexonWeb3 = '';
 var activeAccount = '';
-var banList = ["0xdc0db75c79308f396ed6389537d4ddd2a36c920bb2958ed7f70949b1f9d3375d"];
 
 function htmlEntities(str) {
   return String(str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
 }
 
-function startApp() {
-  var BBS = new web3js.eth.Contract(ABIBBS, BBSContract);
-  var BBSExt = new web3js.eth.Contract(ABIBBSExt, BBSExtContract);
-  BBS.getPastEvents({
-    fromBlock: '990000'
-  }).then(function (events) {
-    events.slice().reverse().forEach(function (event) {
-      if (!banList.includes(event.transactionHash)) directDisplay(getTitle(event.returnValues.content.substr(0, 40)).title, event.transactionHash, event.blockNumber);
-    });
-  });
+function getUrlParameter(sParam) {
+  var sPageURL = window.location.search.substring(1),
+      sURLVariables = sPageURL.split('&'),
+      sParameterName;
+
+  for (i = 0; i < sURLVariables.length; i++) {
+    sParameterName = sURLVariables[i].split('=');
+    if (sParameterName[0] === sParam) return sParameterName[1] === undefined ? true : decodeURIComponent(sParameterName[1]);
+  }
 }
 
 function getTitle(content) {
@@ -238,11 +214,7 @@ function getTitle(content) {
 
     for (i = 0; i < str.length; i++) {
       if (str[i].match(/[\u4e00-\u9fa5]/g)) tmp += str[i], count += 2;else if (str[i].match(/[\uff00-\uffff]/g)) tmp += str[i], count += 2;else tmp += str[i], count++;
-
-      if (count >= 40) {
-        tmp += '…';
-        break;
-      }
+      if (count >= 40) break;
     }
 
     return tmp;
@@ -256,15 +228,27 @@ function getTitle(content) {
   };
 }
 
-function directDisplay(content, txHash, blockNumber) {
-  content = htmlEntities(content);
-  var elem = $('<div class="r-ent"></div>');
-  elem.html('<div class="nrec"><span class="hl f1"> 爆 </span></div>' + '<div class="title">' + '<a href="content.html?tx=' + txHash + '">' + content + '</a>' + '</div>' + '<div class="meta">' + '<div class="author">' + '<a target="_blank" href="https://dexonscan.app/transaction/' + txHash + '">' + '@' + blockNumber + '</a>' + '</div>' + '<div class="date">...</div>' + '</div>');
-  $('.r-list-container.action-bar-margin.bbs-screen').append(elem);
-  web3js.eth.getBlock(blockNumber).then(function (block) {
-    var date = new Date(block.timestamp);
-    $(elem).find('.date').text(date.getMonth() + 1 + '/' + date.getDate());
-  });
+function startApp() {
+  var tx = getUrlParameter('tx');
+
+  if (tx) {
+    web3js.eth.getTransaction(tx).then(function (transaction) {
+      var content = htmlEntities(web3js.utils.hexToUtf8('0x' + transaction.input.slice(138)));
+      var author = '@' + transaction.blockNumber;
+      var title = getTitle(content.substr(0, 40));
+      document.title = title.title + ' - Gossiping - DEXON BBS';
+      $('#main-content-author')[0].innerHTML = author;
+      $('#main-content-author')[0].href = 'https://dexonscan.app/transaction/' + tx;
+      $('#main-content-title')[0].innerHTML = title.title;
+      $('#main-content-content')[0].innerHTML = title.match ? content.slice(title.title.length + 2) : content;
+      web3js.eth.getBlock(transaction.blockNumber).then(function (block) {
+        $('#main-content-date').text(('' + new Date(block.timestamp)).substr(0, 24));
+      });
+      $('#main-content-href')[0].href = window.location.href;
+      $('#main-content-href')[0].innerHTML = window.location.href;
+      $('#main-content-from').text(transaction.from.replace(/^(0x.{4}).+(.{4})$/, '$1...$2'));
+    });
+  }
 }
 
 function startInteractingWithWeb3() {
@@ -291,40 +275,72 @@ function initDexon() {
       } else alert('Wrong network');
     });
   } else {
-    alert('DEXON Wallet not detected. (請安裝 DEXON 瀏覽器擴充套件)');
+    alert('DEXON Wallet not detected');
   }
 }
 
-function newPost(title, content) {
+function upvote() {
   if (dexonWeb3 === '') {
-    alert('Please connect to your DEXON Wallet.');
+    alert('Please connect to your DEXON Wallet first.');
     return;
   }
 
-  if (title.length > 40) {
-    alert('Title\'s length is over 40 characters.');
-    return;
-  }
+  var tx = getUrlParameter('tx').substr(0, 66);
 
-  var post = '[' + title + ']' + content;
-  var dexBBSExt = new dexonWeb3.eth.Contract(ABIBBSExt, BBSExtContract);
-  dexBBSExt.methods.Post(post).send({
-    from: activeAccount
-  }).then(function (receipt) {
-    window.location.reload();
-  }).catch(function (err) {
-    alert(err);
-  });
+  if (tx) {
+    var dexBBSExt = new dexonWeb3.eth.Contract(ABIBBSExt, BBSExtContract);
+    dexBBSExt.methods.upvote(tx).send({
+      from: activeAccount
+    }).then(function (receipt) {
+      window.location.reload();
+    }).catch(function (err) {
+      alert(err);
+    });
+  }
 }
 
-$("#post-area").attr('rel', 'gallery').fancybox();
+function downvote() {
+  if (dexonWeb3 === '') {
+    alert('Please connect to your DEXON Wallet first.');
+    return;
+  }
+
+  var tx = getUrlParameter('tx').substr(0, 66);
+
+  if (tx) {
+    var dexBBSExt = new dexonWeb3.eth.Contract(ABIBBSExt, BBSExtContract);
+    dexBBSExt.methods.downvote(tx).send({
+      from: activeAccount
+    }).then(function (receipt) {
+      window.location.reload();
+    }).catch(function (err) {
+      alert(err);
+    });
+  }
+}
+
+function newReply(content) {
+  if (dexonWeb3 === '') {
+    alert('Please connect to your DEXON Wallet first.');
+    return;
+  }
+
+  var tx = getUrlParameter('tx').substr(0, 66);
+
+  if (tx) {
+    var dexBBSExt = new dexonWeb3.eth.Contract(ABIBBSExt, BBSExtContract);
+    dexBBSExt.methods.Reply(tx, content).send({
+      from: activeAccount
+    }).then(function (receipt) {
+      window.location.reload();
+    }).catch(function (err) {
+      alert(err);
+    });
+  }
+}
+
 $('#dexon-wallet').click(function () {
   initDexon();
 });
-$('#new-post').click(function () {
-  var title = document.getElementById("post-title").value;
-  var content = document.getElementById("post-content").value;
-  newPost(title, content);
-});
 $(startApp);
-},{}]},{},["mpVp"], null)
+},{}]},{},["pILq"], null)
