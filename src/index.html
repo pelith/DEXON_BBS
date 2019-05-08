@@ -8,6 +8,7 @@
     <link rel="stylesheet" type="text/css" href="https://images.ptt.cc/bbs/v2.25/bbs-custom.css">
     <link rel="stylesheet" type="text/css" href="https://images.ptt.cc/bbs/v2.25/pushstream.css" media="screen">
     <link rel="stylesheet" type="text/css" href="https://images.ptt.cc/bbs/v2.25/bbs-print.css" media="print">
+    <link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/fancybox/3.5.7/jquery.fancybox.min.css" />
     <link rel="stylesheet" type="text/css" href="style.css">
   </head>
 
@@ -18,7 +19,7 @@
         <a id="logo" href="index.html">BBS</a>
         <span>›</span>
         <a class="board" href="#"><span class="board-label">看板 </span>Gossiping</a>
-        <a class="right small" href="#">關於我們</a>
+        <a id="dexon-wallet" class="right small" href="#">關於我們</a>
         <a class="right small" href="#">聯絡資訊</a>
       </div>
     </div>
@@ -26,9 +27,16 @@
     <div id="main-container">
       <div id="action-bar-container">
         <div class="action-bar">
-<!--           <div class="btn-group btn-group-dir">
-            <a class="btn selected" href="#">看板</a>
-          </div> -->
+          <div class="btn-group btn-group-dir">
+            <a id="post-area" class="btn" href="#inline">New Post</a>
+            <div id="inline" style="display:none;">
+              <div>
+                <input id="post-title" />
+                <textarea id="post-content" style="width: 100%"></textarea>
+                <button id="new-post" class="btn">Send Post</button>
+              </div>
+            </div>
+          </div>
           <div class="btn-group btn-group-paging">
 <!--             <a class="btn wide" href="#">最舊</a>
             <a class="btn wide" href="#">&lsaquo; 上頁</a>
@@ -44,6 +52,7 @@
 
     <script language="javascript" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
     <script language="javascript" type="text/javascript" src="https://cdn.jsdelivr.net/gh/ethereum/web3.js@1.0.0-beta.37/dist/web3.min.js"></script>
+    <script language="javascript" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/fancybox/3.5.7/jquery.fancybox.min.js"></script>
     <script language="javascript" type="text/javascript" src="script.js"></script>
   </body>
 </html>
