@@ -1,5 +1,10 @@
 
+const ABIBBSExt = [{"constant":!1,"inputs":[{"name":"post","type":"bytes32"}],"name":"upvote","outputs":[],"payable":!1,"stateMutability":"nonpayable","type":"function"},{"constant":!1,"inputs":[{"name":"content","type":"string"}],"name":"Post","outputs":[],"payable":!1,"stateMutability":"nonpayable","type":"function"},{"constant":!1,"inputs":[{"name":"origin","type":"bytes32"},{"name":"content","type":"string"}],"name":"Reply","outputs":[],"payable":!1,"stateMutability":"nonpayable","type":"function"},{"constant":!1,"inputs":[{"name":"post","type":"bytes32"}],"name":"downvote","outputs":[],"payable":!1,"stateMutability":"nonpayable","type":"function"},{"anonymous":!1,"inputs":[{"indexed":!1,"name":"origin","type":"bytes32"},{"indexed":!1,"name":"content","type":"string"}],"name":"Replied","type":"event"}]
+const BBSExtContract = "0x9b985Ef27464CF25561f0046352E03a09d2C2e0C"
+
 const web3js = new Web3('https://mainnet-rpc.dexon.org')
+let dexonWeb3 = ''
+let activeAccount = ''
 
 function htmlEntities(str) {
   return String(str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;')
@@ -32,5 +37,95 @@ function startApp() {
     })
   }
 }
+
+function startInteractingWithWeb3() {
+  setInterval(() => {
+    dexonWeb3.eth.getAccounts().then(([account]) => {
+      activeAccount = account
+    })
+  }, 1000)
+}
+
+function initDexon() {
+  if (window.dexon) {
+    const dexonProvider = window.dexon
+    dexonProvider.enable()
+    dexonWeb3 = new Web3()
+    dexonWeb3.setProvider(dexonProvider)
+    
+    dexonWeb3.eth.net.getId().then(networkID => {
+      if (networkID === 237) {
+        startInteractingWithWeb3()
+        alert('DEXON Wallet connected')
+      }
+      else
+        alert('Wrong network')
+    })
+  }
+  else {
+    alert('DEXON Wallet not detected')
+  }
+}
+
+function upvote() {
+  if (dexonWeb3 === ''){
+    alert('Please connect to your DEXON Wallet first.')
+    return
+  }
+
+  const tx = getUrlParameter('tx').substr(0,66)
+  if (tx) {
+    const dexBBSExt = new dexonWeb3.eth.Contract(ABIBBSExt, BBSExtContract)
+    dexBBSExt.methods.upvote(tx).send({ from: activeAccount })
+    .then(receipt => {
+      window.location.reload()
+    })
+    .catch(err => {
+      alert(err)
+    })
+  }
+}
+
+function downvote() {
+  if (dexonWeb3 === ''){
+    alert('Please connect to your DEXON Wallet first.')
+    return
+  }
+
+  const tx = getUrlParameter('tx').substr(0,66)
+  if (tx) {
+    const dexBBSExt = new dexonWeb3.eth.Contract(ABIBBSExt, BBSExtContract)
+    dexBBSExt.methods.downvote(tx).send({ from: activeAccount })
+    .then(receipt => {
+      window.location.reload()
+    })
+    .catch(err => {
+      alert(err)
+    })
+  }
+}
+
+function newReply(content) {
+  if (dexonWeb3 === ''){
+    alert('Please connect to your DEXON Wallet first.')
+    return
+  }
+
+  const tx = getUrlParameter('tx').substr(0,66)
+  if (tx) {
+    const dexBBSExt = new dexonWeb3.eth.Contract(ABIBBSExt, BBSExtContract)
+    dexBBSExt.methods.Reply(tx, content).send({ from: activeAccount })
+    .then(receipt => {
+      window.location.reload()
+    })
+    .catch(err => {
+      alert(err)
+    })
+  }
+}
+
+$('#dexon-wallet').click(() => {
+  initDexon()
+})
 
 $(startApp)
