@@ -5,7 +5,7 @@
   "scripts": {
     "dev": "npm run clean && parcel src/*.html --out-dir dist/",
     "build": "npm run clean && parcel build --no-source-maps src/*.html --out-dir . --public-url .  --no-minify",
-    "clean": "rm -rf st* sc* .cache dist"
+    "clean": "rm -rf st* sc* .cache dist content*"
   },
   "repository": {
     "type": "git",
