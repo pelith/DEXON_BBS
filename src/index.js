@@ -20,7 +20,7 @@ function startApp() {
   .then(events => {
     events.slice().reverse().forEach(event => {
       if ( !banList.includes(event.transactionHash) )
-        directDisplay(event.returnValues.content, event.transactionHash, event.blockNumber)
+        directDisplay(event.returnValues.content.substr(0,40), event.transactionHash, event.blockNumber)
     })
   });
 }
@@ -31,7 +31,7 @@ function directDisplay(content, txHash, blockNumber) {
   elem.html(
     '<div class="nrec"><span class="hl f1"> 爆 </span></div>' +
     '<div class="title">' +
-    '<a>'+
+    '<a href="content.html?tx=' + txHash + '">'+
       content +
     '</a>'+
     '</div>' +
