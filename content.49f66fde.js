@@ -118,7 +118,79 @@ parcelRequire = (function (modules, cache, entry, globalName) {
 
   return newRequire;
 })({"pILq":[function(require,module,exports) {
+function _slicedToArray(arr, i) { return _arrayWithHoles(arr) || _iterableToArrayLimit(arr, i) || _nonIterableRest(); }
+
+function _nonIterableRest() { throw new TypeError("Invalid attempt to destructure non-iterable instance"); }
+
+function _iterableToArrayLimit(arr, i) { var _arr = []; var _n = true; var _d = false; var _e = undefined; try { for (var _i = arr[Symbol.iterator](), _s; !(_n = (_s = _i.next()).done); _n = true) { _arr.push(_s.value); if (i && _arr.length === i) break; } } catch (err) { _d = true; _e = err; } finally { try { if (!_n && _i["return"] != null) _i["return"](); } finally { if (_d) throw _e; } } return _arr; }
+
+function _arrayWithHoles(arr) { if (Array.isArray(arr)) return arr; }
+
+var ABIBBSExt = [{
+  "constant": !1,
+  "inputs": [{
+    "name": "post",
+    "type": "bytes32"
+  }],
+  "name": "upvote",
+  "outputs": [],
+  "payable": !1,
+  "stateMutability": "nonpayable",
+  "type": "function"
+}, {
+  "constant": !1,
+  "inputs": [{
+    "name": "content",
+    "type": "string"
+  }],
+  "name": "Post",
+  "outputs": [],
+  "payable": !1,
+  "stateMutability": "nonpayable",
+  "type": "function"
+}, {
+  "constant": !1,
+  "inputs": [{
+    "name": "origin",
+    "type": "bytes32"
+  }, {
+    "name": "content",
+    "type": "string"
+  }],
+  "name": "Reply",
+  "outputs": [],
+  "payable": !1,
+  "stateMutability": "nonpayable",
+  "type": "function"
+}, {
+  "constant": !1,
+  "inputs": [{
+    "name": "post",
+    "type": "bytes32"
+  }],
+  "name": "downvote",
+  "outputs": [],
+  "payable": !1,
+  "stateMutability": "nonpayable",
+  "type": "function"
+}, {
+  "anonymous": !1,
+  "inputs": [{
+    "indexed": !1,
+    "name": "origin",
+    "type": "bytes32"
+  }, {
+    "indexed": !1,
+    "name": "content",
+    "type": "string"
+  }],
+  "name": "Replied",
+  "type": "event"
+}];
+var BBSExtContract = "0x9b985Ef27464CF25561f0046352E03a09d2C2e0C";
 var web3js = new Web3('https://mainnet-rpc.dexon.org');
+var dexonWeb3 = '';
+var activeAccount = '';
 
 function htmlEntities(str) {
   return String(str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
@@ -155,5 +227,96 @@ function startApp() {
   }
 }
 
+function startInteractingWithWeb3() {
+  setInterval(function () {
+    dexonWeb3.eth.getAccounts().then(function (_ref) {
+      var _ref2 = _slicedToArray(_ref, 1),
+          account = _ref2[0];
+
+      activeAccount = account;
+    });
+  }, 1000);
+}
+
+function initDexon() {
+  if (window.dexon) {
+    var dexonProvider = window.dexon;
+    dexonProvider.enable();
+    dexonWeb3 = new Web3();
+    dexonWeb3.setProvider(dexonProvider);
+    dexonWeb3.eth.net.getId().then(function (networkID) {
+      if (networkID === 237) {
+        startInteractingWithWeb3();
+        alert('DEXON Wallet connected');
+      } else alert('Wrong network');
+    });
+  } else {
+    alert('DEXON Wallet not detected');
+  }
+}
+
+function upvote() {
+  if (dexonWeb3 === '') {
+    alert('Please connect to your DEXON Wallet first.');
+    return;
+  }
+
+  var tx = getUrlParameter('tx').substr(0, 66);
+
+  if (tx) {
+    var dexBBSExt = new dexonWeb3.eth.Contract(ABIBBSExt, BBSExtContract);
+    dexBBSExt.methods.upvote(tx).send({
+      from: activeAccount
+    }).then(function (receipt) {
+      window.location.reload();
+    }).catch(function (err) {
+      alert(err);
+    });
+  }
+}
+
+function downvote() {
+  if (dexonWeb3 === '') {
+    alert('Please connect to your DEXON Wallet first.');
+    return;
+  }
+
+  var tx = getUrlParameter('tx').substr(0, 66);
+
+  if (tx) {
+    var dexBBSExt = new dexonWeb3.eth.Contract(ABIBBSExt, BBSExtContract);
+    dexBBSExt.methods.downvote(tx).send({
+      from: activeAccount
+    }).then(function (receipt) {
+      window.location.reload();
+    }).catch(function (err) {
+      alert(err);
+    });
+  }
+}
+
+function newReply(content) {
+  if (dexonWeb3 === '') {
+    alert('Please connect to your DEXON Wallet first.');
+    return;
+  }
+
+  var tx = getUrlParameter('tx').substr(0, 66);
+
+  if (tx) {
+    var dexBBSExt = new dexonWeb3.eth.Contract(ABIBBSExt, BBSExtContract);
+    dexBBSExt.methods.Reply(tx, content).send({
+      from: activeAccount
+    }).then(function (receipt) {
+      window.location.reload();
+    }).catch(function (err) {
+      alert(err);
+    });
+  }
+}
+
+$('#dexon-wallet').click(function () {
+  initDexon();
+});
 $(startApp);
 },{}]},{},["pILq"], null)
