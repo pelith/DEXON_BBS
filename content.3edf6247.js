@@ -236,6 +236,7 @@ function startApp() {
       var content = htmlEntities(web3js.utils.hexToUtf8('0x' + transaction.input.slice(138)));
       var author = '@' + transaction.blockNumber;
       var title = getTitle(content.substr(0, 40));
+      document.title = title.title + ' - Gossiping - DEXON BBS';
       $('#main-content-author')[0].innerHTML = author;
       $('#main-content-author')[0].href = 'https://dexonscan.app/transaction/' + tx;
       $('#main-content-title')[0].innerHTML = title.title;
