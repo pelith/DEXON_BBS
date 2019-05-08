@@ -56,26 +56,27 @@ function directDisplay(content, txHash, blockNumber) {
   content = htmlEntities(content)
   const elem = $('<div class="r-ent"></div>')
   elem.html(
-    '<div class="nrec"><span class="hl f1"> 爆 </span></div>' +
-    '<div class="title">' +
-    '<a href="content.html?tx=' + txHash + '">'+
-      content +
-    '</a>'+
-    '</div>' +
-    '<div class="meta">' +
-      '<div class="author">' +
-        '<a target="_blank" href="https://dexonscan.app/transaction/' + txHash + '">'+
-           '@'+blockNumber +
-        '</a>' +
-      '</div>' +
-      '<div class="date">...</div>' +
-    '</div>')
+    `<div class="nrec"><span class="hl f1"> 爆 </span></div>
+    <div class="title">
+    <a href="content.html?tx=${txHash}">
+      ${content}
+    </a>
+    </div>
+    <div class="meta">
+      <div class="author">
+        <a target="_blank" href="https://dexonscan.app/transaction/${txHash}">
+           @${blockNumber}
+        </a>
+      </div>
+      <div class="article-menu"></div>
+      <div class="date">...</div>
+    </div>`)
 
   $('.r-list-container.action-bar-margin.bbs-screen').append(elem)
 
   web3js.eth.getBlock(blockNumber).then(block => {
     const date = new Date(block.timestamp)
-    $(elem).find('.date').text((date.getMonth()+1)+'/'+date.getDate())
+    $(elem).find('.date').text((date.getMonth()+1)+'/'+(''+date.getDate()).padStart(2, '0'))
                          .attr('title', date.toLocaleString())
   })
 }
