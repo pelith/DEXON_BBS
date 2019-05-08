@@ -107,7 +107,7 @@ function newPost(title, content) {
 }
 
 
-$("#post-area").attr('rel', 'gallery').fancybox();
+$("#post-area").attr('rel', 'gallery').fancybox()
 
 $('#dexon-wallet').click(() => {
   initDexon()
