@@ -214,7 +214,7 @@ function getTitle(content) {
 
     for (i = 0; i < str.length; i++) {
       if (str[i].match(/[\u4e00-\u9fa5]/g)) tmp += str[i], count += 2;else if (str[i].match(/[\uff00-\uffff]/g)) tmp += str[i], count += 2;else tmp += str[i], count++;
-      if (count > 40) break;
+      if (count >= 40) break;
     }
 
     return tmp;
@@ -233,6 +233,7 @@ function startApp() {
 
   if (tx) {
     web3js.eth.getTransaction(tx).then(function (transaction) {
+      console.log(transaction);
       var content = htmlEntities(web3js.utils.hexToUtf8('0x' + transaction.input.slice(138)));
       var author = '@' + transaction.blockNumber;
       var title = getTitle(content.substr(0, 40));
@@ -246,6 +247,7 @@ function startApp() {
       });
       $('#main-content-href')[0].href = window.location.href;
       $('#main-content-href')[0].innerHTML = window.location.href;
+      $('#main-content-from').text(transaction.from.replace(/^(0x.{4}).+(.{4})$/, '$1...$2'));
     });
   }
 }

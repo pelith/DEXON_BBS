@@ -238,7 +238,11 @@ function getTitle(content) {
 
     for (i = 0; i < str.length; i++) {
       if (str[i].match(/[\u4e00-\u9fa5]/g)) tmp += str[i], count += 2;else if (str[i].match(/[\uff00-\uffff]/g)) tmp += str[i], count += 2;else tmp += str[i], count++;
-      if (count > 40) break;
+
+      if (count >= 40) {
+        tmp += '…';
+        break;
+      }
     }
 
     return tmp;
