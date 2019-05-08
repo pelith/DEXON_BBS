@@ -80,7 +80,7 @@ function initDexon() {
     })
   }
   else {
-    alert('DEXON Wallet not detected')
+    alert('DEXON Wallet not detected (請安裝 DEXON 瀏覽器擴充套件)')
   }
 }
 
