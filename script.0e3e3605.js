@@ -226,9 +226,30 @@ function startApp() {
     fromBlock: '990000'
   }).then(function (events) {
     events.slice().reverse().forEach(function (event) {
-      if (!banList.includes(event.transactionHash)) directDisplay(event.returnValues.content.substr(0, 40), event.transactionHash, event.blockNumber);
+      if (!banList.includes(event.transactionHash)) directDisplay(getTitle(event.returnValues.content.substr(0, 40)).title, event.transactionHash, event.blockNumber);
     });
   });
+}
+
+function getTitle(content) {
+  function convert(str) {
+    var tmp = '',
+        count = 0;
+
+    for (i = 0; i < str.length; i++) {
+      if (str[i].match(/[\u4e00-\u9fa5]/g)) tmp += str[i], count += 2;else if (str[i].match(/[\uff00-\uffff]/g)) tmp += str[i], count += 2;else tmp += str[i], count++;
+      if (count > 40) break;
+    }
+
+    return tmp;
+  }
+
+  content = convert(content);
+  match = content.match(/^(\[).*(\])/);
+  return {
+    match: match,
+    title: match ? match[0].substr(1, match[0].length - 2) : content
+  };
 }
 
 function directDisplay(content, txHash, blockNumber) {
