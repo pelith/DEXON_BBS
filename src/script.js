@@ -12,7 +12,9 @@ function htmlEntities(str) {
 
 function startApp() {
   const BBSContract = "0x663002C4E41E5d04860a76955A7B9B8234475952"
+  const BBSExtContract = "0x9b985Ef27464CF25561f0046352E03a09d2C2e0C"
   const BBS = new web3js.eth.Contract(ABIBBS, BBSContract)
+  const BBSExt = new web3js.eth.Contract(ABIBBSExt, BBSExtContract)
 
   BBS.getPastEvents({fromBlock : '990000'})
   .then(events => {
