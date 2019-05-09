@@ -21,13 +21,17 @@ function convert(str) {
   return tmp
 }
 
+function check(){
+  $("#bbs-post")[0].disabled = ($("#bbs-content")[0].value.length>0 && $("#bbs-title")[0].value >0) ? "" : "disabled"
+}
+
 
 function main(){
   String.prototype.lines = function() { return this.split(/\r*\n/); }
   String.prototype.lineCount = function() { return this.lines().length; }
 
-  $("#bbs-title")[0].onblur = () => {  $("#bbs-title")[0].value = convert($("#bbs-title")[0].value) }
-  // $("#bbs-content")[0].onkeyup = () => { }
+  $("#bbs-title")[0].onblur = () => { check(), $("#bbs-title")[0].value = convert($("#bbs-title")[0].value) }
+  $("#bbs-content")[0].onkeyup = () => { check() }
   $("#bbs-content")[0].placeholder="~\n".repeat(20)
   $("#bbs-post")[0].onclick = () => { newPost($("#bbs-title")[0].value, $("#bbs-content")[0].value)}
   $("#bbs-cancel")[0].onclick = () => { window.location = 'index.html'}
@@ -61,6 +65,7 @@ function startInteractingWithWeb3() {
   setInterval(() => {
     dexonWeb3.eth.getAccounts().then(([account]) => {
       activeAccount = account
+      $("#bbs-user")[0].innerHTML = activeAccount.replace(/^(0x.{4}).+(.{4})$/, '$1...$2')
     })
   }, 1000)
 }
