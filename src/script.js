@@ -33,6 +33,7 @@ function getTitle(content) {
     let tmp='', count = 0;
     for(i=0;i<str.length; i++){
       if (str[i].match(/[\u4e00-\u9fa5]/g)) tmp+=str[i],count+=2
+      else if (str[i].match(/[\u0800-\u4e00]/g)) tmp+=str[i],count+=2
       else if (str[i].match(/[\uff00-\uffff]/g)) tmp+=str[i],count+=2
       else tmp+=str[i],count++
 
@@ -110,40 +111,11 @@ function initDexon() {
   }
 }
 
-function newPost(title, content) {
-  if (dexonWeb3 === ''){
-    alert('Please connect to your DEXON Wallet.')
-    return
-  }
-
-  if (title.length > 40) {
-    alert('Title\'s length is over 40 characters.')
-    return
-  }
-
-  const post = '[' + title + ']' + content
-  const dexBBSExt = new dexonWeb3.eth.Contract(ABIBBSExt, BBSExtContract)
-  dexBBSExt.methods.Post(post).send({ from: activeAccount })
-  .then(receipt => {
-    window.location.reload()
-  })
-  .catch(err => {
-    alert(err)
-  })
-}
-
-
-$("#post-area").attr('rel', 'gallery').fancybox()
-
 $('#dexon-wallet').click(() => {
   initDexon()
 })
 
-$('#new-post').click(() => {
-  const title = document.getElementById("post-title").value
-  const content = document.getElementById("post-content").value
-  newPost(title, content)
-})
+
 
 
 $(startApp)
