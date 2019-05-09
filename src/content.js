@@ -1,5 +1,5 @@
 import {htmlEntities, getUrlParameter, getTitle, getUser} from './utils.js'
-import {ABIBBS, ABIBBSExt, BBSContract, BBSExtContract, web3js, initDexon} from './dexon.js'
+import {ABIBBS, ABIBBSExt, BBSContract, BBSExtContract, web3js, initDexon, newReply} from './dexon.js'
 
 function main() {
   const tx = getUrlParameter('tx')
@@ -22,35 +22,31 @@ function main() {
       $('#main-content-from').text(getUser(transaction.from))
     })
   }
+
+
+  const BBSExt = new web3js.eth.Contract(ABIBBSExt, BBSExtContract)
+  const originTx = getUrlParameter('tx').substr(0,66)
+  BBSExt.getPastEvents({fromBlock : '990000'})
+  .then(events => {
+    events.slice().reverse().forEach(event => {
+      if (originTx == event.returnValues.origin)
+        displayReply(event.returnValues.vote, event.returnValues.content, event.transactionHash, event.blockNumber)
+    })
+  });
 }
 
-function newReply(vote, content) {
-  if (dexonWeb3 === ''){
-    alert('Please connect to your DEXON Wallet first.')
-    return
-  }
+function displayReply(vote, content, txHash, blockNumber) {
+  content = htmlEntities(content)
+  const voteName = ["→", "推", "噓"]
+  const voteTag = ["→", "推", "噓"]
+  const elem = $('<div class="push"></div>')
+  elem.html(`<span class="${vote != 1 ? 'f1 ' : ''}hl push-tag">${voteName[vote]} </span><span class="f3 hl push-userid">@${blockNumber}</span><span class="f3 push-content">: ${content}</span><span class="push-ipdatetime"></span>`)
+  $('#main-content.bbs-screen.bbs-content').append(elem)
 
-  if (![0, 1, 2].includes(vote)){
-    alert('Wrong type of vote.')
-    return
-  }
-
-  if (content.length === 0){
-    alert('No content.')
-    return
-  }
-
-  const tx = getUrlParameter('tx').substr(0,66)
-  if (tx) {
-    const dexBBSExt = new dexonWeb3.eth.Contract(ABIBBSExt, BBSExtContract)
-    dexBBSExt.methods.Reply(tx, vote, content).send({ from: activeAccount })
-    .then(receipt => {
-      window.location.reload()
-    })
-    .catch(err => {
-      alert(err)
-    })
-  }
+  web3js.eth.getBlock(blockNumber).then(block => {
+    const date = new Date(block.timestamp)
+    $(elem).find('.push-ipdatetime').text((date.getMonth()+1)+'/'+(''+date.getDate()).padStart(2, '0')+' '+(''+date.getHours()).padStart(2, '0')+':'+(''+date.getMinutes()).padStart(2, '0'))
+  })
 }
 
 const activeDexonRender = (account) => {
@@ -72,6 +68,6 @@ $("#reply-area").attr('rel', 'gallery').fancybox()
 $('#submit-reply').click(() => {
   const vote = $("input[name='vote']:checked").val() * 1
   const content = $("#reply-content").val()
-  newReply(vote, content)
+  newReply(getUrlParameter('tx').substr(0,66), vote, content)
 })
 
