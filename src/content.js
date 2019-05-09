@@ -1,5 +1,4 @@
 import {htmlEntities, getUrlParameter, getTitle, getUser} from './utils.js'
-
 import {ABIBBS, ABIBBSExt, BBSContract, BBSExtContract, web3js, initDexon} from './dexon.js'
 
 function main() {
@@ -25,54 +24,26 @@ function main() {
   }
 }
 
-function upvote() {
+function newReply(vote, content) {
   if (dexonWeb3 === ''){
     alert('Please connect to your DEXON Wallet first.')
+    return
+  }
+
+  if (![0, 1, 2].includes(vote)){
+    alert('Wrong type of vote.')
+    return
+  }
+
+  if (content.length === 0){
+    alert('No content.')
     return
   }
 
   const tx = getUrlParameter('tx').substr(0,66)
   if (tx) {
     const dexBBSExt = new dexonWeb3.eth.Contract(ABIBBSExt, BBSExtContract)
-    dexBBSExt.methods.upvote(tx).send({ from: activeAccount })
-    .then(receipt => {
-      window.location.reload()
-    })
-    .catch(err => {
-      alert(err)
-    })
-  }
-}
-
-function downvote() {
-  if (dexonWeb3 === ''){
-    alert('Please connect to your DEXON Wallet first.')
-    return
-  }
-
-  const tx = getUrlParameter('tx').substr(0,66)
-  if (tx) {
-    const dexBBSExt = new dexonWeb3.eth.Contract(ABIBBSExt, BBSExtContract)
-    dexBBSExt.methods.downvote(tx).send({ from: activeAccount })
-    .then(receipt => {
-      window.location.reload()
-    })
-    .catch(err => {
-      alert(err)
-    })
-  }
-}
-
-function newReply(content) {
-  if (dexonWeb3 === ''){
-    alert('Please connect to your DEXON Wallet first.')
-    return
-  }
-
-  const tx = getUrlParameter('tx').substr(0,66)
-  if (tx) {
-    const dexBBSExt = new dexonWeb3.eth.Contract(ABIBBSExt, BBSExtContract)
-    dexBBSExt.methods.Reply(tx, content).send({ from: activeAccount })
+    dexBBSExt.methods.Reply(tx, vote, content).send({ from: activeAccount })
     .then(receipt => {
       window.location.reload()
     })
@@ -94,3 +65,13 @@ $('#bbs-login').click(() => {
 })
 
 $(main)
+
+
+$("#reply-area").attr('rel', 'gallery').fancybox()
+
+$('#submit-reply').click(() => {
+  const vote = $("input[name='vote']:checked").val() * 1
+  const content = $("#reply-content").val()
+  newReply(vote, content)
+})
+
