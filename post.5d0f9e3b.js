@@ -295,7 +295,7 @@ function initDexon() {
     dexonWeb3.eth.net.getId().then(function (networkID) {
       if (networkID === 237) {
         startInteractingWithWeb3();
-        alert('DEXON Wallet connected');
+        console.log('DEXON Wallet connected');
       } else alert('Wrong network');
     });
   } else {

@@ -274,8 +274,9 @@ function startInteractingWithWeb3() {
           account = _ref2[0];
 
       activeAccount = account;
+      $("#bbs-user")[0].innerHTML = activeAccount.replace(/^(0x.{4}).+(.{4})$/, '$1...$2');
     });
-  }, 1000);
+  }, 2000);
 }
 
 function initDexon() {
@@ -286,8 +287,12 @@ function initDexon() {
     dexonWeb3.setProvider(dexonProvider);
     dexonWeb3.eth.net.getId().then(function (networkID) {
       if (networkID === 237) {
+        $("#bbs-post")[0].style.display = '';
+        $("#bbs-login")[0].style.display = 'none';
+        $("#bbs-register")[0].style.display = 'none';
+        $("#bbs-user")[0].style.display = '';
         startInteractingWithWeb3();
-        alert('DEXON Wallet connected');
+        console.log('DEXON Wallet connected');
       } else alert('Wrong network');
     });
   } else {
@@ -295,7 +300,7 @@ function initDexon() {
   }
 }
 
-$('#dexon-wallet').click(function () {
+$('#bbs-login').click(function () {
   initDexon();
 });
 $(startApp);
