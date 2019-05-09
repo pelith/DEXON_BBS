@@ -434,7 +434,7 @@ function main() {
   BBSExt.getPastEvents({
     fromBlock: '990000'
   }).then(function (events) {
-    events.slice().reverse().forEach(function (event) {
+    events.slice().forEach(function (event) {
       if (originTx == event.returnValues.origin) displayReply(event.returnValues.vote, event.returnValues.content, event.transactionHash, event.blockNumber);
     });
   });
@@ -445,7 +445,13 @@ function displayReply(vote, content, txHash, blockNumber) {
   var voteName = ["→", "推", "噓"];
   var voteTag = ["→", "推", "噓"];
   var elem = $('<div class="push"></div>');
-  elem.html("<span class=\"".concat(vote != 1 ? 'f1 ' : '', "hl push-tag\">").concat(voteName[vote], " </span><span class=\"f3 hl push-userid\">@").concat(blockNumber, "</span><span class=\"f3 push-content\">: ").concat(content, "</span><span class=\"push-ipdatetime\"></span>"));
+
+  _dexon.web3js.eth.getTransaction(txHash).then(function (transaction) {
+    console.log(transaction.from);
+    $(elem).find('.push-userid').text((0, _utils.getUser)(transaction.from));
+  });
+
+  elem.html("<span class=\"".concat(vote != 1 ? 'f1 ' : '', "hl push-tag\">").concat(voteName[vote], " </span><span class=\"f3 hl push-userid\"></span><span class=\"f3 push-content\">: ").concat(content, "</span><span class=\"push-ipdatetime\"></span>"));
   $('#main-content.bbs-screen.bbs-content').append(elem);
 
   _dexon.web3js.eth.getBlock(blockNumber).then(function (block) {
@@ -459,6 +465,8 @@ var activeDexonRender = function activeDexonRender(account) {
   $("#bbs-register")[0].style.display = 'none';
   $("#bbs-user")[0].style.display = '';
   $("#bbs-user")[0].innerHTML = (0, _utils.getUser)(account);
+  $("#bbs-reply")[0].style.display = '';
+  $("#bbs-reply-user")[0].innerHTML = (0, _utils.getUser)(account);
 };
 
 $('#bbs-login').click(function () {
