@@ -117,7 +117,72 @@ parcelRequire = (function (modules, cache, entry, globalName) {
   }
 
   return newRequire;
-})({"mpVp":[function(require,module,exports) {
+})({"FO+Z":[function(require,module,exports) {
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.getUser = exports.getTitle = exports.getParseText = exports.getUrlParameter = exports.htmlEntities = void 0;
+
+var htmlEntities = function htmlEntities(str) {
+  return String(str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+};
+
+exports.htmlEntities = htmlEntities;
+
+var getUrlParameter = function getUrlParameter(sParam) {
+  var sPageURL = window.location.search.substring(1),
+      sURLVariables = sPageURL.split('&'),
+      sParameterName = [];
+
+  for (var i = 0; i < sURLVariables.length; i++) {
+    sParameterName = sURLVariables[i].split('=');
+    if (sParameterName[0] === sParam) return sParameterName[1] === undefined ? true : decodeURIComponent(sParameterName[1]);
+  }
+};
+
+exports.getUrlParameter = getUrlParameter;
+
+var getParseText = function getParseText(str, len) {
+  var tmp = '',
+      count = 0;
+
+  for (var i = 0; i < str.length; i++) {
+    if (str[i].match(/[\u4e00-\u9fa5]/g)) tmp += str[i], count += 2;else if (str[i].match(/[\u0800-\u4e00]/g)) tmp += str[i], count += 2;else if (str[i].match(/[\uff00-\uffff]/g)) tmp += str[i], count += 2;else tmp += str[i], count++;
+    if (count >= len) break;
+  }
+
+  return tmp;
+};
+
+exports.getParseText = getParseText;
+
+var getTitle = function getTitle(content) {
+  content = getParseText(content, 40);
+  var match = content.match(/^(\[).*(\])/);
+  return {
+    match: match,
+    title: match ? match[0].substr(1, match[0].length - 2) : content
+  };
+};
+
+exports.getTitle = getTitle;
+
+var getUser = function getUser(address) {
+  return address.replace(/^(0x.{3}).+(.{3})$/, '$1...$2');
+};
+
+exports.getUser = getUser;
+},{}],"UN6U":[function(require,module,exports) {
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.newPost = newPost;
+exports.initDexon = exports.web3js = exports.BBSExtContract = exports.BBSContract = exports.ABIBBSExt = exports.ABIBBS = void 0;
+
 function _slicedToArray(arr, i) { return _arrayWithHoles(arr) || _iterableToArrayLimit(arr, i) || _nonIterableRest(); }
 
 function _nonIterableRest() { throw new TypeError("Invalid attempt to destructure non-iterable instance"); }
@@ -147,158 +212,79 @@ var ABIBBS = [{
   "name": "Posted",
   "type": "event"
 }];
+exports.ABIBBS = ABIBBS;
 var ABIBBSExt = [{
-  "constant": false,
+  "constant": !1,
+  "inputs": [{
+    "name": "post",
+    "type": "bytes32"
+  }],
+  "name": "upvote",
+  "outputs": [],
+  "payable": !1,
+  "stateMutability": "nonpayable",
+  "type": "function"
+}, {
+  "constant": !1,
+  "inputs": [{
+    "name": "content",
+    "type": "string"
+  }],
+  "name": "Post",
+  "outputs": [],
+  "payable": !1,
+  "stateMutability": "nonpayable",
+  "type": "function"
+}, {
+  "constant": !1,
   "inputs": [{
     "name": "origin",
     "type": "bytes32"
-  }, {
-    "name": "vote",
-    "type": "uint256"
   }, {
     "name": "content",
     "type": "string"
   }],
   "name": "Reply",
   "outputs": [],
-  "payable": false,
+  "payable": !1,
   "stateMutability": "nonpayable",
   "type": "function"
 }, {
-  "anonymous": false,
+  "constant": !1,
   "inputs": [{
-    "indexed": false,
+    "name": "post",
+    "type": "bytes32"
+  }],
+  "name": "downvote",
+  "outputs": [],
+  "payable": !1,
+  "stateMutability": "nonpayable",
+  "type": "function"
+}, {
+  "anonymous": !1,
+  "inputs": [{
+    "indexed": !1,
     "name": "origin",
     "type": "bytes32"
   }, {
-    "indexed": false,
-    "name": "vote",
-    "type": "uint256"
-  }, {
-    "indexed": false,
+    "indexed": !1,
     "name": "content",
     "type": "string"
   }],
   "name": "Replied",
   "type": "event"
-}, {
-  "constant": true,
-  "inputs": [{
-    "name": "",
-    "type": "bytes32"
-  }],
-  "name": "downvotes",
-  "outputs": [{
-    "name": "",
-    "type": "uint256"
-  }],
-  "payable": false,
-  "stateMutability": "view",
-  "type": "function"
-}, {
-  "constant": true,
-  "inputs": [{
-    "name": "",
-    "type": "bytes32"
-  }],
-  "name": "upvotes",
-  "outputs": [{
-    "name": "",
-    "type": "uint256"
-  }],
-  "payable": false,
-  "stateMutability": "view",
-  "type": "function"
-}, {
-  "constant": true,
-  "inputs": [{
-    "name": "",
-    "type": "address"
-  }, {
-    "name": "",
-    "type": "bytes32"
-  }],
-  "name": "voted",
-  "outputs": [{
-    "name": "",
-    "type": "bool"
-  }],
-  "payable": false,
-  "stateMutability": "view",
-  "type": "function"
 }];
+exports.ABIBBSExt = ABIBBSExt;
 var BBSContract = "0x663002C4E41E5d04860a76955A7B9B8234475952";
-var BBSExtContract = "0xca107a421f3093cbe28a2a7b4fce843931613bcd";
+exports.BBSContract = BBSContract;
+var BBSExtContract = "0x9b985Ef27464CF25561f0046352E03a09d2C2e0C";
+exports.BBSExtContract = BBSExtContract;
 var web3js = new Web3('https://mainnet-rpc.dexon.org');
+exports.web3js = web3js;
 var dexonWeb3 = '';
 var activeAccount = '';
-var banList = ["0xdc0db75c79308f396ed6389537d4ddd2a36c920bb2958ed7f70949b1f9d3375d"];
 
-function htmlEntities(str) {
-  return String(str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
-}
-
-function startApp() {
-  var BBS = new web3js.eth.Contract(ABIBBS, BBSContract);
-  var BBSExt = new web3js.eth.Contract(ABIBBSExt, BBSExtContract);
-  BBS.getPastEvents({
-    fromBlock: '990000'
-  }).then(function (events) {
-    events.slice().reverse().forEach(function (event) {
-      if (!banList.includes(event.transactionHash)) directDisplay(getTitle(event.returnValues.content.substr(0, 40)).title, event.transactionHash, event.blockNumber);
-    });
-  });
-}
-
-function getTitle(content) {
-  function convert(str) {
-    var tmp = '',
-        count = 0;
-
-    for (i = 0; i < str.length; i++) {
-      if (str[i].match(/[\u4e00-\u9fa5]/g)) tmp += str[i], count += 2;else if (str[i].match(/[\u0800-\u4e00]/g)) tmp += str[i], count += 2;else if (str[i].match(/[\uff00-\uffff]/g)) tmp += str[i], count += 2;else tmp += str[i], count++;
-
-      if (count >= 40) {
-        tmp += '…';
-        break;
-      }
-    }
-
-    return tmp;
-  }
-
-  content = convert(content);
-  match = content.match(/^(\[).*(\])/);
-  return {
-    match: match,
-    title: match ? match[0].substr(1, match[0].length - 2) : content
-  };
-}
-
-function directDisplay(content, txHash, blockNumber) {
-  content = htmlEntities(content);
-  var elem = $('<div class="r-ent"></div>');
-  elem.html("<div class=\"nrec\"><span class=\"hl f1\"> \u7206 </span></div>\n    <div class=\"title\">\n    <a href=\"content.html?tx=".concat(txHash, "\">\n      ").concat(content, "\n    </a>\n    </div>\n    <div class=\"meta\">\n      <div class=\"author\">\n        <a target=\"_blank\" href=\"https://dexonscan.app/transaction/").concat(txHash, "\">\n           @").concat(blockNumber, "\n        </a>\n      </div>\n      <div class=\"article-menu\"></div>\n      <div class=\"date\">...</div>\n    </div>"));
-  $('.r-list-container.action-bar-margin.bbs-screen').append(elem);
-  web3js.eth.getBlock(blockNumber).then(function (block) {
-    var date = new Date(block.timestamp);
-    $(elem).find('.date').text(date.getMonth() + 1 + '/' + ('' + date.getDate()).padStart(2, '0')).attr('title', date.toLocaleString());
-  });
-}
-
-function startInteractingWithWeb3() {
-  setInterval(function () {
-    dexonWeb3.eth.getAccounts().then(function (_ref) {
-      var _ref2 = _slicedToArray(_ref, 1),
-          account = _ref2[0];
-
-      activeAccount = account;
-      $("#bbs-user")[0].innerHTML = activeAccount.replace(/^(0x.{3}).+(.{3})$/, '$1...$2');
-    });
-  }, 2000);
-}
-
-function initDexon() {
+var initDexon = function initDexon(activeDexonRender) {
   if (window.dexon) {
     var dexonProvider = window.dexon;
     dexonProvider.enable();
@@ -306,21 +292,86 @@ function initDexon() {
     dexonWeb3.setProvider(dexonProvider);
     dexonWeb3.eth.net.getId().then(function (networkID) {
       if (networkID === 237) {
-        $("#bbs-post")[0].style.display = '';
-        $("#bbs-login")[0].style.display = 'none';
-        $("#bbs-register")[0].style.display = 'none';
-        $("#bbs-user")[0].style.display = '';
-        startInteractingWithWeb3();
+        startInteractingWithWeb3(activeDexonRender);
         console.log('DEXON Wallet connected');
       } else alert('Wrong network');
     });
   } else {
     alert('DEXON Wallet not detected. (請安裝 DEXON 瀏覽器擴充套件)');
   }
+};
+
+exports.initDexon = initDexon;
+
+var startInteractingWithWeb3 = function startInteractingWithWeb3(activeDexonRender) {
+  var start = function start() {
+    dexonWeb3.eth.getAccounts().then(function (_ref) {
+      var _ref2 = _slicedToArray(_ref, 1),
+          account = _ref2[0];
+
+      activeAccount = account;
+      activeDexonRender(activeAccount);
+    });
+  };
+
+  start();
+  setInterval(start, 1000);
+};
+
+function newPost(title, content) {
+  if (dexonWeb3 === '') {
+    alert('Please connect to your DEXON Wallet.');
+    return;
+  }
+
+  if (title.length > 40) {
+    alert('Title\'s length is over 40 characters.');
+    return;
+  }
+
+  var post = '[' + title + ']' + content;
+  var dexBBSExt = new dexonWeb3.eth.Contract(ABIBBSExt, BBSExtContract);
+  dexBBSExt.methods.Post(post).send({
+    from: activeAccount
+  }).then(function (receipt) {
+    window.location = 'index.html';
+  }).catch(function (err) {
+    alert(err);
+  });
+}
+},{}],"DCbj":[function(require,module,exports) {
+"use strict";
+
+var _utils = require("./utils.js");
+
+var _dexon = require("./dexon.js");
+
+var activeDexonRender = function activeDexonRender(account) {
+  $("#bbs-post")[0].disabled = $("#bbs-content")[0].value.length > 0 && $("#bbs-title")[0].value > 0 ? false : true;
+  $("#bbs-user")[0].innerHTML = (0, _utils.getUser)(account);
+};
+
+function main() {
+  // String.prototype.lines = function() { return this.split(/\r*\n/); }
+  // String.prototype.lineCount = function() { return this.lines().length; }
+  $("#bbs-title")[0].onblur = function () {
+    $("#bbs-title")[0].value = (0, _utils.getParseText)($("#bbs-title")[0].value, 40);
+  };
+
+  $("#bbs-content")[0].onkeyup = function () {};
+
+  $("#bbs-content")[0].placeholder = "~\n".repeat(20);
+
+  $("#bbs-post")[0].onclick = function () {
+    (0, _dexon.newPost)($("#bbs-title")[0].value, $("#bbs-content")[0].value);
+  };
+
+  $("#bbs-cancel")[0].onclick = function () {
+    window.location = 'index.html';
+  };
+
+  (0, _dexon.initDexon)(activeDexonRender);
 }
 
-$('#bbs-login').click(function () {
-  initDexon();
-});
-$(startApp);
-},{}]},{},["mpVp"], null)
+$(main());
+},{"./utils.js":"FO+Z","./dexon.js":"UN6U"}]},{},["DCbj"], null)
