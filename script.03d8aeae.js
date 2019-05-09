@@ -117,7 +117,7 @@ parcelRequire = (function (modules, cache, entry, globalName) {
   }
 
   return newRequire;
-})({"DCbj":[function(require,module,exports) {
+})({"mpVp":[function(require,module,exports) {
 function _slicedToArray(arr, i) { return _arrayWithHoles(arr) || _iterableToArrayLimit(arr, i) || _nonIterableRest(); }
 
 function _nonIterableRest() { throw new TypeError("Invalid attempt to destructure non-iterable instance"); }
@@ -148,131 +148,141 @@ var ABIBBS = [{
   "type": "event"
 }];
 var ABIBBSExt = [{
-  "constant": !1,
-  "inputs": [{
-    "name": "post",
-    "type": "bytes32"
-  }],
-  "name": "upvote",
-  "outputs": [],
-  "payable": !1,
-  "stateMutability": "nonpayable",
-  "type": "function"
-}, {
-  "constant": !1,
-  "inputs": [{
-    "name": "content",
-    "type": "string"
-  }],
-  "name": "Post",
-  "outputs": [],
-  "payable": !1,
-  "stateMutability": "nonpayable",
-  "type": "function"
-}, {
-  "constant": !1,
+  "constant": false,
   "inputs": [{
     "name": "origin",
     "type": "bytes32"
+  }, {
+    "name": "vote",
+    "type": "uint256"
   }, {
     "name": "content",
     "type": "string"
   }],
   "name": "Reply",
   "outputs": [],
-  "payable": !1,
+  "payable": false,
   "stateMutability": "nonpayable",
   "type": "function"
 }, {
-  "constant": !1,
+  "anonymous": false,
   "inputs": [{
-    "name": "post",
-    "type": "bytes32"
-  }],
-  "name": "downvote",
-  "outputs": [],
-  "payable": !1,
-  "stateMutability": "nonpayable",
-  "type": "function"
-}, {
-  "anonymous": !1,
-  "inputs": [{
-    "indexed": !1,
+    "indexed": false,
     "name": "origin",
     "type": "bytes32"
   }, {
-    "indexed": !1,
+    "indexed": false,
+    "name": "vote",
+    "type": "uint256"
+  }, {
+    "indexed": false,
     "name": "content",
     "type": "string"
   }],
   "name": "Replied",
   "type": "event"
+}, {
+  "constant": true,
+  "inputs": [{
+    "name": "",
+    "type": "bytes32"
+  }],
+  "name": "downvotes",
+  "outputs": [{
+    "name": "",
+    "type": "uint256"
+  }],
+  "payable": false,
+  "stateMutability": "view",
+  "type": "function"
+}, {
+  "constant": true,
+  "inputs": [{
+    "name": "",
+    "type": "bytes32"
+  }],
+  "name": "upvotes",
+  "outputs": [{
+    "name": "",
+    "type": "uint256"
+  }],
+  "payable": false,
+  "stateMutability": "view",
+  "type": "function"
+}, {
+  "constant": true,
+  "inputs": [{
+    "name": "",
+    "type": "address"
+  }, {
+    "name": "",
+    "type": "bytes32"
+  }],
+  "name": "voted",
+  "outputs": [{
+    "name": "",
+    "type": "bool"
+  }],
+  "payable": false,
+  "stateMutability": "view",
+  "type": "function"
 }];
 var BBSContract = "0x663002C4E41E5d04860a76955A7B9B8234475952";
-var BBSExtContract = "0x9b985Ef27464CF25561f0046352E03a09d2C2e0C";
+var BBSExtContract = "0xca107a421f3093cbe28a2a7b4fce843931613bcd";
 var web3js = new Web3('https://mainnet-rpc.dexon.org');
 var dexonWeb3 = '';
 var activeAccount = '';
+var banList = ["0xdc0db75c79308f396ed6389537d4ddd2a36c920bb2958ed7f70949b1f9d3375d"];
 
-function convert(str) {
-  var tmp = '',
-      count = 0;
-
-  for (i = 0; i < str.length; i++) {
-    if (str[i].match(/[\u4e00-\u9fa5]/g)) tmp += str[i], count += 2;else if (str[i].match(/[\u0800-\u4e00]/g)) tmp += str[i], count += 2;else if (str[i].match(/[\uff00-\uffff]/g)) tmp += str[i], count += 2;else tmp += str[i], count++;
-    if (count >= 40) break;
-  }
-
-  return tmp;
+function htmlEntities(str) {
+  return String(str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
 }
 
-function check() {
-  $("#bbs-post")[0].disabled = $("#bbs-content")[0].value.length > 0 && $("#bbs-title")[0].value > 0 ? false : true;
+function startApp() {
+  var BBS = new web3js.eth.Contract(ABIBBS, BBSContract);
+  var BBSExt = new web3js.eth.Contract(ABIBBSExt, BBSExtContract);
+  BBS.getPastEvents({
+    fromBlock: '990000'
+  }).then(function (events) {
+    events.slice().reverse().forEach(function (event) {
+      if (!banList.includes(event.transactionHash)) directDisplay(getTitle(event.returnValues.content.substr(0, 40)).title, event.transactionHash, event.blockNumber);
+    });
+  });
 }
 
-function main() {
-  // String.prototype.lines = function() { return this.split(/\r*\n/); }
-  // String.prototype.lineCount = function() { return this.lines().length; }
-  $("#bbs-title")[0].onblur = function () {
-    check(), $("#bbs-title")[0].value = convert($("#bbs-title")[0].value);
+function getTitle(content) {
+  function convert(str) {
+    var tmp = '',
+        count = 0;
+
+    for (i = 0; i < str.length; i++) {
+      if (str[i].match(/[\u4e00-\u9fa5]/g)) tmp += str[i], count += 2;else if (str[i].match(/[\u0800-\u4e00]/g)) tmp += str[i], count += 2;else if (str[i].match(/[\uff00-\uffff]/g)) tmp += str[i], count += 2;else tmp += str[i], count++;
+
+      if (count >= 40) {
+        tmp += '…';
+        break;
+      }
+    }
+
+    return tmp;
+  }
+
+  content = convert(content);
+  match = content.match(/^(\[).*(\])/);
+  return {
+    match: match,
+    title: match ? match[0].substr(1, match[0].length - 2) : content
   };
-
-  $("#bbs-content")[0].onkeyup = function () {
-    check();
-  };
-
-  $("#bbs-content")[0].placeholder = "~\n".repeat(20);
-
-  $("#bbs-post")[0].onclick = function () {
-    newPost($("#bbs-title")[0].value, $("#bbs-content")[0].value);
-  };
-
-  $("#bbs-cancel")[0].onclick = function () {
-    window.location = 'index.html';
-  };
-
-  initDexon();
 }
 
-function newPost(title, content) {
-  if (dexonWeb3 === '') {
-    alert('Please connect to your DEXON Wallet.');
-    return;
-  }
-
-  if (title.length > 40) {
-    alert('Title\'s length is over 40 characters.');
-    return;
-  }
-
-  var post = '[' + title + ']' + content;
-  var dexBBSExt = new dexonWeb3.eth.Contract(ABIBBSExt, BBSExtContract);
-  dexBBSExt.methods.Post(post).send({
-    from: activeAccount
-  }).then(function (receipt) {
-    window.location = 'index.html';
-  }).catch(function (err) {
-    alert(err);
+function directDisplay(content, txHash, blockNumber) {
+  content = htmlEntities(content);
+  var elem = $('<div class="r-ent"></div>');
+  elem.html("<div class=\"nrec\"><span class=\"hl f1\"> \u7206 </span></div>\n    <div class=\"title\">\n    <a href=\"content.html?tx=".concat(txHash, "\">\n      ").concat(content, "\n    </a>\n    </div>\n    <div class=\"meta\">\n      <div class=\"author\">\n        <a target=\"_blank\" href=\"https://dexonscan.app/transaction/").concat(txHash, "\">\n           @").concat(blockNumber, "\n        </a>\n      </div>\n      <div class=\"article-menu\"></div>\n      <div class=\"date\">...</div>\n    </div>"));
+  $('.r-list-container.action-bar-margin.bbs-screen').append(elem);
+  web3js.eth.getBlock(blockNumber).then(function (block) {
+    var date = new Date(block.timestamp);
+    $(elem).find('.date').text(date.getMonth() + 1 + '/' + ('' + date.getDate()).padStart(2, '0')).attr('title', date.toLocaleString());
   });
 }
 
@@ -283,9 +293,9 @@ function startInteractingWithWeb3() {
           account = _ref2[0];
 
       activeAccount = account;
-      $("#bbs-user")[0].innerHTML = activeAccount.replace(/^(0x.{4}).+(.{4})$/, '$1...$2');
+      $("#bbs-user")[0].innerHTML = activeAccount.replace(/^(0x.{3}).+(.{3})$/, '$1...$2');
     });
-  }, 1000);
+  }, 2000);
 }
 
 function initDexon() {
@@ -296,15 +306,21 @@ function initDexon() {
     dexonWeb3.setProvider(dexonProvider);
     dexonWeb3.eth.net.getId().then(function (networkID) {
       if (networkID === 237) {
+        $("#bbs-post")[0].style.display = '';
+        $("#bbs-login")[0].style.display = 'none';
+        $("#bbs-register")[0].style.display = 'none';
+        $("#bbs-user")[0].style.display = '';
         startInteractingWithWeb3();
         console.log('DEXON Wallet connected');
       } else alert('Wrong network');
     });
   } else {
     alert('DEXON Wallet not detected. (請安裝 DEXON 瀏覽器擴充套件)');
-    window.location = 'index.html';
   }
 }
 
-$(main());
-},{}]},{},["DCbj"], null)
+$('#bbs-login').click(function () {
+  initDexon();
+});
+$(startApp);
+},{}]},{},["mpVp"], null)

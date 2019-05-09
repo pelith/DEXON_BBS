@@ -127,67 +127,86 @@ function _iterableToArrayLimit(arr, i) { var _arr = []; var _n = true; var _d = 
 function _arrayWithHoles(arr) { if (Array.isArray(arr)) return arr; }
 
 var ABIBBSExt = [{
-  "constant": !1,
-  "inputs": [{
-    "name": "post",
-    "type": "bytes32"
-  }],
-  "name": "upvote",
-  "outputs": [],
-  "payable": !1,
-  "stateMutability": "nonpayable",
-  "type": "function"
-}, {
-  "constant": !1,
-  "inputs": [{
-    "name": "content",
-    "type": "string"
-  }],
-  "name": "Post",
-  "outputs": [],
-  "payable": !1,
-  "stateMutability": "nonpayable",
-  "type": "function"
-}, {
-  "constant": !1,
+  "constant": false,
   "inputs": [{
     "name": "origin",
     "type": "bytes32"
+  }, {
+    "name": "vote",
+    "type": "uint256"
   }, {
     "name": "content",
     "type": "string"
   }],
   "name": "Reply",
   "outputs": [],
-  "payable": !1,
+  "payable": false,
   "stateMutability": "nonpayable",
   "type": "function"
 }, {
-  "constant": !1,
+  "anonymous": false,
   "inputs": [{
-    "name": "post",
-    "type": "bytes32"
-  }],
-  "name": "downvote",
-  "outputs": [],
-  "payable": !1,
-  "stateMutability": "nonpayable",
-  "type": "function"
-}, {
-  "anonymous": !1,
-  "inputs": [{
-    "indexed": !1,
+    "indexed": false,
     "name": "origin",
     "type": "bytes32"
   }, {
-    "indexed": !1,
+    "indexed": false,
+    "name": "vote",
+    "type": "uint256"
+  }, {
+    "indexed": false,
     "name": "content",
     "type": "string"
   }],
   "name": "Replied",
   "type": "event"
+}, {
+  "constant": true,
+  "inputs": [{
+    "name": "",
+    "type": "bytes32"
+  }],
+  "name": "downvotes",
+  "outputs": [{
+    "name": "",
+    "type": "uint256"
+  }],
+  "payable": false,
+  "stateMutability": "view",
+  "type": "function"
+}, {
+  "constant": true,
+  "inputs": [{
+    "name": "",
+    "type": "bytes32"
+  }],
+  "name": "upvotes",
+  "outputs": [{
+    "name": "",
+    "type": "uint256"
+  }],
+  "payable": false,
+  "stateMutability": "view",
+  "type": "function"
+}, {
+  "constant": true,
+  "inputs": [{
+    "name": "",
+    "type": "address"
+  }, {
+    "name": "",
+    "type": "bytes32"
+  }],
+  "name": "voted",
+  "outputs": [{
+    "name": "",
+    "type": "bool"
+  }],
+  "payable": false,
+  "stateMutability": "view",
+  "type": "function"
 }];
-var BBSExtContract = "0x9b985Ef27464CF25561f0046352E03a09d2C2e0C";
+var BBSExtContract = "0xca107a421f3093cbe28a2a7b4fce843931613bcd";
 var web3js = new Web3('https://mainnet-rpc.dexon.org');
 var dexonWeb3 = '';
 var activeAccount = '';
@@ -279,9 +298,19 @@ function initDexon() {
   }
 }
 
-function upvote() {
+function newReply(vote, content) {
   if (dexonWeb3 === '') {
     alert('Please connect to your DEXON Wallet first.');
+    return;
+  }
+
+  if (![0, 1, 2].includes(vote)) {
+    alert('Wrong type of vote.');
+    return;
+  }
+
+  if (content.length === 0) {
+    alert('No content.');
     return;
   }
 
@@ -289,47 +318,7 @@ function upvote() {
 
   if (tx) {
     var dexBBSExt = new dexonWeb3.eth.Contract(ABIBBSExt, BBSExtContract);
-    dexBBSExt.methods.upvote(tx).send({
-      from: activeAccount
-    }).then(function (receipt) {
-      window.location.reload();
-    }).catch(function (err) {
-      alert(err);
-    });
-  }
-}
-
-function downvote() {
-  if (dexonWeb3 === '') {
-    alert('Please connect to your DEXON Wallet first.');
-    return;
-  }
-
-  var tx = getUrlParameter('tx').substr(0, 66);
-
-  if (tx) {
-    var dexBBSExt = new dexonWeb3.eth.Contract(ABIBBSExt, BBSExtContract);
-    dexBBSExt.methods.downvote(tx).send({
-      from: activeAccount
-    }).then(function (receipt) {
-      window.location.reload();
-    }).catch(function (err) {
-      alert(err);
-    });
-  }
-}
-
-function newReply(content) {
-  if (dexonWeb3 === '') {
-    alert('Please connect to your DEXON Wallet first.');
-    return;
-  }
-
-  var tx = getUrlParameter('tx').substr(0, 66);
-
-  if (tx) {
-    var dexBBSExt = new dexonWeb3.eth.Contract(ABIBBSExt, BBSExtContract);
-    dexBBSExt.methods.Reply(tx, content).send({
+    dexBBSExt.methods.Reply(tx, vote, content).send({
       from: activeAccount
     }).then(function (receipt) {
       window.location.reload();
@@ -341,6 +330,12 @@ function newReply(content) {
 
 $('#dexon-wallet').click(function () {
   initDexon();
+});
+$("#reply-area").attr('rel', 'gallery').fancybox();
+$('#submit-reply').click(function () {
+  var vote = $("input[name='vote']:checked").val() * 1;
+  var content = $("#reply-content").val();
+  newReply(vote, content);
 });
 $(startApp);
 },{}]},{},["pILq"], null)
