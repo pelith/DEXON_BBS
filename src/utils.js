@@ -28,7 +28,7 @@ const getParseText = (str, len) => {
 }
 
 const getTitle = (content) => {
-  content = getParseText(content, 40)
+  content = getParseText(content, 42)
   const match = content.match(/^(\[).*(\])/)
   return {
     match: match,

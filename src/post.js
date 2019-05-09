@@ -5,7 +5,7 @@ const checkContent = () => { return $("#bbs-content")[0].value.length>0 }
 
 const checkTitle = () => { return $("#bbs-title")[0].value >0 }
 
-const check = () => { return checkContent() || checkTitle()}
+const check = () => { return checkContent() && checkTitle()}
 
 const activeDexonRender = (account) => {
   $("#bbs-post")[0].disabled = !check()
