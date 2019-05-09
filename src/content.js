@@ -28,7 +28,7 @@ function main() {
   const originTx = getUrlParameter('tx').substr(0,66)
   BBSExt.getPastEvents({fromBlock : '990000'})
   .then(events => {
-    events.slice().reverse().forEach(event => {
+    events.slice().forEach(event => {
       if (originTx == event.returnValues.origin)
         displayReply(event.returnValues.vote, event.returnValues.content, event.transactionHash, event.blockNumber)
     })
@@ -40,7 +40,13 @@ function displayReply(vote, content, txHash, blockNumber) {
   const voteName = ["→", "推", "噓"]
   const voteTag = ["→", "推", "噓"]
   const elem = $('<div class="push"></div>')
-  elem.html(`<span class="${vote != 1 ? 'f1 ' : ''}hl push-tag">${voteName[vote]} </span><span class="f3 hl push-userid">@${blockNumber}</span><span class="f3 push-content">: ${content}</span><span class="push-ipdatetime"></span>`)
+
+  web3js.eth.getTransaction(txHash).then(transaction => {
+    console.log(transaction.from)
+    $(elem).find('.push-userid').text(getUser(transaction.from))
+  })
+
+  elem.html(`<span class="${vote != 1 ? 'f1 ' : ''}hl push-tag">${voteName[vote]} </span><span class="f3 hl push-userid"></span><span class="f3 push-content">: ${content}</span><span class="push-ipdatetime"></span>`)
   $('#main-content.bbs-screen.bbs-content').append(elem)
 
   web3js.eth.getBlock(blockNumber).then(block => {
@@ -54,6 +60,8 @@ const activeDexonRender = (account) => {
   $("#bbs-register")[0].style.display='none'
   $("#bbs-user")[0].style.display=''
   $("#bbs-user")[0].innerHTML = getUser(account)
+  $("#bbs-reply")[0].style.display=''
+  $("#bbs-reply-user")[0].innerHTML=getUser(account)
 }
 
 $('#bbs-login').click(() => {
