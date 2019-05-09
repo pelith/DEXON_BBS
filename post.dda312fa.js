@@ -117,13 +117,71 @@ parcelRequire = (function (modules, cache, entry, globalName) {
   }
 
   return newRequire;
-})({"UN6U":[function(require,module,exports) {
+})({"FO+Z":[function(require,module,exports) {
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.getUser = exports.getTitle = exports.getParseText = exports.getUrlParameter = exports.htmlEntities = void 0;
+
+var htmlEntities = function htmlEntities(str) {
+  return String(str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+};
+
+exports.htmlEntities = htmlEntities;
+
+var getUrlParameter = function getUrlParameter(sParam) {
+  var sPageURL = window.location.search.substring(1),
+      sURLVariables = sPageURL.split('&'),
+      sParameterName = [];
+
+  for (var i = 0; i < sURLVariables.length; i++) {
+    sParameterName = sURLVariables[i].split('=');
+    if (sParameterName[0] === sParam) return sParameterName[1] === undefined ? true : decodeURIComponent(sParameterName[1]);
+  }
+};
+
+exports.getUrlParameter = getUrlParameter;
+
+var getParseText = function getParseText(str, len) {
+  var tmp = '',
+      count = 0;
+
+  for (var i = 0; i < str.length; i++) {
+    if (str[i].match(/[\u4e00-\u9fa5]/g)) tmp += str[i], count += 2;else if (str[i].match(/[\u0800-\u4e00]/g)) tmp += str[i], count += 2;else if (str[i].match(/[\uff00-\uffff]/g)) tmp += str[i], count += 2;else tmp += str[i], count++;
+    if (count >= len) break;
+  }
+
+  return tmp;
+};
+
+exports.getParseText = getParseText;
+
+var getTitle = function getTitle(content) {
+  content = getParseText(content, 40);
+  var match = content.match(/^(\[).*(\])/);
+  return {
+    match: match,
+    title: match ? match[0].substr(1, match[0].length - 2) : content
+  };
+};
+
+exports.getTitle = getTitle;
+
+var getUser = function getUser(address) {
+  return address.replace(/^(0x.{3}).+(.{3})$/, '$1...$2');
+};
+
+exports.getUser = getUser;
+},{}],"UN6U":[function(require,module,exports) {
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
 exports.newPost = newPost;
+exports.newReply = newReply;
 exports.initDexon = exports.web3js = exports.BBSExtContract = exports.BBSContract = exports.ABIBBSExt = exports.ABIBBS = void 0;
 
 function _slicedToArray(arr, i) { return _arrayWithHoles(arr) || _iterableToArrayLimit(arr, i) || _nonIterableRest(); }
@@ -157,6 +215,17 @@ var ABIBBS = [{
 }];
 exports.ABIBBS = ABIBBS;
 var ABIBBSExt = [{
+  "constant": false,
+  "inputs": [{
+    "name": "content",
+    "type": "string"
+  }],
+  "name": "Post",
+  "outputs": [],
+  "payable": false,
+  "stateMutability": "nonpayable",
+  "type": "function"
+}, {
   "constant": false,
   "inputs": [{
     "name": "origin",
@@ -239,7 +308,7 @@ var ABIBBSExt = [{
 exports.ABIBBSExt = ABIBBSExt;
 var BBSContract = "0x663002C4E41E5d04860a76955A7B9B8234475952";
 exports.BBSContract = BBSContract;
-var BBSExtContract = "0xca107a421f3093cbe28a2a7b4fce843931613bcd";
+var BBSExtContract = "0xec368ba43010056abb3e5afd01957ea1fdbd3d8f";
 exports.BBSExtContract = BBSExtContract;
 var web3js = new Web3('https://mainnet-rpc.dexon.org');
 exports.web3js = web3js;
@@ -301,4 +370,67 @@ function newPost(title, content) {
     alert(err);
   });
 }
-},{}]},{},["UN6U"], null)
+
+function newReply(tx, vote, content) {
+  if (dexonWeb3 === '') {
+    alert('Please connect to your DEXON Wallet first.');
+    return;
+  }
+
+  if (![0, 1, 2].includes(vote)) {
+    alert('Wrong type of vote.');
+    return;
+  }
+
+  if (content.length === 0) {
+    alert('No content.');
+    return;
+  }
+
+  if (tx) {
+    var dexBBSExt = new dexonWeb3.eth.Contract(ABIBBSExt, BBSExtContract);
+    dexBBSExt.methods.Reply(tx, vote, content).send({
+      from: activeAccount
+    }).then(function (receipt) {
+      window.location.reload();
+    }).catch(function (err) {
+      alert(err);
+    });
+  }
+}
+},{}],"DCbj":[function(require,module,exports) {
+"use strict";
+
+var _utils = require("./utils.js");
+
+var _dexon = require("./dexon.js");
+
+var activeDexonRender = function activeDexonRender(account) {
+  $("#bbs-post")[0].disabled = $("#bbs-content")[0].value.length > 0 && $("#bbs-title")[0].value > 0 ? false : true;
+  $("#bbs-user")[0].innerHTML = (0, _utils.getUser)(account);
+};
+
+function main() {
+  // String.prototype.lines = function() { return this.split(/\r*\n/); }
+  // String.prototype.lineCount = function() { return this.lines().length; }
+  $("#bbs-title")[0].onblur = function () {
+    $("#bbs-title")[0].value = (0, _utils.getParseText)($("#bbs-title")[0].value, 40);
+  };
+
+  $("#bbs-content")[0].onkeyup = function () {};
+
+  $("#bbs-content")[0].placeholder = "~\n".repeat(20);
+
+  $("#bbs-post")[0].onclick = function () {
+    (0, _dexon.newPost)($("#bbs-title")[0].value, $("#bbs-content")[0].value);
+  };
+
+  $("#bbs-cancel")[0].onclick = function () {
+    window.location = 'index.html';
+  };
+
+  (0, _dexon.initDexon)(activeDexonRender);
+}
+
+$(main());
+},{"./utils.js":"FO+Z","./dexon.js":"UN6U"}]},{},["DCbj"], null)

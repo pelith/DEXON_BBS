@@ -181,6 +181,7 @@ Object.defineProperty(exports, "__esModule", {
   value: true
 });
 exports.newPost = newPost;
+exports.newReply = newReply;
 exports.initDexon = exports.web3js = exports.BBSExtContract = exports.BBSContract = exports.ABIBBSExt = exports.ABIBBS = void 0;
 
 function _slicedToArray(arr, i) { return _arrayWithHoles(arr) || _iterableToArrayLimit(arr, i) || _nonIterableRest(); }
@@ -214,6 +215,17 @@ var ABIBBS = [{
 }];
 exports.ABIBBS = ABIBBS;
 var ABIBBSExt = [{
+  "constant": false,
+  "inputs": [{
+    "name": "content",
+    "type": "string"
+  }],
+  "name": "Post",
+  "outputs": [],
+  "payable": false,
+  "stateMutability": "nonpayable",
+  "type": "function"
+}, {
   "constant": false,
   "inputs": [{
     "name": "origin",
@@ -296,7 +308,7 @@ var ABIBBSExt = [{
 exports.ABIBBSExt = ABIBBSExt;
 var BBSContract = "0x663002C4E41E5d04860a76955A7B9B8234475952";
 exports.BBSContract = BBSContract;
-var BBSExtContract = "0xca107a421f3093cbe28a2a7b4fce843931613bcd";
+var BBSExtContract = "0xec368ba43010056abb3e5afd01957ea1fdbd3d8f";
 exports.BBSExtContract = BBSExtContract;
 var web3js = new Web3('https://mainnet-rpc.dexon.org');
 exports.web3js = web3js;
@@ -358,39 +370,105 @@ function newPost(title, content) {
     alert(err);
   });
 }
-},{}],"DCbj":[function(require,module,exports) {
+
+function newReply(tx, vote, content) {
+  if (dexonWeb3 === '') {
+    alert('Please connect to your DEXON Wallet first.');
+    return;
+  }
+
+  if (![0, 1, 2].includes(vote)) {
+    alert('Wrong type of vote.');
+    return;
+  }
+
+  if (content.length === 0) {
+    alert('No content.');
+    return;
+  }
+
+  if (tx) {
+    var dexBBSExt = new dexonWeb3.eth.Contract(ABIBBSExt, BBSExtContract);
+    dexBBSExt.methods.Reply(tx, vote, content).send({
+      from: activeAccount
+    }).then(function (receipt) {
+      window.location.reload();
+    }).catch(function (err) {
+      alert(err);
+    });
+  }
+}
+},{}],"pILq":[function(require,module,exports) {
 "use strict";
 
 var _utils = require("./utils.js");
 
 var _dexon = require("./dexon.js");
 
+function main() {
+  var tx = (0, _utils.getUrlParameter)('tx');
+
+  if (tx) {
+    _dexon.web3js.eth.getTransaction(tx).then(function (transaction) {
+      var content = (0, _utils.htmlEntities)(_dexon.web3js.utils.hexToUtf8('0x' + transaction.input.slice(138)));
+      var author = '@' + transaction.blockNumber;
+      var title = (0, _utils.getTitle)(content.substr(0, 40));
+      document.title = title.title + ' - Gossiping - DEXON BBS';
+      $('#main-content-author')[0].innerHTML = author;
+      $('#main-content-author')[0].href = 'https://dexonscan.app/transaction/' + tx;
+      $('#main-content-title')[0].innerHTML = title.title;
+      $('#main-content-content')[0].innerHTML = title.match ? content.slice(title.title.length + 2) : content;
+
+      _dexon.web3js.eth.getBlock(transaction.blockNumber).then(function (block) {
+        $('#main-content-date').text(('' + new Date(block.timestamp)).substr(0, 24));
+      });
+
+      $('#main-content-href')[0].href = window.location.href;
+      $('#main-content-href')[0].innerHTML = window.location.href;
+      $('#main-content-from').text((0, _utils.getUser)(transaction.from));
+    });
+  }
+
+  var BBSExt = new _dexon.web3js.eth.Contract(_dexon.ABIBBSExt, _dexon.BBSExtContract);
+  var originTx = (0, _utils.getUrlParameter)('tx').substr(0, 66);
+  BBSExt.getPastEvents({
+    fromBlock: '990000'
+  }).then(function (events) {
+    events.slice().reverse().forEach(function (event) {
+      if (originTx == event.returnValues.origin) displayReply(event.returnValues.vote, event.returnValues.content, event.transactionHash, event.blockNumber);
+    });
+  });
+}
+
+function displayReply(vote, content, txHash, blockNumber) {
+  content = (0, _utils.htmlEntities)(content);
+  var voteName = ["→", "推", "噓"];
+  var voteTag = ["→", "推", "噓"];
+  var elem = $('<div class="push"></div>');
+  elem.html("<span class=\"".concat(vote != 1 ? 'f1 ' : '', "hl push-tag\">").concat(voteName[vote], " </span><span class=\"f3 hl push-userid\">@").concat(blockNumber, "</span><span class=\"f3 push-content\">: ").concat(content, "</span><span class=\"push-ipdatetime\"></span>"));
+  $('#main-content.bbs-screen.bbs-content').append(elem);
+
+  _dexon.web3js.eth.getBlock(blockNumber).then(function (block) {
+    var date = new Date(block.timestamp);
+    $(elem).find('.push-ipdatetime').text(date.getMonth() + 1 + '/' + ('' + date.getDate()).padStart(2, '0') + ' ' + ('' + date.getHours()).padStart(2, '0') + ':' + ('' + date.getMinutes()).padStart(2, '0'));
+  });
+}
+
 var activeDexonRender = function activeDexonRender(account) {
-  $("#bbs-post")[0].disabled = $("#bbs-content")[0].value.length > 0 && $("#bbs-title")[0].value > 0 ? false : true;
+  $("#bbs-login")[0].style.display = 'none';
+  $("#bbs-register")[0].style.display = 'none';
+  $("#bbs-user")[0].style.display = '';
   $("#bbs-user")[0].innerHTML = (0, _utils.getUser)(account);
 };
 
-function main() {
-  // String.prototype.lines = function() { return this.split(/\r*\n/); }
-  // String.prototype.lineCount = function() { return this.lines().length; }
-  $("#bbs-title")[0].onblur = function () {
-    $("#bbs-title")[0].value = (0, _utils.getParseText)($("#bbs-title")[0].value, 40);
-  };
-
-  $("#bbs-content")[0].onkeyup = function () {};
-
-  $("#bbs-content")[0].placeholder = "~\n".repeat(20);
-
-  $("#bbs-post")[0].onclick = function () {
-    (0, _dexon.newPost)($("#bbs-title")[0].value, $("#bbs-content")[0].value);
-  };
-
-  $("#bbs-cancel")[0].onclick = function () {
-    window.location = 'index.html';
-  };
-
+$('#bbs-login').click(function () {
   (0, _dexon.initDexon)(activeDexonRender);
-}
-
-$(main());
-},{"./utils.js":"FO+Z","./dexon.js":"UN6U"}]},{},["DCbj"], null)
+});
+$(main);
+$("#reply-area").attr('rel', 'gallery').fancybox();
+$('#submit-reply').click(function () {
+  var vote = $("input[name='vote']:checked").val() * 1;
+  var content = $("#reply-content").val();
+  (0, _dexon.newReply)((0, _utils.getUrlParameter)('tx').substr(0, 66), vote, content);
+});
+},{"./utils.js":"FO+Z","./dexon.js":"UN6U"}]},{},["pILq"], null)
