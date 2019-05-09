@@ -226,6 +226,10 @@ function convert(str) {
   return tmp;
 }
 
+function check() {
+  $("#bbs-post")[0].disabled = $("#bbs-content")[0].value.length > 0 && $("#bbs-title")[0].value > 0 ? "" : "disabled";
+}
+
 function main() {
   String.prototype.lines = function () {
     return this.split(/\r*\n/);
@@ -236,9 +240,12 @@ function main() {
   };
 
   $("#bbs-title")[0].onblur = function () {
-    $("#bbs-title")[0].value = convert($("#bbs-title")[0].value);
-  }; // $("#bbs-content")[0].onkeyup = () => { }
+    check(), $("#bbs-title")[0].value = convert($("#bbs-title")[0].value);
+  };
 
+  $("#bbs-content")[0].onkeyup = function () {
+    check();
+  };
 
   $("#bbs-content")[0].placeholder = "~\n".repeat(20);
 
@@ -282,6 +289,7 @@ function startInteractingWithWeb3() {
           account = _ref2[0];
 
       activeAccount = account;
+      $("#bbs-user")[0].innerHTML = activeAccount.replace(/^(0x.{4}).+(.{4})$/, '$1...$2');
     });
   }, 1000);
 }
