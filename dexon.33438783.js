@@ -117,64 +117,7 @@ parcelRequire = (function (modules, cache, entry, globalName) {
   }
 
   return newRequire;
-})({"FO+Z":[function(require,module,exports) {
-"use strict";
-
-Object.defineProperty(exports, "__esModule", {
-  value: true
-});
-exports.getUser = exports.getTitle = exports.getParseText = exports.getUrlParameter = exports.htmlEntities = void 0;
-
-var htmlEntities = function htmlEntities(str) {
-  return String(str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
-};
-
-exports.htmlEntities = htmlEntities;
-
-var getUrlParameter = function getUrlParameter(sParam) {
-  var sPageURL = window.location.search.substring(1),
-      sURLVariables = sPageURL.split('&'),
-      sParameterName = [];
-
-  for (var i = 0; i < sURLVariables.length; i++) {
-    sParameterName = sURLVariables[i].split('=');
-    if (sParameterName[0] === sParam) return sParameterName[1] === undefined ? true : decodeURIComponent(sParameterName[1]);
-  }
-};
-
-exports.getUrlParameter = getUrlParameter;
-
-var getParseText = function getParseText(str, len) {
-  var tmp = '',
-      count = 0;
-
-  for (var i = 0; i < str.length; i++) {
-    if (str[i].match(/[\u4e00-\u9fa5]/g)) tmp += str[i], count += 2;else if (str[i].match(/[\u0800-\u4e00]/g)) tmp += str[i], count += 2;else if (str[i].match(/[\uff00-\uffff]/g)) tmp += str[i], count += 2;else tmp += str[i], count++;
-    if (count >= len) break;
-  }
-
-  return tmp;
-};
-
-exports.getParseText = getParseText;
-
-var getTitle = function getTitle(content) {
-  content = getParseText(content, 40);
-  var match = content.match(/^(\[).*(\])/);
-  return {
-    match: match,
-    title: match ? match[0].substr(1, match[0].length - 2) : content
-  };
-};
-
-exports.getTitle = getTitle;
-
-var getUser = function getUser(address) {
-  return address.replace(/^(0x.{3}).+(.{3})$/, '$1...$2');
-};
-
-exports.getUser = getUser;
-},{}],"UN6U":[function(require,module,exports) {
+})({"UN6U":[function(require,module,exports) {
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -214,70 +157,89 @@ var ABIBBS = [{
 }];
 exports.ABIBBS = ABIBBS;
 var ABIBBSExt = [{
-  "constant": !1,
-  "inputs": [{
-    "name": "post",
-    "type": "bytes32"
-  }],
-  "name": "upvote",
-  "outputs": [],
-  "payable": !1,
-  "stateMutability": "nonpayable",
-  "type": "function"
-}, {
-  "constant": !1,
-  "inputs": [{
-    "name": "content",
-    "type": "string"
-  }],
-  "name": "Post",
-  "outputs": [],
-  "payable": !1,
-  "stateMutability": "nonpayable",
-  "type": "function"
-}, {
-  "constant": !1,
+  "constant": false,
   "inputs": [{
     "name": "origin",
     "type": "bytes32"
+  }, {
+    "name": "vote",
+    "type": "uint256"
   }, {
     "name": "content",
     "type": "string"
   }],
   "name": "Reply",
   "outputs": [],
-  "payable": !1,
+  "payable": false,
   "stateMutability": "nonpayable",
   "type": "function"
 }, {
-  "constant": !1,
+  "anonymous": false,
   "inputs": [{
-    "name": "post",
-    "type": "bytes32"
-  }],
-  "name": "downvote",
-  "outputs": [],
-  "payable": !1,
-  "stateMutability": "nonpayable",
-  "type": "function"
-}, {
-  "anonymous": !1,
-  "inputs": [{
-    "indexed": !1,
+    "indexed": false,
     "name": "origin",
     "type": "bytes32"
   }, {
-    "indexed": !1,
+    "indexed": false,
+    "name": "vote",
+    "type": "uint256"
+  }, {
+    "indexed": false,
     "name": "content",
     "type": "string"
   }],
   "name": "Replied",
   "type": "event"
+}, {
+  "constant": true,
+  "inputs": [{
+    "name": "",
+    "type": "bytes32"
+  }],
+  "name": "downvotes",
+  "outputs": [{
+    "name": "",
+    "type": "uint256"
+  }],
+  "payable": false,
+  "stateMutability": "view",
+  "type": "function"
+}, {
+  "constant": true,
+  "inputs": [{
+    "name": "",
+    "type": "bytes32"
+  }],
+  "name": "upvotes",
+  "outputs": [{
+    "name": "",
+    "type": "uint256"
+  }],
+  "payable": false,
+  "stateMutability": "view",
+  "type": "function"
+}, {
+  "constant": true,
+  "inputs": [{
+    "name": "",
+    "type": "address"
+  }, {
+    "name": "",
+    "type": "bytes32"
+  }],
+  "name": "voted",
+  "outputs": [{
+    "name": "",
+    "type": "bool"
+  }],
+  "payable": false,
+  "stateMutability": "view",
+  "type": "function"
 }];
 exports.ABIBBSExt = ABIBBSExt;
 var BBSContract = "0x663002C4E41E5d04860a76955A7B9B8234475952";
 exports.BBSContract = BBSContract;
-var BBSExtContract = "0x9b985Ef27464CF25561f0046352E03a09d2C2e0C";
+var BBSExtContract = "0xca107a421f3093cbe28a2a7b4fce843931613bcd";
 exports.BBSExtContract = BBSExtContract;
 var web3js = new Web3('https://mainnet-rpc.dexon.org');
 exports.web3js = web3js;
@@ -339,39 +301,4 @@ function newPost(title, content) {
     alert(err);
   });
 }
-},{}],"DCbj":[function(require,module,exports) {
-"use strict";
-
-var _utils = require("./utils.js");
-
-var _dexon = require("./dexon.js");
-
-var activeDexonRender = function activeDexonRender(account) {
-  $("#bbs-post")[0].disabled = $("#bbs-content")[0].value.length > 0 && $("#bbs-title")[0].value > 0 ? false : true;
-  $("#bbs-user")[0].innerHTML = (0, _utils.getUser)(account);
-};
-
-function main() {
-  // String.prototype.lines = function() { return this.split(/\r*\n/); }
-  // String.prototype.lineCount = function() { return this.lines().length; }
-  $("#bbs-title")[0].onblur = function () {
-    $("#bbs-title")[0].value = (0, _utils.getParseText)($("#bbs-title")[0].value, 40);
-  };
-
-  $("#bbs-content")[0].onkeyup = function () {};
-
-  $("#bbs-content")[0].placeholder = "~\n".repeat(20);
-
-  $("#bbs-post")[0].onclick = function () {
-    (0, _dexon.newPost)($("#bbs-title")[0].value, $("#bbs-content")[0].value);
-  };
-
-  $("#bbs-cancel")[0].onclick = function () {
-    window.location = 'index.html';
-  };
-
-  (0, _dexon.initDexon)(activeDexonRender);
-}
-
-$(main());
-},{"./utils.js":"FO+Z","./dexon.js":"UN6U"}]},{},["DCbj"], null)
+},{}]},{},["UN6U"], null)

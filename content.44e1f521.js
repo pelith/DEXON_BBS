@@ -117,7 +117,64 @@ parcelRequire = (function (modules, cache, entry, globalName) {
   }
 
   return newRequire;
-})({"UN6U":[function(require,module,exports) {
+})({"FO+Z":[function(require,module,exports) {
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.getUser = exports.getTitle = exports.getParseText = exports.getUrlParameter = exports.htmlEntities = void 0;
+
+var htmlEntities = function htmlEntities(str) {
+  return String(str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+};
+
+exports.htmlEntities = htmlEntities;
+
+var getUrlParameter = function getUrlParameter(sParam) {
+  var sPageURL = window.location.search.substring(1),
+      sURLVariables = sPageURL.split('&'),
+      sParameterName = [];
+
+  for (var i = 0; i < sURLVariables.length; i++) {
+    sParameterName = sURLVariables[i].split('=');
+    if (sParameterName[0] === sParam) return sParameterName[1] === undefined ? true : decodeURIComponent(sParameterName[1]);
+  }
+};
+
+exports.getUrlParameter = getUrlParameter;
+
+var getParseText = function getParseText(str, len) {
+  var tmp = '',
+      count = 0;
+
+  for (var i = 0; i < str.length; i++) {
+    if (str[i].match(/[\u4e00-\u9fa5]/g)) tmp += str[i], count += 2;else if (str[i].match(/[\u0800-\u4e00]/g)) tmp += str[i], count += 2;else if (str[i].match(/[\uff00-\uffff]/g)) tmp += str[i], count += 2;else tmp += str[i], count++;
+    if (count >= len) break;
+  }
+
+  return tmp;
+};
+
+exports.getParseText = getParseText;
+
+var getTitle = function getTitle(content) {
+  content = getParseText(content, 40);
+  var match = content.match(/^(\[).*(\])/);
+  return {
+    match: match,
+    title: match ? match[0].substr(1, match[0].length - 2) : content
+  };
+};
+
+exports.getTitle = getTitle;
+
+var getUser = function getUser(address) {
+  return address.replace(/^(0x.{3}).+(.{3})$/, '$1...$2');
+};
+
+exports.getUser = getUser;
+},{}],"UN6U":[function(require,module,exports) {
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -157,70 +214,89 @@ var ABIBBS = [{
 }];
 exports.ABIBBS = ABIBBS;
 var ABIBBSExt = [{
-  "constant": !1,
-  "inputs": [{
-    "name": "post",
-    "type": "bytes32"
-  }],
-  "name": "upvote",
-  "outputs": [],
-  "payable": !1,
-  "stateMutability": "nonpayable",
-  "type": "function"
-}, {
-  "constant": !1,
-  "inputs": [{
-    "name": "content",
-    "type": "string"
-  }],
-  "name": "Post",
-  "outputs": [],
-  "payable": !1,
-  "stateMutability": "nonpayable",
-  "type": "function"
-}, {
-  "constant": !1,
+  "constant": false,
   "inputs": [{
     "name": "origin",
     "type": "bytes32"
+  }, {
+    "name": "vote",
+    "type": "uint256"
   }, {
     "name": "content",
     "type": "string"
   }],
   "name": "Reply",
   "outputs": [],
-  "payable": !1,
+  "payable": false,
   "stateMutability": "nonpayable",
   "type": "function"
 }, {
-  "constant": !1,
+  "anonymous": false,
   "inputs": [{
-    "name": "post",
-    "type": "bytes32"
-  }],
-  "name": "downvote",
-  "outputs": [],
-  "payable": !1,
-  "stateMutability": "nonpayable",
-  "type": "function"
-}, {
-  "anonymous": !1,
-  "inputs": [{
-    "indexed": !1,
+    "indexed": false,
     "name": "origin",
     "type": "bytes32"
   }, {
-    "indexed": !1,
+    "indexed": false,
+    "name": "vote",
+    "type": "uint256"
+  }, {
+    "indexed": false,
     "name": "content",
     "type": "string"
   }],
   "name": "Replied",
   "type": "event"
+}, {
+  "constant": true,
+  "inputs": [{
+    "name": "",
+    "type": "bytes32"
+  }],
+  "name": "downvotes",
+  "outputs": [{
+    "name": "",
+    "type": "uint256"
+  }],
+  "payable": false,
+  "stateMutability": "view",
+  "type": "function"
+}, {
+  "constant": true,
+  "inputs": [{
+    "name": "",
+    "type": "bytes32"
+  }],
+  "name": "upvotes",
+  "outputs": [{
+    "name": "",
+    "type": "uint256"
+  }],
+  "payable": false,
+  "stateMutability": "view",
+  "type": "function"
+}, {
+  "constant": true,
+  "inputs": [{
+    "name": "",
+    "type": "address"
+  }, {
+    "name": "",
+    "type": "bytes32"
+  }],
+  "name": "voted",
+  "outputs": [{
+    "name": "",
+    "type": "bool"
+  }],
+  "payable": false,
+  "stateMutability": "view",
+  "type": "function"
 }];
 exports.ABIBBSExt = ABIBBSExt;
 var BBSContract = "0x663002C4E41E5d04860a76955A7B9B8234475952";
 exports.BBSContract = BBSContract;
-var BBSExtContract = "0x9b985Ef27464CF25561f0046352E03a09d2C2e0C";
+var BBSExtContract = "0xca107a421f3093cbe28a2a7b4fce843931613bcd";
 exports.BBSExtContract = BBSExtContract;
 var web3js = new Web3('https://mainnet-rpc.dexon.org');
 exports.web3js = web3js;
@@ -282,106 +358,83 @@ function newPost(title, content) {
     alert(err);
   });
 }
-},{}],"FO+Z":[function(require,module,exports) {
+},{}],"pILq":[function(require,module,exports) {
 "use strict";
-
-Object.defineProperty(exports, "__esModule", {
-  value: true
-});
-exports.getUser = exports.getTitle = exports.getParseText = exports.getUrlParameter = exports.htmlEntities = void 0;
-
-var htmlEntities = function htmlEntities(str) {
-  return String(str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
-};
-
-exports.htmlEntities = htmlEntities;
-
-var getUrlParameter = function getUrlParameter(sParam) {
-  var sPageURL = window.location.search.substring(1),
-      sURLVariables = sPageURL.split('&'),
-      sParameterName = [];
-
-  for (var i = 0; i < sURLVariables.length; i++) {
-    sParameterName = sURLVariables[i].split('=');
-    if (sParameterName[0] === sParam) return sParameterName[1] === undefined ? true : decodeURIComponent(sParameterName[1]);
-  }
-};
-
-exports.getUrlParameter = getUrlParameter;
-
-var getParseText = function getParseText(str, len) {
-  var tmp = '',
-      count = 0;
-
-  for (var i = 0; i < str.length; i++) {
-    if (str[i].match(/[\u4e00-\u9fa5]/g)) tmp += str[i], count += 2;else if (str[i].match(/[\u0800-\u4e00]/g)) tmp += str[i], count += 2;else if (str[i].match(/[\uff00-\uffff]/g)) tmp += str[i], count += 2;else tmp += str[i], count++;
-    if (count >= len) break;
-  }
-
-  return tmp;
-};
-
-exports.getParseText = getParseText;
-
-var getTitle = function getTitle(content) {
-  content = getParseText(content, 40);
-  var match = content.match(/^(\[).*(\])/);
-  return {
-    match: match,
-    title: match ? match[0].substr(1, match[0].length - 2) : content
-  };
-};
-
-exports.getTitle = getTitle;
-
-var getUser = function getUser(address) {
-  return address.replace(/^(0x.{3}).+(.{3})$/, '$1...$2');
-};
-
-exports.getUser = getUser;
-},{}],"mpVp":[function(require,module,exports) {
-"use strict";
-
-var _dexon = require("./dexon.js");
 
 var _utils = require("./utils.js");
 
-var banList = ["0xdc0db75c79308f396ed6389537d4ddd2a36c920bb2958ed7f70949b1f9d3375d"];
+var _dexon = require("./dexon.js");
 
 function main() {
-  var BBS = new _dexon.web3js.eth.Contract(_dexon.ABIBBS, _dexon.BBSContract);
-  var BBSExt = new _dexon.web3js.eth.Contract(_dexon.ABIBBSExt, _dexon.BBSExtContract);
-  BBS.getPastEvents({
-    fromBlock: '990000'
-  }).then(function (events) {
-    events.slice().reverse().forEach(function (event) {
-      if (!banList.includes(event.transactionHash)) directDisplay((0, _utils.getTitle)(event.returnValues.content.substr(0, 40)).title, event.transactionHash, event.blockNumber);
+  var tx = (0, _utils.getUrlParameter)('tx');
+
+  if (tx) {
+    _dexon.web3js.eth.getTransaction(tx).then(function (transaction) {
+      var content = (0, _utils.htmlEntities)(_dexon.web3js.utils.hexToUtf8('0x' + transaction.input.slice(138)));
+      var author = '@' + transaction.blockNumber;
+      var title = (0, _utils.getTitle)(content.substr(0, 40));
+      document.title = title.title + ' - Gossiping - DEXON BBS';
+      $('#main-content-author')[0].innerHTML = author;
+      $('#main-content-author')[0].href = 'https://dexonscan.app/transaction/' + tx;
+      $('#main-content-title')[0].innerHTML = title.title;
+      $('#main-content-content')[0].innerHTML = title.match ? content.slice(title.title.length + 2) : content;
+
+      _dexon.web3js.eth.getBlock(transaction.blockNumber).then(function (block) {
+        $('#main-content-date').text(('' + new Date(block.timestamp)).substr(0, 24));
+      });
+
+      $('#main-content-href')[0].href = window.location.href;
+      $('#main-content-href')[0].innerHTML = window.location.href;
+      $('#main-content-from').text((0, _utils.getUser)(transaction.from));
     });
-  });
+  }
 }
 
-function directDisplay(content, txHash, blockNumber) {
-  content = (0, _utils.htmlEntities)(content);
-  var elem = $('<div class="r-ent"></div>');
-  elem.html("<div class=\"nrec\"><span class=\"hl f1\"> \u7206 </span></div>\n    <div class=\"title\">\n    <a href=\"content.html?tx=".concat(txHash, "\">\n      ").concat(content, "\n    </a>\n    </div>\n    <div class=\"meta\">\n      <div class=\"author\">\n        <a target=\"_blank\" href=\"https://dexonscan.app/transaction/").concat(txHash, "\">\n           @").concat(blockNumber, "\n        </a>\n      </div>\n      <div class=\"article-menu\"></div>\n      <div class=\"date\">...</div>\n    </div>"));
-  $('.r-list-container.action-bar-margin.bbs-screen').append(elem);
+function newReply(vote, content) {
+  if (dexonWeb3 === '') {
+    alert('Please connect to your DEXON Wallet first.');
+    return;
+  }
 
-  _dexon.web3js.eth.getBlock(blockNumber).then(function (block) {
-    var date = new Date(block.timestamp);
-    $(elem).find('.date').text(date.getMonth() + 1 + '/' + ('' + date.getDate()).padStart(2, '0')).attr('title', date.toLocaleString());
-  });
+  if (![0, 1, 2].includes(vote)) {
+    alert('Wrong type of vote.');
+    return;
+  }
+
+  if (content.length === 0) {
+    alert('No content.');
+    return;
+  }
+
+  var tx = (0, _utils.getUrlParameter)('tx').substr(0, 66);
+
+  if (tx) {
+    var dexBBSExt = new dexonWeb3.eth.Contract(_dexon.ABIBBSExt, _dexon.BBSExtContract);
+    dexBBSExt.methods.Reply(tx, vote, content).send({
+      from: activeAccount
+    }).then(function (receipt) {
+      window.location.reload();
+    }).catch(function (err) {
+      alert(err);
+    });
+  }
 }
 
 var activeDexonRender = function activeDexonRender(account) {
   $("#bbs-login")[0].style.display = 'none';
   $("#bbs-register")[0].style.display = 'none';
   $("#bbs-user")[0].style.display = '';
-  $("#bbs-post")[0].style.display = '';
-  $("#bbs-user")[0].innerHTML = account.replace(/^(0x.{3}).+(.{3})$/, '$1...$2');
+  $("#bbs-user")[0].innerHTML = (0, _utils.getUser)(account);
 };
 
 $('#bbs-login').click(function () {
   (0, _dexon.initDexon)(activeDexonRender);
 });
 $(main);
-},{"./dexon.js":"UN6U","./utils.js":"FO+Z"}]},{},["mpVp"], null)
+$("#reply-area").attr('rel', 'gallery').fancybox();
+$('#submit-reply').click(function () {
+  var vote = $("input[name='vote']:checked").val() * 1;
+  var content = $("#reply-content").val();
+  newReply(vote, content);
+});
+},{"./utils.js":"FO+Z","./dexon.js":"UN6U"}]},{},["pILq"], null)
