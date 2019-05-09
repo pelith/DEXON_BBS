@@ -117,7 +117,64 @@ parcelRequire = (function (modules, cache, entry, globalName) {
   }
 
   return newRequire;
-})({"UN6U":[function(require,module,exports) {
+})({"FO+Z":[function(require,module,exports) {
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.getUser = exports.getTitle = exports.getParseText = exports.getUrlParameter = exports.htmlEntities = void 0;
+
+var htmlEntities = function htmlEntities(str) {
+  return String(str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+};
+
+exports.htmlEntities = htmlEntities;
+
+var getUrlParameter = function getUrlParameter(sParam) {
+  var sPageURL = window.location.search.substring(1),
+      sURLVariables = sPageURL.split('&'),
+      sParameterName = [];
+
+  for (var i = 0; i < sURLVariables.length; i++) {
+    sParameterName = sURLVariables[i].split('=');
+    if (sParameterName[0] === sParam) return sParameterName[1] === undefined ? true : decodeURIComponent(sParameterName[1]);
+  }
+};
+
+exports.getUrlParameter = getUrlParameter;
+
+var getParseText = function getParseText(str, len) {
+  var tmp = '',
+      count = 0;
+
+  for (var i = 0; i < str.length; i++) {
+    if (str[i].match(/[\u4e00-\u9fa5]/g)) tmp += str[i], count += 2;else if (str[i].match(/[\u0800-\u4e00]/g)) tmp += str[i], count += 2;else if (str[i].match(/[\uff00-\uffff]/g)) tmp += str[i], count += 2;else tmp += str[i], count++;
+    if (count >= len) break;
+  }
+
+  return tmp;
+};
+
+exports.getParseText = getParseText;
+
+var getTitle = function getTitle(content) {
+  content = getParseText(content, 42);
+  var match = content.match(/^(\[).*(\])/);
+  return {
+    match: match,
+    title: match ? match[0].substr(1, match[0].length - 2) : content
+  };
+};
+
+exports.getTitle = getTitle;
+
+var getUser = function getUser(address) {
+  return address.replace(/^(0x.{3}).+(.{3})$/, '$1...$2');
+};
+
+exports.getUser = getUser;
+},{}],"UN6U":[function(require,module,exports) {
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -305,12 +362,15 @@ function newPost(title, content) {
 
   var post = '[' + title + ']' + content;
   var dexBBSExt = new dexonWeb3.eth.Contract(ABIBBSExt, BBSExtContract);
-  dexBBSExt.methods.Post(post).send({
-    from: activeAccount
-  }).then(function (receipt) {
-    window.location = 'index.html';
-  }).catch(function (err) {
-    alert(err);
+  dexBBSExt.methods.Post(post).estimateGas().then(function (gas) {
+    dexBBSExt.methods.Post(post).send({
+      from: activeAccount,
+      gas: gas
+    }).then(function (receipt) {
+      window.location = 'index.html';
+    }).catch(function (err) {
+      alert(err);
+    });
   });
 }
 
@@ -332,115 +392,77 @@ function newReply(tx, vote, content) {
 
   if (tx) {
     var dexBBSExt = new dexonWeb3.eth.Contract(ABIBBSExt, BBSExtContract);
-    dexBBSExt.methods.Reply(tx, vote, content).send({
-      from: activeAccount
-    }).then(function (receipt) {
-      window.location.reload();
-    }).catch(function (err) {
-      alert(err);
+    dexBBSExt.methods.Reply(tx, vote, content).estimateGas().then(function (gas) {
+      dexBBSExt.methods.Reply(tx, vote, content).send({
+        from: activeAccount,
+        gas: gas
+      }).then(function (receipt) {
+        window.location.reload();
+      }).catch(function (err) {
+        alert(err);
+      });
     });
   }
 }
-},{}],"FO+Z":[function(require,module,exports) {
+},{}],"pILq":[function(require,module,exports) {
 "use strict";
-
-Object.defineProperty(exports, "__esModule", {
-  value: true
-});
-exports.getUser = exports.getTitle = exports.getParseText = exports.getUrlParameter = exports.htmlEntities = void 0;
-
-var htmlEntities = function htmlEntities(str) {
-  return String(str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
-};
-
-exports.htmlEntities = htmlEntities;
-
-var getUrlParameter = function getUrlParameter(sParam) {
-  var sPageURL = window.location.search.substring(1),
-      sURLVariables = sPageURL.split('&'),
-      sParameterName = [];
-
-  for (var i = 0; i < sURLVariables.length; i++) {
-    sParameterName = sURLVariables[i].split('=');
-    if (sParameterName[0] === sParam) return sParameterName[1] === undefined ? true : decodeURIComponent(sParameterName[1]);
-  }
-};
-
-exports.getUrlParameter = getUrlParameter;
-
-var getParseText = function getParseText(str, len) {
-  var tmp = '',
-      count = 0;
-
-  for (var i = 0; i < str.length; i++) {
-    if (str[i].match(/[\u4e00-\u9fa5]/g)) tmp += str[i], count += 2;else if (str[i].match(/[\u0800-\u4e00]/g)) tmp += str[i], count += 2;else if (str[i].match(/[\uff00-\uffff]/g)) tmp += str[i], count += 2;else tmp += str[i], count++;
-    if (count >= len) break;
-  }
-
-  return tmp;
-};
-
-exports.getParseText = getParseText;
-
-var getTitle = function getTitle(content) {
-  content = getParseText(content, 42);
-  var match = content.match(/^(\[).*(\])/);
-  return {
-    match: match,
-    title: match ? match[0].substr(1, match[0].length - 2) : content
-  };
-};
-
-exports.getTitle = getTitle;
-
-var getUser = function getUser(address) {
-  return address.replace(/^(0x.{3}).+(.{3})$/, '$1...$2');
-};
-
-exports.getUser = getUser;
-},{}],"mpVp":[function(require,module,exports) {
-"use strict";
-
-var _dexon = require("./dexon.js");
 
 var _utils = require("./utils.js");
 
-var banList = ["0xdc0db75c79308f396ed6389537d4ddd2a36c920bb2958ed7f70949b1f9d3375d"];
+var _dexon = require("./dexon.js");
 
 function main() {
-  var BBS = new _dexon.web3js.eth.Contract(_dexon.ABIBBS, _dexon.BBSContract);
+  var tx = (0, _utils.getUrlParameter)('tx');
+
+  if (tx) {
+    _dexon.web3js.eth.getTransaction(tx).then(function (transaction) {
+      var content = (0, _utils.htmlEntities)(_dexon.web3js.utils.hexToUtf8('0x' + transaction.input.slice(138)));
+      var author = '@' + transaction.blockNumber;
+      var title = (0, _utils.getTitle)(content.substr(0, 40));
+      document.title = title.title + ' - Gossiping - DEXON BBS';
+      $('#main-content-author')[0].innerHTML = author;
+      $('#main-content-author')[0].href = 'https://dexonscan.app/transaction/' + tx;
+      $('#main-content-title')[0].innerHTML = title.title;
+      $('#main-content-content')[0].innerHTML = title.match ? content.slice(title.title.length + 2) : content;
+
+      _dexon.web3js.eth.getBlock(transaction.blockNumber).then(function (block) {
+        $('#main-content-date').text(('' + new Date(block.timestamp)).substr(0, 24));
+      });
+
+      $('#main-content-href')[0].href = window.location.href;
+      $('#main-content-href')[0].innerHTML = window.location.href;
+      $('#main-content-from').text((0, _utils.getUser)(transaction.from));
+    });
+  }
+
   var BBSExt = new _dexon.web3js.eth.Contract(_dexon.ABIBBSExt, _dexon.BBSExtContract);
-  BBS.getPastEvents({
+  var originTx = (0, _utils.getUrlParameter)('tx').substr(0, 66);
+  BBSExt.getPastEvents({
     fromBlock: '990000'
   }).then(function (events) {
-    events.slice().reverse().forEach(function (event) {
-      if (!banList.includes(event.transactionHash)) directDisplay((0, _utils.getTitle)(event.returnValues.content.substr(0, 40)).title, event.transactionHash, event.blockNumber);
+    events.slice().forEach(function (event) {
+      if (originTx == event.returnValues.origin) displayReply(event.returnValues.vote, event.returnValues.content, event.transactionHash, event.blockNumber);
     });
   });
 }
 
-function countVotes(txHash) {
-  var BBSExt = new _dexon.web3js.eth.Contract(_dexon.ABIBBSExt, _dexon.BBSExtContract);
-  return BBSExt.methods.upvotes(txHash.substr(0, 66)).call().then(function (upvotes) {
-    return BBSExt.methods.downvotes(txHash.substr(0, 66)).call().then(function (downvotes) {
-      return upvotes - downvotes;
-    });
-  });
-}
-
-function directDisplay(content, txHash, blockNumber) {
+function displayReply(vote, content, txHash, blockNumber) {
   content = (0, _utils.htmlEntities)(content);
-  var elem = $('<div class="r-ent"></div>');
-  elem.html("<div class=\"nrec\"></div>\n    <div class=\"title\">\n    <a href=\"content.html?tx=".concat(txHash, "\">\n      ").concat(content, "\n    </a>\n    </div>\n    <div class=\"meta\">\n      <div class=\"author\">\n        <a target=\"_blank\" href=\"https://dexonscan.app/transaction/").concat(txHash, "\">\n           @").concat(blockNumber, "\n        </a>\n      </div>\n      <div class=\"article-menu\"></div>\n      <div class=\"date\">...</div>\n    </div>"));
-  $('.r-list-container.action-bar-margin.bbs-screen').append(elem);
+  var voteName = ["→", "推", "噓"];
+  var voteTag = ["→", "推", "噓"];
+  var elem = $('<div class="push"></div>');
+
+  _dexon.web3js.eth.getTransaction(txHash).then(function (transaction) {
+    console.log(transaction.from);
+    $(elem).find('.push-userid').text((0, _utils.getUser)(transaction.from));
+  });
+
+  elem.html("<span class=\"".concat(vote != 1 ? 'f1 ' : '', "hl push-tag\">").concat(voteName[vote], " </span><span class=\"f3 hl push-userid\"></span><span class=\"f3 push-content\">: ").concat(content, "</span><span class=\"push-ipdatetime\"></span>"));
+  $('#main-content.bbs-screen.bbs-content').append(elem);
 
   _dexon.web3js.eth.getBlock(blockNumber).then(function (block) {
     var date = new Date(block.timestamp);
-    $(elem).find('.date').text(date.getMonth() + 1 + '/' + ('' + date.getDate()).padStart(2, '0')).attr('title', date.toLocaleString());
-  });
-
-  countVotes(txHash).then(function (votes) {
-    if (votes > 99) $(elem).find('.nrec').html("<span class=\"hl f1\"> ".concat(votes, " </span>"));else if (votes > 9) $(elem).find('.nrec').html("<span class=\"hl f3\"> ".concat(votes, " </span>"));else if (votes > 0) $(elem).find('.nrec').html("<span class=\"hl f2\"> ".concat(votes, " </span>"));
+    $(elem).find('.push-ipdatetime').text(date.getMonth() + 1 + '/' + ('' + date.getDate()).padStart(2, '0') + ' ' + ('' + date.getHours()).padStart(2, '0') + ':' + ('' + date.getMinutes()).padStart(2, '0'));
   });
 }
 
@@ -448,12 +470,19 @@ var activeDexonRender = function activeDexonRender(account) {
   $("#bbs-login")[0].style.display = 'none';
   $("#bbs-register")[0].style.display = 'none';
   $("#bbs-user")[0].style.display = '';
-  $("#bbs-post")[0].style.display = '';
-  $("#bbs-user")[0].innerHTML = account.replace(/^(0x.{3}).+(.{3})$/, '$1...$2');
+  $("#bbs-user")[0].innerHTML = (0, _utils.getUser)(account);
+  $("#bbs-reply")[0].style.display = '';
+  $("#bbs-reply-user")[0].innerHTML = (0, _utils.getUser)(account);
 };
 
 $('#bbs-login').click(function () {
   (0, _dexon.initDexon)(activeDexonRender);
 });
 $(main);
-},{"./dexon.js":"UN6U","./utils.js":"FO+Z"}]},{},["mpVp"], null)
+$("#reply-area").attr('rel', 'gallery').fancybox();
+$('#submit-reply').click(function () {
+  var vote = $("input[name='vote']:checked").val() * 1;
+  var content = $("#reply-content").val();
+  (0, _dexon.newReply)((0, _utils.getUrlParameter)('tx').substr(0, 66), vote, content);
+});
+},{"./utils.js":"FO+Z","./dexon.js":"UN6U"}]},{},["pILq"], null)

@@ -305,12 +305,15 @@ function newPost(title, content) {
 
   var post = '[' + title + ']' + content;
   var dexBBSExt = new dexonWeb3.eth.Contract(ABIBBSExt, BBSExtContract);
-  dexBBSExt.methods.Post(post).send({
-    from: activeAccount
-  }).then(function (receipt) {
-    window.location = 'index.html';
-  }).catch(function (err) {
-    alert(err);
+  dexBBSExt.methods.Post(post).estimateGas().then(function (gas) {
+    dexBBSExt.methods.Post(post).send({
+      from: activeAccount,
+      gas: gas
+    }).then(function (receipt) {
+      window.location = 'index.html';
+    }).catch(function (err) {
+      alert(err);
+    });
   });
 }
 
@@ -332,12 +335,15 @@ function newReply(tx, vote, content) {
 
   if (tx) {
     var dexBBSExt = new dexonWeb3.eth.Contract(ABIBBSExt, BBSExtContract);
-    dexBBSExt.methods.Reply(tx, vote, content).send({
-      from: activeAccount
-    }).then(function (receipt) {
-      window.location.reload();
-    }).catch(function (err) {
-      alert(err);
+    dexBBSExt.methods.Reply(tx, vote, content).estimateGas().then(function (gas) {
+      dexBBSExt.methods.Reply(tx, vote, content).send({
+        from: activeAccount,
+        gas: gas
+      }).then(function (receipt) {
+        window.location.reload();
+      }).catch(function (err) {
+        alert(err);
+      });
     });
   }
 }
