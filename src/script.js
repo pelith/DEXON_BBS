@@ -16,11 +16,20 @@ function main() {
   });
 }
 
+function countVotes(txHash) {
+  const BBSExt = new web3js.eth.Contract(ABIBBSExt, BBSExtContract)
+  return BBSExt.methods.upvotes(txHash.substr(0,66)).call().then(upvotes => {
+    return BBSExt.methods.downvotes(txHash.substr(0,66)).call().then(downvotes => {
+      return upvotes - downvotes
+    })
+  })
+}
+
 function directDisplay(content, txHash, blockNumber) {
   content = htmlEntities(content)
   const elem = $('<div class="r-ent"></div>')
   elem.html(
-    `<div class="nrec"><span class="hl f1"> 爆 </span></div>
+    `<div class="nrec"></div>
     <div class="title">
     <a href="content.html?tx=${txHash}">
       ${content}
@@ -42,6 +51,15 @@ function directDisplay(content, txHash, blockNumber) {
     const date = new Date(block.timestamp)
     $(elem).find('.date').text((date.getMonth()+1)+'/'+(''+date.getDate()).padStart(2, '0'))
                          .attr('title', date.toLocaleString())
+  })
+
+  countVotes(txHash).then(votes => {
+    if (votes > 99)
+      $(elem).find('.nrec').html(`<span class="hl f1"> ${votes} </span>`)
+    else if (votes > 9)
+      $(elem).find('.nrec').html(`<span class="hl f3"> ${votes} </span>`)
+    else if (votes > 0)
+      $(elem).find('.nrec').html(`<span class="hl f2"> ${votes} </span>`)
   })
 }
 
