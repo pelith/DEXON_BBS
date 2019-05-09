@@ -22,13 +22,13 @@ function convert(str) {
 }
 
 function check(){
-  $("#bbs-post")[0].disabled = ($("#bbs-content")[0].value.length>0 && $("#bbs-title")[0].value >0) ? "" : "disabled"
+  $("#bbs-post")[0].disabled = ( $("#bbs-content")[0].value.length>0 && $("#bbs-title")[0].value >0 ) ? false : true
 }
 
 
 function main(){
-  String.prototype.lines = function() { return this.split(/\r*\n/); }
-  String.prototype.lineCount = function() { return this.lines().length; }
+  // String.prototype.lines = function() { return this.split(/\r*\n/); }
+  // String.prototype.lineCount = function() { return this.lines().length; }
 
   $("#bbs-title")[0].onblur = () => { check(), $("#bbs-title")[0].value = convert($("#bbs-title")[0].value) }
   $("#bbs-content")[0].onkeyup = () => { check() }

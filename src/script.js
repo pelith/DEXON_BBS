@@ -86,7 +86,7 @@ function startInteractingWithWeb3() {
   setInterval(() => {
     dexonWeb3.eth.getAccounts().then(([account]) => {
       activeAccount = account
-      $("#bbs-user")[0].innerHTML = activeAccount.replace(/^(0x.{4}).+(.{4})$/, '$1...$2')
+      $("#bbs-user")[0].innerHTML = activeAccount.replace(/^(0x.{3}).+(.{3})$/, '$1...$2')
     })
   }, 2000)
 }
