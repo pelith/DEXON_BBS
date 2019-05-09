@@ -159,7 +159,7 @@ var getParseText = function getParseText(str, len) {
 exports.getParseText = getParseText;
 
 var getTitle = function getTitle(content) {
-  content = getParseText(content, 40);
+  content = getParseText(content, 42);
   var match = content.match(/^(\[).*(\])/);
   return {
     match: match,
@@ -398,77 +398,103 @@ function newReply(tx, vote, content) {
     });
   }
 }
-},{}],"pILq":[function(require,module,exports) {
+},{}],"DCbj":[function(require,module,exports) {
 "use strict";
 
 var _utils = require("./utils.js");
 
 var _dexon = require("./dexon.js");
 
-function main() {
-  var tx = (0, _utils.getUrlParameter)('tx');
+var checkContent = function checkContent() {
+  return $("#bbs-content")[0].value.length > 0;
+};
 
-  if (tx) {
-    _dexon.web3js.eth.getTransaction(tx).then(function (transaction) {
-      var content = (0, _utils.htmlEntities)(_dexon.web3js.utils.hexToUtf8('0x' + transaction.input.slice(138)));
-      var author = '@' + transaction.blockNumber;
-      var title = (0, _utils.getTitle)(content.substr(0, 40));
-      document.title = title.title + ' - Gossiping - DEXON BBS';
-      $('#main-content-author')[0].innerHTML = author;
-      $('#main-content-author')[0].href = 'https://dexonscan.app/transaction/' + tx;
-      $('#main-content-title')[0].innerHTML = title.title;
-      $('#main-content-content')[0].innerHTML = title.match ? content.slice(title.title.length + 2) : content;
+var checkTitle = function checkTitle() {
+  return $("#bbs-title")[0].value > 0;
+};
 
-      _dexon.web3js.eth.getBlock(transaction.blockNumber).then(function (block) {
-        $('#main-content-date').text(('' + new Date(block.timestamp)).substr(0, 24));
-      });
-
-      $('#main-content-href')[0].href = window.location.href;
-      $('#main-content-href')[0].innerHTML = window.location.href;
-      $('#main-content-from').text((0, _utils.getUser)(transaction.from));
-    });
-  }
-
-  var BBSExt = new _dexon.web3js.eth.Contract(_dexon.ABIBBSExt, _dexon.BBSExtContract);
-  var originTx = (0, _utils.getUrlParameter)('tx').substr(0, 66);
-  BBSExt.getPastEvents({
-    fromBlock: '990000'
-  }).then(function (events) {
-    events.slice().reverse().forEach(function (event) {
-      if (originTx == event.returnValues.origin) displayReply(event.returnValues.vote, event.returnValues.content, event.transactionHash, event.blockNumber);
-    });
-  });
-}
-
-function displayReply(vote, content, txHash, blockNumber) {
-  content = (0, _utils.htmlEntities)(content);
-  var voteName = ["→", "推", "噓"];
-  var voteTag = ["→", "推", "噓"];
-  var elem = $('<div class="push"></div>');
-  elem.html("<span class=\"".concat(vote != 1 ? 'f1 ' : '', "hl push-tag\">").concat(voteName[vote], " </span><span class=\"f3 hl push-userid\">@").concat(blockNumber, "</span><span class=\"f3 push-content\">: ").concat(content, "</span><span class=\"push-ipdatetime\"></span>"));
-  $('#main-content.bbs-screen.bbs-content').append(elem);
-
-  _dexon.web3js.eth.getBlock(blockNumber).then(function (block) {
-    var date = new Date(block.timestamp);
-    $(elem).find('.push-ipdatetime').text(date.getMonth() + 1 + '/' + ('' + date.getDate()).padStart(2, '0') + ' ' + ('' + date.getHours()).padStart(2, '0') + ':' + ('' + date.getMinutes()).padStart(2, '0'));
-  });
-}
+var check = function check() {
+  return checkContent() && checkTitle();
+};
 
 var activeDexonRender = function activeDexonRender(account) {
-  $("#bbs-login")[0].style.display = 'none';
-  $("#bbs-register")[0].style.display = 'none';
-  $("#bbs-user")[0].style.display = '';
+  $("#bbs-post")[0].disabled = !check();
   $("#bbs-user")[0].innerHTML = (0, _utils.getUser)(account);
 };
 
-$('#bbs-login').click(function () {
+var keyboardHook = function keyboardHook() {
+  var ctrlKey = 17,
+      cmdKey = 91,
+      QKey = 81,
+      XKey = 88,
+      YKey = 89;
+  var ctrlDown = false;
+  var checkSave = false,
+      checkPost = false;
+  $(document).keydown(function (e) {
+    if (e.keyCode == ctrlKey || e.keyCode == cmdKey) ctrlDown = true;
+  }).keyup(function (e) {
+    if (e.keyCode == ctrlKey || e.keyCode == cmdKey) ctrlDown = false;
+  });
+  $(document).keydown(function (e) {
+    if (ctrlDown && e.keyCode == QKey) {
+      $("#bbs-footer")[0].style.display = 'none';
+      $("#bbs-checksave")[0].style.display = '';
+      $("#bbs-title")[0].disabled = true;
+      $("#bbs-content")[0].disabled = true;
+      checkSave = true; // window.location = 'index.html'
+    } else if (ctrlDown && e.keyCode == XKey) {
+      if (check()) {
+        $("#bbs-footer")[0].style.display = 'none';
+        $("#bbs-checkpost")[0].style.display = '';
+        $("#bbs-title")[0].disabled = true;
+        $("#bbs-content")[0].disabled = true;
+        checkPost = true;
+      }
+    } else if (48 <= e.keyCode && e.keyCode <= 222) {
+      if (checkSave) {
+        $("#bbs-footer")[0].style.display = '';
+        $("#bbs-checksave")[0].style.display = 'none';
+        $("#bbs-title")[0].disabled = false;
+        $("#bbs-content")[0].disabled = false;
+        checkSave = false;
+        if (e.keyCode == YKey) window.location = 'index.html';
+      } else if (checkPost) {
+        $("#bbs-footer")[0].style.display = '';
+        $("#bbs-checkpost")[0].style.display = 'none';
+        $("#bbs-title")[0].disabled = false;
+        $("#bbs-content")[0].disabled = false;
+        checkPost = false;
+        if (e.keyCode == YKey) if (check()) (0, _dexon.newPost)($("#bbs-title")[0].value, $("#bbs-content")[0].value);
+      }
+    }
+  });
+};
+
+function main() {
+  // String.prototype.lines = function() { return this.split(/\r*\n/); }
+  // String.prototype.lineCount = function() { return this.lines().length; }
+  keyboardHook();
+
+  $("#bbs-title")[0].onblur = function () {
+    $("#bbs-title")[0].value = (0, _utils.getParseText)($("#bbs-title")[0].value, 40);
+  };
+
+  $("#bbs-content")[0].onkeyup = function () {};
+
+  $("#bbs-content")[0].placeholder = "~\n".repeat(20);
+
+  $("#bbs-post")[0].onclick = function () {
+    if (!checkContent() && !checkTitle() || confirm('確定發文?')) (0, _dexon.newPost)($("#bbs-title")[0].value, $("#bbs-content")[0].value);
+  };
+
+  $("#bbs-cancel")[0].onclick = function () {
+    if (!checkContent() && !checkTitle() || confirm('結束但不儲存?')) window.location = 'index.html';
+  };
+
   (0, _dexon.initDexon)(activeDexonRender);
-});
-$(main);
-$("#reply-area").attr('rel', 'gallery').fancybox();
-$('#submit-reply').click(function () {
-  var vote = $("input[name='vote']:checked").val() * 1;
-  var content = $("#reply-content").val();
-  (0, _dexon.newReply)((0, _utils.getUrlParameter)('tx').substr(0, 66), vote, content);
-});
-},{"./utils.js":"FO+Z","./dexon.js":"UN6U"}]},{},["pILq"], null)
+  ' ◆ 結束但不儲存 [y/N]?                                        ';
+}
+
+$(main());
+},{"./utils.js":"FO+Z","./dexon.js":"UN6U"}]},{},["DCbj"], null)
