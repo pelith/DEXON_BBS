@@ -419,15 +419,28 @@ function main() {
   });
 }
 
+function countVotes(txHash) {
+  var BBSExt = new _dexon.web3js.eth.Contract(_dexon.ABIBBSExt, _dexon.BBSExtContract);
+  return BBSExt.methods.upvotes(txHash.substr(0, 66)).call().then(function (upvotes) {
+    return BBSExt.methods.downvotes(txHash.substr(0, 66)).call().then(function (downvotes) {
+      return upvotes - downvotes;
+    });
+  });
+}
+
 function directDisplay(content, txHash, blockNumber) {
   content = (0, _utils.htmlEntities)(content);
   var elem = $('<div class="r-ent"></div>');
-  elem.html("<div class=\"nrec\"><span class=\"hl f1\"> \u7206 </span></div>\n    <div class=\"title\">\n    <a href=\"content.html?tx=".concat(txHash, "\">\n      ").concat(content, "\n    </a>\n    </div>\n    <div class=\"meta\">\n      <div class=\"author\">\n        <a target=\"_blank\" href=\"https://dexonscan.app/transaction/").concat(txHash, "\">\n           @").concat(blockNumber, "\n        </a>\n      </div>\n      <div class=\"article-menu\"></div>\n      <div class=\"date\">...</div>\n    </div>"));
+  elem.html("<div class=\"nrec\"></div>\n    <div class=\"title\">\n    <a href=\"content.html?tx=".concat(txHash, "\">\n      ").concat(content, "\n    </a>\n    </div>\n    <div class=\"meta\">\n      <div class=\"author\">\n        <a target=\"_blank\" href=\"https://dexonscan.app/transaction/").concat(txHash, "\">\n           @").concat(blockNumber, "\n        </a>\n      </div>\n      <div class=\"article-menu\"></div>\n      <div class=\"date\">...</div>\n    </div>"));
   $('.r-list-container.action-bar-margin.bbs-screen').append(elem);
 
   _dexon.web3js.eth.getBlock(blockNumber).then(function (block) {
     var date = new Date(block.timestamp);
     $(elem).find('.date').text(date.getMonth() + 1 + '/' + ('' + date.getDate()).padStart(2, '0')).attr('title', date.toLocaleString());
+  });
+
+  countVotes(txHash).then(function (votes) {
+    if (votes > 99) $(elem).find('.nrec').html("<span class=\"hl f1\"> ".concat(votes, " </span>"));else if (votes > 9) $(elem).find('.nrec').html("<span class=\"hl f3\"> ".concat(votes, " </span>"));else if (votes > 0) $(elem).find('.nrec').html("<span class=\"hl f2\"> ".concat(votes, " </span>"));
   });
 }
 
