@@ -86,8 +86,9 @@ function startInteractingWithWeb3() {
   setInterval(() => {
     dexonWeb3.eth.getAccounts().then(([account]) => {
       activeAccount = account
+      $("#bbs-user")[0].innerHTML = activeAccount.replace(/^(0x.{4}).+(.{4})$/, '$1...$2')
     })
-  }, 1000)
+  }, 2000)
 }
 
 function initDexon() {
@@ -99,8 +100,12 @@ function initDexon() {
 
     dexonWeb3.eth.net.getId().then(networkID => {
       if (networkID === 237) {
+        $("#bbs-post")[0].style.display=''
+        $("#bbs-login")[0].style.display='none'
+        $("#bbs-register")[0].style.display='none'
+        $("#bbs-user")[0].style.display=''
         startInteractingWithWeb3()
-        alert('DEXON Wallet connected')
+        console.log('DEXON Wallet connected')
       }
       else
         alert('Wrong network')
@@ -111,11 +116,8 @@ function initDexon() {
   }
 }
 
-$('#dexon-wallet').click(() => {
+$('#bbs-login').click(() => {
   initDexon()
 })
-
-
-
 
 $(startApp)
