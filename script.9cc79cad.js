@@ -274,7 +274,7 @@ function startInteractingWithWeb3() {
           account = _ref2[0];
 
       activeAccount = account;
-      $("#bbs-user")[0].innerHTML = activeAccount.replace(/^(0x.{4}).+(.{4})$/, '$1...$2');
+      $("#bbs-user")[0].innerHTML = activeAccount.replace(/^(0x.{3}).+(.{3})$/, '$1...$2');
     });
   }, 2000);
 }
