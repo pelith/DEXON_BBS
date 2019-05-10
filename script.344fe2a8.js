@@ -125,16 +125,7 @@ Object.defineProperty(exports, "__esModule", {
 });
 exports.newPost = newPost;
 exports.newReply = newReply;
-exports.initDexon = exports.web3js = exports.BBSExtContract = exports.BBSContract = exports.ABIBBSExt = exports.ABIBBS = void 0;
-
-function _slicedToArray(arr, i) { return _arrayWithHoles(arr) || _iterableToArrayLimit(arr, i) || _nonIterableRest(); }
-
-function _nonIterableRest() { throw new TypeError("Invalid attempt to destructure non-iterable instance"); }
-
-function _iterableToArrayLimit(arr, i) { var _arr = []; var _n = true; var _d = false; var _e = undefined; try { for (var _i = arr[Symbol.iterator](), _s; !(_n = (_s = _i.next()).done); _n = true) { _arr.push(_s.value); if (i && _arr.length === i) break; } } catch (err) { _d = true; _e = err; } finally { try { if (!_n && _i["return"] != null) _i["return"](); } finally { if (_d) throw _e; } } return _arr; }
-
-function _arrayWithHoles(arr) { if (Array.isArray(arr)) return arr; }
-
+exports.loginDexon = exports.initDexon = exports.web3js = exports.BBSExtContract = exports.BBSContract = exports.ABIBBSExt = exports.ABIBBS = void 0;
 var ABIBBS = [{
   "constant": !1,
   "inputs": [{
@@ -260,31 +251,42 @@ var activeAccount = '';
 
 var initDexon = function initDexon(activeDexonRender) {
   if (window.dexon) {
-    var dexonProvider = window.dexon;
-    dexonProvider.enable();
-    dexonWeb3 = new Web3();
-    dexonWeb3.setProvider(dexonProvider);
-    dexonWeb3.eth.net.getId().then(function (networkID) {
-      if (networkID === 237) {
-        startInteractingWithWeb3(activeDexonRender);
-        console.log('DEXON Wallet connected');
-      } else alert('Wrong network');
+    dexonWeb3 = new Web3(window.dexon);
+    dexonWeb3.eth.getAccounts().then(function (accounts) {
+      if (accounts.length > 0) {
+        detectDexonNetwrok(activeDexonRender);
+      }
     });
-  } else {
-    alert('DEXON Wallet not detected. (請安裝 DEXON 瀏覽器擴充套件)');
   }
 };
 
 exports.initDexon = initDexon;
 
+var loginDexon = function loginDexon(activeDexonRender) {
+  if (window.dexon) {
+    window.dexon.enable();
+    detectDexonNetwrok(activeDexonRender);
+  } else alert('DEXON Wallet not detected. (請安裝 DEXON 瀏覽器擴充套件)');
+};
+
+exports.loginDexon = loginDexon;
+
+var detectDexonNetwrok = function detectDexonNetwrok(activeDexonRender) {
+  dexonWeb3.eth.net.getId().then(function (networkID) {
+    if (networkID === 237) {
+      startInteractingWithWeb3(activeDexonRender);
+      console.log('DEXON Wallet connected');
+    } else alert('Wrong network');
+  });
+};
+
 var startInteractingWithWeb3 = function startInteractingWithWeb3(activeDexonRender) {
   var start = function start() {
-    dexonWeb3.eth.getAccounts().then(function (_ref) {
-      var _ref2 = _slicedToArray(_ref, 1),
-          account = _ref2[0];
-
-      activeAccount = account;
-      activeDexonRender(activeAccount);
+    dexonWeb3.eth.getAccounts().then(function (accounts) {
+      if (accounts.length > 0) {
+        activeAccount = accounts[0];
+        activeDexonRender(activeAccount);
+      }
     });
   };
 
@@ -317,14 +319,14 @@ function newPost(title, content) {
   });
 }
 
-function newReply(tx, vote, content) {
+function newReply(tx, replyType, content) {
   if (dexonWeb3 === '') {
     alert('Please connect to your DEXON Wallet first.');
     return;
   }
 
-  if (![0, 1, 2].includes(vote)) {
-    alert('Wrong type of vote.');
+  if (![0, 1, 2].includes(+replyType)) {
+    alert('Wrong type of replyType.');
     return;
   }
 
@@ -335,8 +337,8 @@ function newReply(tx, vote, content) {
 
   if (tx) {
     var dexBBSExt = new dexonWeb3.eth.Contract(ABIBBSExt, BBSExtContract);
-    dexBBSExt.methods.Reply(tx, vote, content).estimateGas().then(function (gas) {
-      dexBBSExt.methods.Reply(tx, vote, content).send({
+    dexBBSExt.methods.Reply(tx, replyType, content).estimateGas().then(function (gas) {
+      dexBBSExt.methods.Reply(tx, replyType, content).send({
         from: activeAccount,
         gas: gas
       }).then(function (receipt) {
@@ -411,9 +413,11 @@ var _dexon = require("./dexon.js");
 
 var _utils = require("./utils.js");
 
+// import 'babel-polyfill'
 var banList = ["0xdc0db75c79308f396ed6389537d4ddd2a36c920bb2958ed7f70949b1f9d3375d"];
 
 function main() {
+  (0, _dexon.initDexon)(activeDexonRender);
   var BBS = new _dexon.web3js.eth.Contract(_dexon.ABIBBS, _dexon.BBSContract);
   var BBSExt = new _dexon.web3js.eth.Contract(_dexon.ABIBBSExt, _dexon.BBSExtContract);
   BBS.getPastEvents({
@@ -459,7 +463,7 @@ var activeDexonRender = function activeDexonRender(account) {
 };
 
 $('#bbs-login').click(function () {
-  (0, _dexon.initDexon)(activeDexonRender);
+  (0, _dexon.loginDexon)(activeDexonRender);
 });
 $(main);
 },{"./dexon.js":"UN6U","./utils.js":"FO+Z"}]},{},["mpVp"], null)

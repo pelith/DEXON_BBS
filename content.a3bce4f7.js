@@ -117,7 +117,64 @@ parcelRequire = (function (modules, cache, entry, globalName) {
   }
 
   return newRequire;
-})({"UN6U":[function(require,module,exports) {
+})({"FO+Z":[function(require,module,exports) {
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.getUser = exports.getTitle = exports.getParseText = exports.getUrlParameter = exports.htmlEntities = void 0;
+
+var htmlEntities = function htmlEntities(str) {
+  return String(str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+};
+
+exports.htmlEntities = htmlEntities;
+
+var getUrlParameter = function getUrlParameter(sParam) {
+  var sPageURL = window.location.search.substring(1),
+      sURLVariables = sPageURL.split('&'),
+      sParameterName = [];
+
+  for (var i = 0; i < sURLVariables.length; i++) {
+    sParameterName = sURLVariables[i].split('=');
+    if (sParameterName[0] === sParam) return sParameterName[1] === undefined ? true : decodeURIComponent(sParameterName[1]);
+  }
+};
+
+exports.getUrlParameter = getUrlParameter;
+
+var getParseText = function getParseText(str, len) {
+  var tmp = '',
+      count = 0;
+
+  for (var i = 0; i < str.length; i++) {
+    if (str[i].match(/[\u4e00-\u9fa5]/g)) tmp += str[i], count += 2;else if (str[i].match(/[\u0800-\u4e00]/g)) tmp += str[i], count += 2;else if (str[i].match(/[\uff00-\uffff]/g)) tmp += str[i], count += 2;else tmp += str[i], count++;
+    if (count >= len) break;
+  }
+
+  return tmp;
+};
+
+exports.getParseText = getParseText;
+
+var getTitle = function getTitle(content) {
+  content = getParseText(content, 42);
+  var match = content.match(/^(\[).*(\])/);
+  return {
+    match: match,
+    title: match ? match[0].substr(1, match[0].length - 2) : content
+  };
+};
+
+exports.getTitle = getTitle;
+
+var getUser = function getUser(address) {
+  return address.replace(/^(0x.{3}).+(.{3})$/, '$1...$2');
+};
+
+exports.getUser = getUser;
+},{}],"UN6U":[function(require,module,exports) {
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -125,16 +182,7 @@ Object.defineProperty(exports, "__esModule", {
 });
 exports.newPost = newPost;
 exports.newReply = newReply;
-exports.initDexon = exports.web3js = exports.BBSExtContract = exports.BBSContract = exports.ABIBBSExt = exports.ABIBBS = void 0;
-
-function _slicedToArray(arr, i) { return _arrayWithHoles(arr) || _iterableToArrayLimit(arr, i) || _nonIterableRest(); }
-
-function _nonIterableRest() { throw new TypeError("Invalid attempt to destructure non-iterable instance"); }
-
-function _iterableToArrayLimit(arr, i) { var _arr = []; var _n = true; var _d = false; var _e = undefined; try { for (var _i = arr[Symbol.iterator](), _s; !(_n = (_s = _i.next()).done); _n = true) { _arr.push(_s.value); if (i && _arr.length === i) break; } } catch (err) { _d = true; _e = err; } finally { try { if (!_n && _i["return"] != null) _i["return"](); } finally { if (_d) throw _e; } } return _arr; }
-
-function _arrayWithHoles(arr) { if (Array.isArray(arr)) return arr; }
-
+exports.loginDexon = exports.initDexon = exports.web3js = exports.BBSExtContract = exports.BBSContract = exports.ABIBBSExt = exports.ABIBBS = void 0;
 var ABIBBS = [{
   "constant": !1,
   "inputs": [{
@@ -260,31 +308,42 @@ var activeAccount = '';
 
 var initDexon = function initDexon(activeDexonRender) {
   if (window.dexon) {
-    var dexonProvider = window.dexon;
-    dexonProvider.enable();
-    dexonWeb3 = new Web3();
-    dexonWeb3.setProvider(dexonProvider);
-    dexonWeb3.eth.net.getId().then(function (networkID) {
-      if (networkID === 237) {
-        startInteractingWithWeb3(activeDexonRender);
-        console.log('DEXON Wallet connected');
-      } else alert('Wrong network');
+    dexonWeb3 = new Web3(window.dexon);
+    dexonWeb3.eth.getAccounts().then(function (accounts) {
+      if (accounts.length > 0) {
+        detectDexonNetwrok(activeDexonRender);
+      }
     });
-  } else {
-    alert('DEXON Wallet not detected. (請安裝 DEXON 瀏覽器擴充套件)');
   }
 };
 
 exports.initDexon = initDexon;
 
+var loginDexon = function loginDexon(activeDexonRender) {
+  if (window.dexon) {
+    window.dexon.enable();
+    detectDexonNetwrok(activeDexonRender);
+  } else alert('DEXON Wallet not detected. (請安裝 DEXON 瀏覽器擴充套件)');
+};
+
+exports.loginDexon = loginDexon;
+
+var detectDexonNetwrok = function detectDexonNetwrok(activeDexonRender) {
+  dexonWeb3.eth.net.getId().then(function (networkID) {
+    if (networkID === 237) {
+      startInteractingWithWeb3(activeDexonRender);
+      console.log('DEXON Wallet connected');
+    } else alert('Wrong network');
+  });
+};
+
 var startInteractingWithWeb3 = function startInteractingWithWeb3(activeDexonRender) {
   var start = function start() {
-    dexonWeb3.eth.getAccounts().then(function (_ref) {
-      var _ref2 = _slicedToArray(_ref, 1),
-          account = _ref2[0];
-
-      activeAccount = account;
-      activeDexonRender(activeAccount);
+    dexonWeb3.eth.getAccounts().then(function (accounts) {
+      if (accounts.length > 0) {
+        activeAccount = accounts[0];
+        activeDexonRender(activeAccount);
+      }
     });
   };
 
@@ -317,14 +376,14 @@ function newPost(title, content) {
   });
 }
 
-function newReply(tx, vote, content) {
+function newReply(tx, replyType, content) {
   if (dexonWeb3 === '') {
     alert('Please connect to your DEXON Wallet first.');
     return;
   }
 
-  if (![0, 1, 2].includes(vote)) {
-    alert('Wrong type of vote.');
+  if (![0, 1, 2].includes(+replyType)) {
+    alert('Wrong type of replyType.');
     return;
   }
 
@@ -335,8 +394,8 @@ function newReply(tx, vote, content) {
 
   if (tx) {
     var dexBBSExt = new dexonWeb3.eth.Contract(ABIBBSExt, BBSExtContract);
-    dexBBSExt.methods.Reply(tx, vote, content).estimateGas().then(function (gas) {
-      dexBBSExt.methods.Reply(tx, vote, content).send({
+    dexBBSExt.methods.Reply(tx, replyType, content).estimateGas().then(function (gas) {
+      dexBBSExt.methods.Reply(tx, replyType, content).send({
         from: activeAccount,
         gas: gas
       }).then(function (receipt) {
@@ -347,4 +406,88 @@ function newReply(tx, vote, content) {
     });
   }
 }
-},{}]},{},["UN6U"], null)
+},{}],"pILq":[function(require,module,exports) {
+"use strict";
+
+var _utils = require("./utils.js");
+
+var _dexon = require("./dexon.js");
+
+function main() {
+  (0, _dexon.initDexon)(activeDexonRender);
+  $('#bbs-reply-btn').click(function () {
+    $("#bbs-reply")[0].style.display = '';
+    $("#bbs-reply-content")[0].focus();
+  });
+  var tx = (0, _utils.getUrlParameter)('tx');
+
+  if (tx) {
+    _dexon.web3js.eth.getTransaction(tx).then(function (transaction) {
+      var content = (0, _utils.htmlEntities)(_dexon.web3js.utils.hexToUtf8('0x' + transaction.input.slice(138)));
+      var author = '@' + transaction.blockNumber;
+      var title = (0, _utils.getTitle)(content.substr(0, 40));
+      document.title = title.title + ' - Gossiping - DEXON BBS';
+      $('#main-content-author')[0].innerHTML = author;
+      $('#main-content-author')[0].href = 'https://dexonscan.app/transaction/' + tx;
+      $('#main-content-title')[0].innerHTML = title.title;
+      $('#main-content-content')[0].innerHTML = title.match ? content.slice(title.title.length + 2) : content;
+
+      _dexon.web3js.eth.getBlock(transaction.blockNumber).then(function (block) {
+        $('#main-content-date').text(('' + new Date(block.timestamp)).substr(0, 24));
+      });
+
+      $('#main-content-href')[0].href = window.location.href;
+      $('#main-content-href')[0].innerHTML = window.location.href;
+      $('#main-content-from').text((0, _utils.getUser)(transaction.from));
+    });
+  }
+
+  var BBSExt = new _dexon.web3js.eth.Contract(_dexon.ABIBBSExt, _dexon.BBSExtContract);
+  var originTx = (0, _utils.getUrlParameter)('tx').substr(0, 66);
+  BBSExt.getPastEvents({
+    fromBlock: '990000'
+  }).then(function (events) {
+    events.slice().forEach(function (event) {
+      if (originTx == event.returnValues.origin) displayReply(event.returnValues.vote, event.returnValues.content, event.transactionHash, event.blockNumber);
+    });
+  });
+}
+
+function displayReply(vote, content, txHash, blockNumber) {
+  content = (0, _utils.htmlEntities)(content);
+  var voteName = ["→", "推", "噓"];
+  var voteTag = ["→", "推", "噓"];
+  var elem = $('<div class="push"></div>');
+
+  _dexon.web3js.eth.getTransaction(txHash).then(function (transaction) {
+    $(elem).find('.push-userid').text((0, _utils.getUser)(transaction.from));
+  });
+
+  elem.html("<span class=\"".concat(vote != 1 ? 'f1 ' : '', "hl push-tag\">").concat(voteName[vote], " </span><span class=\"f3 hl push-userid\"></span><span class=\"f3 push-content\">: ").concat(content, "</span><span class=\"push-ipdatetime\"></span>"));
+  $('#main-content.bbs-screen.bbs-content').append(elem);
+
+  _dexon.web3js.eth.getBlock(blockNumber).then(function (block) {
+    var date = new Date(block.timestamp);
+    $(elem).find('.push-ipdatetime').text(date.getMonth() + 1 + '/' + ('' + date.getDate()).padStart(2, '0') + ' ' + ('' + date.getHours()).padStart(2, '0') + ':' + ('' + date.getMinutes()).padStart(2, '0'));
+  });
+}
+
+var activeDexonRender = function activeDexonRender(account) {
+  $("#bbs-login")[0].style.display = 'none';
+  $("#bbs-register")[0].style.display = 'none';
+  $("#bbs-user")[0].style.display = '';
+  $("#bbs-user")[0].innerHTML = (0, _utils.getUser)(account);
+  $("#bbs-reply-user")[0].innerHTML = (0, _utils.getUser)(account);
+  $("#bbs-reply-btn")[0].style.display = '';
+};
+
+$('#bbs-login').click(function () {
+  (0, _dexon.loginDexon)(activeDexonRender);
+});
+$(main);
+$('#bbs-newReply').click(function () {
+  var replyType = $("#bbs-reply-type")[0].value;
+  var content = $("#bbs-reply-content")[0].value;
+  (0, _dexon.newReply)((0, _utils.getUrlParameter)('tx').substr(0, 66), replyType, content);
+});
+},{"./utils.js":"FO+Z","./dexon.js":"UN6U"}]},{},["pILq"], null)

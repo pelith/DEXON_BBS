@@ -117,64 +117,7 @@ parcelRequire = (function (modules, cache, entry, globalName) {
   }
 
   return newRequire;
-})({"FO+Z":[function(require,module,exports) {
-"use strict";
-
-Object.defineProperty(exports, "__esModule", {
-  value: true
-});
-exports.getUser = exports.getTitle = exports.getParseText = exports.getUrlParameter = exports.htmlEntities = void 0;
-
-var htmlEntities = function htmlEntities(str) {
-  return String(str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
-};
-
-exports.htmlEntities = htmlEntities;
-
-var getUrlParameter = function getUrlParameter(sParam) {
-  var sPageURL = window.location.search.substring(1),
-      sURLVariables = sPageURL.split('&'),
-      sParameterName = [];
-
-  for (var i = 0; i < sURLVariables.length; i++) {
-    sParameterName = sURLVariables[i].split('=');
-    if (sParameterName[0] === sParam) return sParameterName[1] === undefined ? true : decodeURIComponent(sParameterName[1]);
-  }
-};
-
-exports.getUrlParameter = getUrlParameter;
-
-var getParseText = function getParseText(str, len) {
-  var tmp = '',
-      count = 0;
-
-  for (var i = 0; i < str.length; i++) {
-    if (str[i].match(/[\u4e00-\u9fa5]/g)) tmp += str[i], count += 2;else if (str[i].match(/[\u0800-\u4e00]/g)) tmp += str[i], count += 2;else if (str[i].match(/[\uff00-\uffff]/g)) tmp += str[i], count += 2;else tmp += str[i], count++;
-    if (count >= len) break;
-  }
-
-  return tmp;
-};
-
-exports.getParseText = getParseText;
-
-var getTitle = function getTitle(content) {
-  content = getParseText(content, 42);
-  var match = content.match(/^(\[).*(\])/);
-  return {
-    match: match,
-    title: match ? match[0].substr(1, match[0].length - 2) : content
-  };
-};
-
-exports.getTitle = getTitle;
-
-var getUser = function getUser(address) {
-  return address.replace(/^(0x.{3}).+(.{3})$/, '$1...$2');
-};
-
-exports.getUser = getUser;
-},{}],"UN6U":[function(require,module,exports) {
+})({"UN6U":[function(require,module,exports) {
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -182,16 +125,7 @@ Object.defineProperty(exports, "__esModule", {
 });
 exports.newPost = newPost;
 exports.newReply = newReply;
-exports.initDexon = exports.web3js = exports.BBSExtContract = exports.BBSContract = exports.ABIBBSExt = exports.ABIBBS = void 0;
-
-function _slicedToArray(arr, i) { return _arrayWithHoles(arr) || _iterableToArrayLimit(arr, i) || _nonIterableRest(); }
-
-function _nonIterableRest() { throw new TypeError("Invalid attempt to destructure non-iterable instance"); }
-
-function _iterableToArrayLimit(arr, i) { var _arr = []; var _n = true; var _d = false; var _e = undefined; try { for (var _i = arr[Symbol.iterator](), _s; !(_n = (_s = _i.next()).done); _n = true) { _arr.push(_s.value); if (i && _arr.length === i) break; } } catch (err) { _d = true; _e = err; } finally { try { if (!_n && _i["return"] != null) _i["return"](); } finally { if (_d) throw _e; } } return _arr; }
-
-function _arrayWithHoles(arr) { if (Array.isArray(arr)) return arr; }
-
+exports.loginDexon = exports.initDexon = exports.web3js = exports.BBSExtContract = exports.BBSContract = exports.ABIBBSExt = exports.ABIBBS = void 0;
 var ABIBBS = [{
   "constant": !1,
   "inputs": [{
@@ -317,31 +251,42 @@ var activeAccount = '';
 
 var initDexon = function initDexon(activeDexonRender) {
   if (window.dexon) {
-    var dexonProvider = window.dexon;
-    dexonProvider.enable();
-    dexonWeb3 = new Web3();
-    dexonWeb3.setProvider(dexonProvider);
-    dexonWeb3.eth.net.getId().then(function (networkID) {
-      if (networkID === 237) {
-        startInteractingWithWeb3(activeDexonRender);
-        console.log('DEXON Wallet connected');
-      } else alert('Wrong network');
+    dexonWeb3 = new Web3(window.dexon);
+    dexonWeb3.eth.getAccounts().then(function (accounts) {
+      if (accounts.length > 0) {
+        detectDexonNetwrok(activeDexonRender);
+      }
     });
-  } else {
-    alert('DEXON Wallet not detected. (請安裝 DEXON 瀏覽器擴充套件)');
   }
 };
 
 exports.initDexon = initDexon;
 
+var loginDexon = function loginDexon(activeDexonRender) {
+  if (window.dexon) {
+    window.dexon.enable();
+    detectDexonNetwrok(activeDexonRender);
+  } else alert('DEXON Wallet not detected. (請安裝 DEXON 瀏覽器擴充套件)');
+};
+
+exports.loginDexon = loginDexon;
+
+var detectDexonNetwrok = function detectDexonNetwrok(activeDexonRender) {
+  dexonWeb3.eth.net.getId().then(function (networkID) {
+    if (networkID === 237) {
+      startInteractingWithWeb3(activeDexonRender);
+      console.log('DEXON Wallet connected');
+    } else alert('Wrong network');
+  });
+};
+
 var startInteractingWithWeb3 = function startInteractingWithWeb3(activeDexonRender) {
   var start = function start() {
-    dexonWeb3.eth.getAccounts().then(function (_ref) {
-      var _ref2 = _slicedToArray(_ref, 1),
-          account = _ref2[0];
-
-      activeAccount = account;
-      activeDexonRender(activeAccount);
+    dexonWeb3.eth.getAccounts().then(function (accounts) {
+      if (accounts.length > 0) {
+        activeAccount = accounts[0];
+        activeDexonRender(activeAccount);
+      }
     });
   };
 
@@ -374,14 +319,14 @@ function newPost(title, content) {
   });
 }
 
-function newReply(tx, vote, content) {
+function newReply(tx, replyType, content) {
   if (dexonWeb3 === '') {
     alert('Please connect to your DEXON Wallet first.');
     return;
   }
 
-  if (![0, 1, 2].includes(vote)) {
-    alert('Wrong type of vote.');
+  if (![0, 1, 2].includes(+replyType)) {
+    alert('Wrong type of replyType.');
     return;
   }
 
@@ -392,8 +337,8 @@ function newReply(tx, vote, content) {
 
   if (tx) {
     var dexBBSExt = new dexonWeb3.eth.Contract(ABIBBSExt, BBSExtContract);
-    dexBBSExt.methods.Reply(tx, vote, content).estimateGas().then(function (gas) {
-      dexBBSExt.methods.Reply(tx, vote, content).send({
+    dexBBSExt.methods.Reply(tx, replyType, content).estimateGas().then(function (gas) {
+      dexBBSExt.methods.Reply(tx, replyType, content).send({
         from: activeAccount,
         gas: gas
       }).then(function (receipt) {
@@ -404,104 +349,4 @@ function newReply(tx, vote, content) {
     });
   }
 }
-},{}],"DCbj":[function(require,module,exports) {
-"use strict";
-
-var _utils = require("./utils.js");
-
-var _dexon = require("./dexon.js");
-
-var checkContent = function checkContent() {
-  return $("#bbs-content")[0].value.length > 0;
-};
-
-var checkTitle = function checkTitle() {
-  return $("#bbs-title")[0].value.length > 0;
-};
-
-var check = function check() {
-  return checkContent() && checkTitle();
-};
-
-var activeDexonRender = function activeDexonRender(account) {
-  $("#bbs-post")[0].disabled = !check();
-  $("#bbs-user")[0].innerHTML = (0, _utils.getUser)(account);
-};
-
-var keyboardHook = function keyboardHook() {
-  var ctrlKey = 17,
-      cmdKey = 91,
-      QKey = 81,
-      XKey = 88,
-      YKey = 89;
-  var ctrlDown = false;
-  var checkSave = false,
-      checkPost = false;
-  $(document).keydown(function (e) {
-    if (e.keyCode == ctrlKey || e.keyCode == cmdKey) ctrlDown = true;
-  }).keyup(function (e) {
-    if (e.keyCode == ctrlKey || e.keyCode == cmdKey) ctrlDown = false;
-  });
-  $(document).keydown(function (e) {
-    if (ctrlDown && e.keyCode == QKey) {
-      $("#bbs-footer")[0].style.display = 'none';
-      $("#bbs-checksave")[0].style.display = '';
-      $("#bbs-title")[0].disabled = true;
-      $("#bbs-content")[0].disabled = true;
-      checkSave = true; // window.location = 'index.html'
-    } else if (ctrlDown && e.keyCode == XKey) {
-      console.log("x");
-
-      if (check()) {
-        $("#bbs-footer")[0].style.display = 'none';
-        $("#bbs-checkpost")[0].style.display = '';
-        $("#bbs-title")[0].disabled = true;
-        $("#bbs-content")[0].disabled = true;
-        checkPost = true;
-      }
-    } else if (!ctrlDown && 48 <= e.keyCode && e.keyCode <= 222) {
-      if (checkSave) {
-        $("#bbs-footer")[0].style.display = '';
-        $("#bbs-checksave")[0].style.display = 'none';
-        $("#bbs-title")[0].disabled = false;
-        $("#bbs-content")[0].disabled = false;
-        checkSave = false;
-        if (e.keyCode == YKey) window.location = 'index.html';
-      } else if (checkPost) {
-        $("#bbs-footer")[0].style.display = '';
-        $("#bbs-checkpost")[0].style.display = 'none';
-        $("#bbs-title")[0].disabled = false;
-        $("#bbs-content")[0].disabled = false;
-        checkPost = false;
-        if (e.keyCode == YKey) if (check()) (0, _dexon.newPost)($("#bbs-title")[0].value, $("#bbs-content")[0].value);
-      }
-    }
-  });
-};
-
-function main() {
-  // String.prototype.lines = function() { return this.split(/\r*\n/); }
-  // String.prototype.lineCount = function() { return this.lines().length; }
-  keyboardHook();
-
-  $("#bbs-title")[0].onblur = function () {
-    $("#bbs-title")[0].value = (0, _utils.getParseText)($("#bbs-title")[0].value, 40);
-  };
-
-  $("#bbs-content")[0].onkeyup = function () {};
-
-  $("#bbs-content")[0].placeholder = "~\n".repeat(20);
-
-  $("#bbs-post")[0].onclick = function () {
-    if (!checkContent() && !checkTitle() || confirm('確定發文?')) (0, _dexon.newPost)($("#bbs-title")[0].value, $("#bbs-content")[0].value);
-  };
-
-  $("#bbs-cancel")[0].onclick = function () {
-    if (!checkContent() && !checkTitle() || confirm('結束但不儲存?')) window.location = 'index.html';
-  };
-
-  (0, _dexon.initDexon)(activeDexonRender);
-}
-
-$(main());
-},{"./utils.js":"FO+Z","./dexon.js":"UN6U"}]},{},["DCbj"], null)
+},{}]},{},["UN6U"], null)
