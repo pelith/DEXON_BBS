@@ -416,7 +416,7 @@ var checkContent = function checkContent() {
 };
 
 var checkTitle = function checkTitle() {
-  return $("#bbs-title")[0].value > 0;
+  return $("#bbs-title")[0].value.length > 0;
 };
 
 var check = function check() {
@@ -450,6 +450,8 @@ var keyboardHook = function keyboardHook() {
       $("#bbs-content")[0].disabled = true;
       checkSave = true; // window.location = 'index.html'
     } else if (ctrlDown && e.keyCode == XKey) {
+      console.log("x");
+
       if (check()) {
         $("#bbs-footer")[0].style.display = 'none';
         $("#bbs-checkpost")[0].style.display = '';
@@ -457,7 +459,7 @@ var keyboardHook = function keyboardHook() {
         $("#bbs-content")[0].disabled = true;
         checkPost = true;
       }
-    } else if (48 <= e.keyCode && e.keyCode <= 222) {
+    } else if (!ctrlDown && 48 <= e.keyCode && e.keyCode <= 222) {
       if (checkSave) {
         $("#bbs-footer")[0].style.display = '';
         $("#bbs-checksave")[0].style.display = 'none';
@@ -499,7 +501,6 @@ function main() {
   };
 
   (0, _dexon.initDexon)(activeDexonRender);
-  ' ◆ 結束但不儲存 [y/N]?                                        ';
 }
 
 $(main());
