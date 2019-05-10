@@ -1,12 +1,67 @@
 import {htmlEntities, getUrlParameter, getTitle, getUser} from './utils.js'
 import {ABIBBS, ABIBBSExt, BBSContract, BBSExtContract, web3js, initDexon, loginDexon, newReply} from './dexon.js'
 
+let checkReplyBtn = false
+
+const activeDexonRender = (account) => {
+  $("#bbs-login")[0].style.display='none'
+  $("#bbs-register")[0].style.display='none'
+  $("#bbs-user")[0].style.display=''
+  $("#bbs-user")[0].innerHTML = getUser(account)
+  $("#bbs-reply-user")[0].innerHTML=getUser(account)
+  if (!checkReplyBtn) $("#bbs-reply-btn")[0].style.display = ''
+}
+
 function main() {
   initDexon(activeDexonRender)
 
-  $('#bbs-reply-btn').click(() => {
+  $('#bbs-login').click(() => {
+    loginDexon(activeDexonRender)
+  })
+
+  const showReplyTypeBtn = () => {
+    $('#bbs-reply-btn')[0].style.display='none'
+    $('#bbs-reply-type-text')[0].style.display=''
+    $('#bbs-reply-type0')[0].style.display=''
+    $('#bbs-reply-type1')[0].style.display=''
+    $('#bbs-reply-type2')[0].style.display=''
+    checkReplyBtn = true
+  }
+
+  const hideReplyTypeBtn = () => {
+    $('#bbs-reply-type-text')[0].style.display='none'
+    $('#bbs-reply-type0')[0].style.display='none'
+    $('#bbs-reply-type1')[0].style.display='none'
+    $('#bbs-reply-type2')[0].style.display='none'
+    $('#bbs-reply-btn-cancel')[0].style.display='none'
+  }
+
+  const showReply = (type) => {
+    hideReplyTypeBtn()
+    $('#bbs-reply-btn-cancel')[0].style.display=''
+    $("#bbs-reply-type")[0].value = type
     $("#bbs-reply")[0].style.display=''
+    $("html").stop().animate({scrollTop:$('#bbs-reply').position().top}, 500, 'swing');
     $("#bbs-reply-content")[0].focus()
+  }
+
+  $('#bbs-reply-btn').click(() => { showReplyTypeBtn() })
+  $('#bbs-reply-type0').click(() => { showReply(0) })
+  $('#bbs-reply-type1').click(() => { showReply(1) })
+  $('#bbs-reply-type2').click(() => { showReply(2) })
+
+  $('#bbs-reply-btn-cancel').click(() => {
+    hideReplyTypeBtn()
+    $("#bbs-reply")[0].style.display='none'
+    $('#bbs-reply-btn-cancel')[0].style.display='none'
+    $('#bbs-reply-btn')[0].style.display=''
+    checkReplyBtn = false
+  })
+
+  $('#bbs-newReply').click(() => {
+    const replyType = $("#bbs-reply-type")[0].value
+    const content = $("#bbs-reply-content")[0].value
+    newReply(getUrlParameter('tx').substr(0,66), replyType, content)
   })
 
   const tx = getUrlParameter('tx')
@@ -61,25 +116,6 @@ function displayReply(vote, content, txHash, blockNumber) {
   })
 }
 
-const activeDexonRender = (account) => {
-  $("#bbs-login")[0].style.display='none'
-  $("#bbs-register")[0].style.display='none'
-  $("#bbs-user")[0].style.display=''
-  $("#bbs-user")[0].innerHTML = getUser(account)
-  $("#bbs-reply-user")[0].innerHTML=getUser(account)
-  $("#bbs-reply-btn")[0].style.display=''
-  
-}
-
-$('#bbs-login').click(() => {
-  loginDexon(activeDexonRender)
-})
-
 $(main)
 
-$('#bbs-newReply').click(() => {
-  const replyType = $("#bbs-reply-type")[0].value
-  const content = $("#bbs-reply-content")[0].value
-  newReply(getUrlParameter('tx').substr(0,66), replyType, content)
-})
 
