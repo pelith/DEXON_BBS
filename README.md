@@ -1,6 +1,6 @@
 # DEXON BBS
 
-[![CircleCI](https://circleci.com/gh/artistic709/DEXON_BBS/tree/master.svg?style=svg)](https://circleci.com/gh/artistic709/DEXON_BBS/tree/master)
+[![CircleCI](https://circleci.com/gh/pelith/DEXON_BBS.svg?style=svg)](https://circleci.com/gh/pelith/DEXON_BBS)
 
 ## Install and develop
 
