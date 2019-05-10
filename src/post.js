@@ -8,7 +8,10 @@ const checkTitle = () => { return $("#bbs-title")[0].value.length > 0 }
 const check = () => { return (checkContent() && checkTitle())}
 
 const activeDexonRender = (account) => {
-  $("#bbs-post")[0].disabled = !check()
+  $(".bbs-post")[0].disabled = !check()
+  // Handle mobile version
+  if ($(".bbs-post")[1] !== undefined)
+    $(".bbs-post")[1].disabled = !check()
   $("#bbs-user")[0].innerHTML = getUser(account)
 }
 
@@ -58,7 +61,7 @@ const keyboardHook = () => {
         if (e.keyCode == YKey)
           if (check()) newPost($("#bbs-title")[0].value, $("#bbs-content")[0].value)
       }
-    }    
+    }
   })
 }
 
@@ -68,16 +71,29 @@ function main(){
   keyboardHook()
 
   $("#bbs-title")[0].onblur = () => { $("#bbs-title")[0].value = getParseText($("#bbs-title")[0].value, 40) }
-  $("#bbs-content")[0].onkeyup = () => { }
-  $("#bbs-content")[0].placeholder="~\n".repeat(20)
-  $("#bbs-post")[0].onclick = () => { 
-    if ((!checkContent() && !checkTitle()) || confirm('確定發文?')) 
+  $("#bbs-content")[0].onkeyup = () => {}
+
+  if ($(window).width() > 992) {
+    $("#bbs-content")[0].placeholder="~\r\n".repeat(20)
+  } else {
+    // mobile
+    $("#bbs-content")[0].placeholder = "請輸入您欲發布的內容";
+  }
+
+  let postFunc = () => {
+    if ((!checkContent() && !checkTitle()) || confirm('確定發文?'))
       newPost($("#bbs-title")[0].value, $("#bbs-content")[0].value)
   }
-  $("#bbs-cancel")[0].onclick = () => { 
-    if ((!checkContent() && !checkTitle()) || confirm('結束但不儲存?')) 
+  $(".bbs-post")[0].onclick = postFunc // 電腦版
+  $(".bbs-post")[1].onclick = postFunc // 手機版
+
+  let cancelFunc = () => {
+    console.log('.bbs-cancel clicked');
+    if ((!checkContent() && !checkTitle()) || confirm('結束但不儲存?'))
       window.location = 'index.html'
   }
+  $(".bbs-cancel")[0].onclick = cancelFunc // 電腦版
+  $(".bbs-cancel")[1].onclick = cancelFunc // 手機版
   initDexon(activeDexonRender)
 }
 
