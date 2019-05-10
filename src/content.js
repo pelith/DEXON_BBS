@@ -1,7 +1,14 @@
 import {htmlEntities, getUrlParameter, getTitle, getUser} from './utils.js'
-import {ABIBBS, ABIBBSExt, BBSContract, BBSExtContract, web3js, initDexon, newReply} from './dexon.js'
+import {ABIBBS, ABIBBSExt, BBSContract, BBSExtContract, web3js, initDexon, loginDexon, newReply} from './dexon.js'
 
 function main() {
+  initDexon(activeDexonRender)
+
+  $('#bbs-reply-btn').click(() => {
+    $("#bbs-reply")[0].style.display=''
+    $("#bbs-reply-content")[0].focus()
+  })
+
   const tx = getUrlParameter('tx')
   if (tx){
     web3js.eth.getTransaction(tx).then(transaction => {
@@ -42,7 +49,6 @@ function displayReply(vote, content, txHash, blockNumber) {
   const elem = $('<div class="push"></div>')
 
   web3js.eth.getTransaction(txHash).then(transaction => {
-    console.log(transaction.from)
     $(elem).find('.push-userid').text(getUser(transaction.from))
   })
 
@@ -60,22 +66,20 @@ const activeDexonRender = (account) => {
   $("#bbs-register")[0].style.display='none'
   $("#bbs-user")[0].style.display=''
   $("#bbs-user")[0].innerHTML = getUser(account)
-  $("#bbs-reply")[0].style.display=''
   $("#bbs-reply-user")[0].innerHTML=getUser(account)
+  $("#bbs-reply-btn")[0].style.display=''
+  
 }
 
 $('#bbs-login').click(() => {
-  initDexon(activeDexonRender)
+  loginDexon(activeDexonRender)
 })
 
 $(main)
 
-
-$("#reply-area").attr('rel', 'gallery').fancybox()
-
-$('#submit-reply').click(() => {
-  const vote = $("input[name='vote']:checked").val() * 1
-  const content = $("#reply-content").val()
-  newReply(getUrlParameter('tx').substr(0,66), vote, content)
+$('#bbs-newReply').click(() => {
+  const replyType = $("#bbs-reply-type")[0].value
+  const content = $("#bbs-reply-content")[0].value
+  newReply(getUrlParameter('tx').substr(0,66), replyType, content)
 })
 
