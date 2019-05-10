@@ -10,30 +10,42 @@ let activeAccount = ''
 
 const initDexon = (activeDexonRender) => {
   if (window.dexon) {
-    const dexonProvider = window.dexon
-    dexonProvider.enable()
-    dexonWeb3 = new Web3()
-    dexonWeb3.setProvider(dexonProvider)
-
-    dexonWeb3.eth.net.getId().then(networkID => {
-      if (networkID === 237) {
-        startInteractingWithWeb3(activeDexonRender)
-        console.log('DEXON Wallet connected')
+    dexonWeb3 = new Web3(window.dexon)
+    dexonWeb3.eth.getAccounts().then((accounts) => {
+      if (accounts.length>0){
+        detectDexonNetwrok(activeDexonRender)
       }
-      else
-        alert('Wrong network')
     })
   }
-  else {
-    alert('DEXON Wallet not detected. (請安裝 DEXON 瀏覽器擴充套件)')
+}
+
+const loginDexon = (activeDexonRender) => {
+  if (window.dexon) {
+    window.dexon.enable()
+    detectDexonNetwrok(activeDexonRender)
   }
+  else 
+    alert('DEXON Wallet not detected. (請安裝 DEXON 瀏覽器擴充套件)')
+}
+
+const detectDexonNetwrok = (activeDexonRender) => {
+  dexonWeb3.eth.net.getId().then(networkID => {
+    if (networkID === 237) {
+      startInteractingWithWeb3(activeDexonRender)
+      console.log('DEXON Wallet connected')
+    }
+    else
+      alert('Wrong network')
+  })
 }
 
 const startInteractingWithWeb3 = (activeDexonRender) => {
   const start = () => {
-    dexonWeb3.eth.getAccounts().then(([account]) => {
-      activeAccount = account
-      activeDexonRender(activeAccount)
+    dexonWeb3.eth.getAccounts().then((accounts)=>{
+      if (accounts.length>0){
+        activeAccount = accounts[0]
+        activeDexonRender(activeAccount)  
+      }
     })
   }
   start()
@@ -64,14 +76,14 @@ function newPost(title, content) {
   })
 }
 
-function newReply(tx, vote, content) {
+function newReply(tx, replyType, content) {
   if (dexonWeb3 === ''){
     alert('Please connect to your DEXON Wallet first.')
     return
   }
 
-  if (![0, 1, 2].includes(vote)){
-    alert('Wrong type of vote.')
+  if (![0, 1, 2].includes(+replyType)){
+    alert('Wrong type of replyType.')
     return
   }
 
@@ -82,8 +94,8 @@ function newReply(tx, vote, content) {
 
   if (tx) {
     const dexBBSExt = new dexonWeb3.eth.Contract(ABIBBSExt, BBSExtContract)
-    dexBBSExt.methods.Reply(tx, vote, content).estimateGas().then(gas => {
-      dexBBSExt.methods.Reply(tx, vote, content).send({ from: activeAccount, gas: gas })
+    dexBBSExt.methods.Reply(tx, replyType, content).estimateGas().then(gas => {
+      dexBBSExt.methods.Reply(tx, replyType, content).send({ from: activeAccount, gas: gas })
       .then(receipt => {
         window.location.reload()
       })
@@ -94,4 +106,4 @@ function newReply(tx, vote, content) {
   }
 }
 
-export {ABIBBS, ABIBBSExt, BBSContract, BBSExtContract, web3js, initDexon, newPost, newReply}
+export {ABIBBS, ABIBBSExt, BBSContract, BBSExtContract, web3js, initDexon, loginDexon, newPost, newReply}

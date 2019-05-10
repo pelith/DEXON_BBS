@@ -28,13 +28,19 @@
             -webkit-appearance: none;
             -webkit-border-radius: 0px;
         }
+        button {
+          height: 26px; 
+          border:0 none; 
+          padding: 0px;
+          font-size: 24px;
+        }
         input {
             background-color: silver;
             height: 26px; 
             border:0 none; 
             padding: 0px;
             font-size: 24px; 
-            width: 672px;
+            width: 60vw;
             vertical-align: middle;
         }
         input:focus { 
@@ -55,18 +61,6 @@
         <a id="bbs-user" class="right small" href="#" style="display: none">User</a>
         <a id="bbs-login" class="right small" href="#">登入</a>
         <a id="bbs-register" class="right small" href="register.html">註冊</a>
-        <a id="reply-area" class="right small" href="#inline">回覆</a>
-        <div class="btn-group btn-group-dir">
-          <div id="inline" style="display:none;">
-            <div>
-              <input type="radio" name="vote" value="1">推
-              <input type="radio" name="vote" value="2">噓
-              <input type="radio" name="vote" value="0">→
-              <textarea id="reply-content" style="width: 100%; height: 60px;"></textarea>
-              <button id="submit-reply" class="btn" style="width: 100%">送出回覆</button>
-            </div>
-          </div>
-        </div>
       </div>
     </div>
 
@@ -74,6 +68,11 @@
       <div id="navigation" class="bbs-content">
         <a class="board" href="index.html">返回看板</a>
         <div class="bar"></div>
+        <a id="bbs-reply-btn" class="board" href="#" style="display: none;">推文(X%)</a>
+        <span>您覺得這篇文章 </span>
+        <a id="bbs-reply-btn" class="board" href="#" style="">1.值得推薦</a>
+        <a id="bbs-reply-btn" class="board" href="#" style="">2.給它噓聲</a>
+        <a id="bbs-reply-btn" class="board" href="#" style="">3.只加→註解</a>
       </div>
     </div>
 
@@ -84,11 +83,11 @@
 --
 <span class="f2">※ 發信站: DEXON BBS(dett.cc), 來自: <span id="main-content-from">DEXON</span></span>
 <span class="f2">※ 文章網址: <a id="main-content-href" href="#" target="_blank" rel="nofollow"></a></span>
-<div id="bbs-reply" style="display: none"><select name="relpyType">
-  <option value="1">→</option>
-　<option value="2">推</option>
-　<option value="3">噓</option>
-</select> <span id="bbs-reply-user" class="f3 hl push-userid"></span><span class="f3 push-content">: </span><input class="main-content-content" id="bbs-title" type="text" maxlength="40" value=""></div></div>
+<!-- <div id="bbs-reply" style="display: none"><select name="relpyType"> --><div id="bbs-reply" style=""><select id="bbs-reply-type">
+  <option value="0">→</option>
+　<option value="1">推</option>
+　<option value="2">噓</option>
+</select> <span id="bbs-reply-user" class="f3 hl push-userid"></span><span class="f3 push-content">: </span><input class="main-content-content" id="bbs-reply-content" type="text" maxlength="40" value=""><button id="bbs-newReply" class="push-ipdatetime">送出回應</span></div></div>
     </div>
 
     <script language="javascript" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>

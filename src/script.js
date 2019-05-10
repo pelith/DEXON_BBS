@@ -1,9 +1,13 @@
-import {ABIBBS, ABIBBSExt, BBSContract, BBSExtContract, web3js, initDexon} from './dexon.js'
+// import 'babel-polyfill'
+
+import {ABIBBS, ABIBBSExt, BBSContract, BBSExtContract, web3js, initDexon, loginDexon} from './dexon.js'
 import {htmlEntities, getTitle} from './utils.js'
 
 const banList = ["0xdc0db75c79308f396ed6389537d4ddd2a36c920bb2958ed7f70949b1f9d3375d"]
 
 function main() {
+  initDexon(activeDexonRender)
+
   const BBS = new web3js.eth.Contract(ABIBBS, BBSContract)
   const BBSExt = new web3js.eth.Contract(ABIBBSExt, BBSExtContract)
 
@@ -72,7 +76,7 @@ const activeDexonRender = (account) => {
 }
 
 $('#bbs-login').click(() => {
-  initDexon(activeDexonRender)
+  loginDexon(activeDexonRender)
 })
 
 $(main)
