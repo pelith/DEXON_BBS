@@ -424,64 +424,66 @@ var activeDexonRender = function activeDexonRender(account) {
   if (!checkReplyBtn) $("#bbs-reply-btn")[0].style.display = '';
 };
 
+var showReplyTypeBtn = function showReplyTypeBtn() {
+  $('#bbs-reply-btn')[0].style.display = 'none';
+  $('#bbs-reply-type0')[0].style.display = '';
+  $('#bbs-reply-type1')[0].style.display = '';
+  $('#bbs-reply-type2')[0].style.display = '';
+  checkReplyBtn = true;
+};
+
+var hideReplyTypeBtn = function hideReplyTypeBtn() {
+  $('#bbs-reply-type0')[0].style.display = 'none';
+  $('#bbs-reply-type1')[0].style.display = 'none';
+  $('#bbs-reply-type2')[0].style.display = 'none';
+  $('#bbs-reply-btn-cancel')[0].style.display = 'none';
+};
+
+var showReply = function showReply(type) {
+  hideReplyTypeBtn();
+  $('#bbs-reply-btn-cancel')[0].style.display = '';
+  $("#bbs-reply-type")[0].value = type;
+  $("#bbs-reply")[0].style.display = '';
+  $("html").stop().animate({
+    scrollTop: $('#bbs-reply').position().top
+  }, 500, 'swing');
+  $("#bbs-reply-content")[0].focus();
+};
+
+var hideReply = function hideReply() {
+  hideReplyTypeBtn();
+  $("#bbs-reply")[0].style.display = 'none';
+  $('#bbs-reply-btn-cancel')[0].style.display = 'none';
+  $('#bbs-reply-btn')[0].style.display = '';
+  $("#bbs-reply-content")[0].value = '';
+  checkReplyBtn = false;
+};
+
 function main() {
   (0, _dexon.initDexon)(activeDexonRender);
   $('#bbs-login').click(function () {
     (0, _dexon.loginDexon)(activeDexonRender);
   });
-
-  var showReplyTypeBtn = function showReplyTypeBtn() {
-    $('#bbs-reply-btn')[0].style.display = 'none';
-    $('#bbs-reply-type-text')[0].style.display = '';
-    $('#bbs-reply-type0')[0].style.display = '';
-    $('#bbs-reply-type1')[0].style.display = '';
-    $('#bbs-reply-type2')[0].style.display = '';
-    checkReplyBtn = true;
-  };
-
-  var hideReplyTypeBtn = function hideReplyTypeBtn() {
-    $('#bbs-reply-type-text')[0].style.display = 'none';
-    $('#bbs-reply-type0')[0].style.display = 'none';
-    $('#bbs-reply-type1')[0].style.display = 'none';
-    $('#bbs-reply-type2')[0].style.display = 'none';
-    $('#bbs-reply-btn-cancel')[0].style.display = 'none';
-  };
-
-  var showReply = function showReply(type) {
-    hideReplyTypeBtn();
-    $('#bbs-reply-btn-cancel')[0].style.display = '';
-    $("#bbs-reply-type")[0].value = type;
-    $("#bbs-reply")[0].style.display = '';
-    $("html").stop().animate({
-      scrollTop: $('#bbs-reply').position().top
-    }, 500, 'swing');
-    $("#bbs-reply-content")[0].focus();
-  };
-
   $('#bbs-reply-btn').click(function () {
     showReplyTypeBtn();
   });
   $('#bbs-reply-type0').click(function () {
-    showReply(0);
+    $("#bbs-reply-type")[0].style.color = 'white', showReply(0);
   });
   $('#bbs-reply-type1').click(function () {
-    showReply(1);
+    $("#bbs-reply-type")[0].style.color = '#ff6', showReply(1);
   });
   $('#bbs-reply-type2').click(function () {
-    showReply(2);
+    $("#bbs-reply-type")[0].style.color = '#f66', showReply(2);
   });
   $('#bbs-reply-btn-cancel').click(function () {
-    hideReplyTypeBtn();
-    $("#bbs-reply")[0].style.display = 'none';
-    $('#bbs-reply-btn-cancel')[0].style.display = 'none';
-    $('#bbs-reply-btn')[0].style.display = '';
-    checkReplyBtn = false;
+    hideReply();
   });
   $('#bbs-newReply').click(function () {
     var replyType = $("#bbs-reply-type")[0].value;
-    var content = $("#bbs-reply-content")[0].value;
-    (0, _dexon.newReply)((0, _utils.getUrlParameter)('tx').substr(0, 66), replyType, content);
+    var content = (0, _dexon.newReply)((0, _utils.getUrlParameter)('tx').substr(0, 66), $("#bbs-reply-type")[0].value, $("#bbs-reply-content")[0].value);
   });
+  keyboardHook();
   var tx = (0, _utils.getUrlParameter)('tx');
 
   if (tx) {
@@ -515,6 +517,35 @@ function main() {
     });
   });
 }
+
+var keyboardHook = function keyboardHook() {
+  var XKey = 88;
+  var checkType = false,
+      checkReply = false;
+  $(document).keyup(function (e) {
+    console.log(e.keyCode);
+
+    if (!checkType && !checkReply && e.keyCode == XKey) {
+      showReplyTypeBtn();
+      checkType = true;
+    } else if (!checkReply && checkType && 49 <= e.keyCode && e.keyCode <= 51) {
+      if (e.keyCode == 49) $("#bbs-reply-type")[0].style.color = 'white', showReply(0);
+      if (e.keyCode == 50) $("#bbs-reply-type")[0].style.color = '#ff6', showReply(1);
+      if (e.keyCode == 51) $("#bbs-reply-type")[0].style.color = '#f66', showReply(2);
+      checkType = false;
+      checkReply = true;
+    } else if (checkReply && !checkType && 13 == e.keyCode) {
+      if ($("#bbs-reply-content")[0].value.length > 0) {
+        var replyType = $("#bbs-reply-type")[0].value;
+        var content = $("#bbs-reply-content")[0].value;
+        (0, _dexon.newReply)((0, _utils.getUrlParameter)('tx').substr(0, 66), replyType, content);
+      } else {
+        hideReply();
+        checkReply = false;
+      }
+    }
+  });
+};
 
 function displayReply(vote, content, txHash, blockNumber) {
   content = (0, _utils.htmlEntities)(content);

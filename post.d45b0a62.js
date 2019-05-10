@@ -452,10 +452,8 @@ var keyboardHook = function keyboardHook() {
       $("#bbs-checksave")[0].style.display = '';
       $("#bbs-title")[0].disabled = true;
       $("#bbs-content")[0].disabled = true;
-      checkSave = true; // window.location = 'index.html'
+      checkSave = true;
     } else if (ctrlDown && e.keyCode == XKey) {
-      console.log("x");
-
       if (check()) {
         $("#bbs-footer")[0].style.display = 'none';
         $("#bbs-checkpost")[0].style.display = '';
