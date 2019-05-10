@@ -1,11 +1,11 @@
 import {getParseText, getUser} from './utils.js'
 import {initDexon, newPost} from './dexon.js'
 
-const checkContent = () => { return $("#bbs-content")[0].value.length>0 }
+const checkContent = () => { return $("#bbs-content")[0].value.length > 0 }
 
-const checkTitle = () => { return $("#bbs-title")[0].value >0 }
+const checkTitle = () => { return $("#bbs-title")[0].value.length > 0 }
 
-const check = () => { return checkContent() && checkTitle()}
+const check = () => { return (checkContent() && checkTitle())}
 
 const activeDexonRender = (account) => {
   $("#bbs-post")[0].disabled = !check()
@@ -30,6 +30,7 @@ const keyboardHook = () => {
       // window.location = 'index.html'
     }
     else if (ctrlDown && e.keyCode == XKey) {
+      console.log("x")
       if (check()) {
         $("#bbs-footer")[0].style.display = 'none'
         $("#bbs-checkpost")[0].style.display = ''
@@ -38,7 +39,7 @@ const keyboardHook = () => {
         checkPost = true
       }
     }
-    else if (48 <= e.keyCode && e.keyCode <= 222) {
+    else if (!ctrlDown && 48 <= e.keyCode && e.keyCode <= 222) {
       if ( checkSave ) {
         $("#bbs-footer")[0].style.display = ''
         $("#bbs-checksave")[0].style.display = 'none'
@@ -80,7 +81,6 @@ function main(){
       window.location = 'index.html'
   }
   initDexon(activeDexonRender)
-  ' ◆ 結束但不儲存 [y/N]?                                        '
 }
 
 
