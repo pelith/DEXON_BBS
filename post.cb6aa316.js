@@ -426,7 +426,9 @@ var check = function check() {
 };
 
 var activeDexonRender = function activeDexonRender(account) {
-  $("#bbs-post")[0].disabled = !check();
+  $(".bbs-post")[0].disabled = !check(); // Handle mobile version
+
+  if ($(".bbs-post")[1] !== undefined) $(".bbs-post")[1].disabled = !check();
   $("#bbs-user")[0].innerHTML = (0, _utils.getUser)(account);
 };
 
@@ -492,15 +494,29 @@ function main() {
 
   $("#bbs-content")[0].onkeyup = function () {};
 
-  $("#bbs-content")[0].placeholder = "~\n".repeat(20);
+  if ($(window).width() > 992) {
+    $("#bbs-content")[0].placeholder = "~\r\n".repeat(20);
+  } else {
+    // mobile
+    $("#bbs-content")[0].placeholder = "請輸入您欲發布的內容";
+  }
 
-  $("#bbs-post")[0].onclick = function () {
+  var postFunc = function postFunc() {
     if (!checkContent() && !checkTitle() || confirm('確定發文?')) (0, _dexon.newPost)($("#bbs-title")[0].value, $("#bbs-content")[0].value);
   };
 
-  $("#bbs-cancel")[0].onclick = function () {
+  $(".bbs-post")[0].onclick = postFunc; // 電腦版
+
+  $(".bbs-post")[1].onclick = postFunc; // 手機版
+
+  var cancelFunc = function cancelFunc() {
+    console.log('.bbs-cancel clicked');
     if (!checkContent() && !checkTitle() || confirm('結束但不儲存?')) window.location = 'index.html';
   };
+
+  $(".bbs-cancel")[0].onclick = cancelFunc; // 電腦版
+
+  $(".bbs-cancel")[1].onclick = cancelFunc; // 手機版
 
   (0, _dexon.initDexon)(activeDexonRender);
 }
