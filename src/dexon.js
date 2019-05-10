@@ -53,12 +53,14 @@ function newPost(title, content) {
 
   const post = '[' + title + ']' + content
   const dexBBSExt = new dexonWeb3.eth.Contract(ABIBBSExt, BBSExtContract)
-  dexBBSExt.methods.Post(post).send({ from: activeAccount })
-  .then(receipt => {
-    window.location = 'index.html'
-  })
-  .catch(err => {
-    alert(err)
+  dexBBSExt.methods.Post(post).estimateGas().then(gas => {
+    dexBBSExt.methods.Post(post).send({ from: activeAccount, gas: gas })
+    .then(receipt => {
+      window.location = 'index.html'
+    })
+    .catch(err => {
+      alert(err)
+    })
   })
 }
 
@@ -80,12 +82,14 @@ function newReply(tx, vote, content) {
 
   if (tx) {
     const dexBBSExt = new dexonWeb3.eth.Contract(ABIBBSExt, BBSExtContract)
-    dexBBSExt.methods.Reply(tx, vote, content).send({ from: activeAccount })
-    .then(receipt => {
-      window.location.reload()
-    })
-    .catch(err => {
-      alert(err)
+    dexBBSExt.methods.Reply(tx, vote, content).estimateGas().then(gas => {
+      dexBBSExt.methods.Reply(tx, vote, content).send({ from: activeAccount, gas: gas })
+      .then(receipt => {
+        window.location.reload()
+      })
+      .catch(err => {
+        alert(err)
+      })
     })
   }
 }
