@@ -12,6 +12,39 @@ const activeDexonRender = (account) => {
   if (!checkReplyBtn) $("#bbs-reply-btn")[0].style.display = ''
 }
 
+const showReplyTypeBtn = () => {
+  $('#bbs-reply-btn')[0].style.display='none'
+  $('#bbs-reply-type0')[0].style.display=''
+  $('#bbs-reply-type1')[0].style.display=''
+  $('#bbs-reply-type2')[0].style.display=''
+  checkReplyBtn = true
+}
+
+const hideReplyTypeBtn = () => {
+  $('#bbs-reply-type0')[0].style.display='none'
+  $('#bbs-reply-type1')[0].style.display='none'
+  $('#bbs-reply-type2')[0].style.display='none'
+  $('#bbs-reply-btn-cancel')[0].style.display='none'
+}
+
+const showReply = (type) => {
+  hideReplyTypeBtn()
+  $('#bbs-reply-btn-cancel')[0].style.display=''
+  $("#bbs-reply-type")[0].value = type
+  $("#bbs-reply")[0].style.display=''
+  $("html").stop().animate({scrollTop:$('#bbs-reply').position().top}, 500, 'swing');
+  $("#bbs-reply-content")[0].focus()
+}
+
+const hideReply = () => {
+  hideReplyTypeBtn()
+  $("#bbs-reply")[0].style.display='none'
+  $('#bbs-reply-btn-cancel')[0].style.display='none'
+  $('#bbs-reply-btn')[0].style.display=''
+  $("#bbs-reply-content")[0].value = ''
+  checkReplyBtn = false
+}
+
 function main() {
   initDexon(activeDexonRender)
 
@@ -19,50 +52,19 @@ function main() {
     loginDexon(activeDexonRender)
   })
 
-  const showReplyTypeBtn = () => {
-    $('#bbs-reply-btn')[0].style.display='none'
-    $('#bbs-reply-type-text')[0].style.display=''
-    $('#bbs-reply-type0')[0].style.display=''
-    $('#bbs-reply-type1')[0].style.display=''
-    $('#bbs-reply-type2')[0].style.display=''
-    checkReplyBtn = true
-  }
-
-  const hideReplyTypeBtn = () => {
-    $('#bbs-reply-type-text')[0].style.display='none'
-    $('#bbs-reply-type0')[0].style.display='none'
-    $('#bbs-reply-type1')[0].style.display='none'
-    $('#bbs-reply-type2')[0].style.display='none'
-    $('#bbs-reply-btn-cancel')[0].style.display='none'
-  }
-
-  const showReply = (type) => {
-    hideReplyTypeBtn()
-    $('#bbs-reply-btn-cancel')[0].style.display=''
-    $("#bbs-reply-type")[0].value = type
-    $("#bbs-reply")[0].style.display=''
-    $("html").stop().animate({scrollTop:$('#bbs-reply').position().top}, 500, 'swing');
-    $("#bbs-reply-content")[0].focus()
-  }
-
   $('#bbs-reply-btn').click(() => { showReplyTypeBtn() })
-  $('#bbs-reply-type0').click(() => { showReply(0) })
-  $('#bbs-reply-type1').click(() => { showReply(1) })
-  $('#bbs-reply-type2').click(() => { showReply(2) })
-
-  $('#bbs-reply-btn-cancel').click(() => {
-    hideReplyTypeBtn()
-    $("#bbs-reply")[0].style.display='none'
-    $('#bbs-reply-btn-cancel')[0].style.display='none'
-    $('#bbs-reply-btn')[0].style.display=''
-    checkReplyBtn = false
-  })
+  $('#bbs-reply-type0').click(() => { $("#bbs-reply-type")[0].style.color='white',showReply(0) })
+  $('#bbs-reply-type1').click(() => { $("#bbs-reply-type")[0].style.color='#ff6',showReply(1) })
+  $('#bbs-reply-type2').click(() => { $("#bbs-reply-type")[0].style.color='#f66',showReply(2) })
+  $('#bbs-reply-btn-cancel').click(() => { hideReply() })
 
   $('#bbs-newReply').click(() => {
     const replyType = $("#bbs-reply-type")[0].value
-    const content = $("#bbs-reply-content")[0].value
-    newReply(getUrlParameter('tx').substr(0,66), replyType, content)
+    const content = 
+    newReply(getUrlParameter('tx').substr(0,66), $("#bbs-reply-type")[0].value, $("#bbs-reply-content")[0].value)
   })
+
+  keyboardHook()
 
   const tx = getUrlParameter('tx')
   if (tx){
@@ -95,6 +97,37 @@ function main() {
         displayReply(event.returnValues.vote, event.returnValues.content, event.transactionHash, event.blockNumber)
     })
   });
+}
+
+const keyboardHook = () => {
+  const XKey = 88
+  let checkType = false, checkReply = false
+
+  $(document).keyup((e) => {
+    console.log(e.keyCode)
+    if (!checkType && !checkReply && e.keyCode == XKey) {
+      showReplyTypeBtn()
+      checkType = true
+    }
+    else if ( !checkReply && checkType && 49 <= e.keyCode && e.keyCode <= 51) {
+      if ( e.keyCode == 49 ) $("#bbs-reply-type")[0].style.color='white',showReply(0)
+      if ( e.keyCode == 50 ) $("#bbs-reply-type")[0].style.color='#ff6',showReply(1)
+      if ( e.keyCode == 51 ) $("#bbs-reply-type")[0].style.color='#f66',showReply(2)
+      checkType = false
+      checkReply = true
+    }    
+    else if ( checkReply && !checkType && 13 == e.keyCode) {
+      if ($("#bbs-reply-content")[0].value.length>0) {
+        const replyType = $("#bbs-reply-type")[0].value
+        const content = $("#bbs-reply-content")[0].value
+        newReply(getUrlParameter('tx').substr(0,66), replyType, content)
+      }
+      else {
+        hideReply()
+        checkReply = false
+      }      
+    }
+  })
 }
 
 function displayReply(vote, content, txHash, blockNumber) {
