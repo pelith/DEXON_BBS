@@ -26,8 +26,7 @@ jobs:
             git config --global user.email $GH_EMAIL
             git config --global user.name $GH_NAME
             npm run build
-            echo -n "dett.cc" > build/CNAME
-            npm run deploy-ghpages
+            npm run deploy-ci
 workflows:
   version: 2
   workflow:
