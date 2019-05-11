@@ -9,7 +9,7 @@ const getUrlParameter = (sParam) => {
 
   for (let i = 0; i < sURLVariables.length; i++) {
     sParameterName = sURLVariables[i].split('=');
-    if (sParameterName[0] === sParam) 
+    if (sParameterName[0] === sParam)
       return sParameterName[1] === undefined ? true : decodeURIComponent(sParameterName[1]);
   }
 }
@@ -37,7 +37,7 @@ const getTitle = (content) => {
 }
 
 const getUser = (address) => {
-  return address.replace(/^(0x.{3}).+(.{3})$/, '$1...$2')
+  return address.replace(/^(0x.{4}).+(.{4})$/, '$1…$2')
 }
 
 export {htmlEntities, getUrlParameter, getParseText, getTitle, getUser}
