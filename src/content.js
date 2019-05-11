@@ -2,6 +2,7 @@ import {htmlEntities, getUrlParameter, getTitle, getUser} from './utils.js'
 import {ABIBBS, ABIBBSExt, BBSContract, BBSExtContract, web3js, initDexon, loginDexon, newReply} from './dexon.js'
 
 let checkReplyBtn = false
+let checkType = false, checkReply = false
 
 const activeDexonRender = (account) => {
   $("#bbs-login")[0].style.display='none'
@@ -56,7 +57,7 @@ function main() {
   $('#bbs-reply-type0').click(() => { $("#bbs-reply-type")[0].style.color='white',showReply(0) })
   $('#bbs-reply-type1').click(() => { $("#bbs-reply-type")[0].style.color='#ff6',showReply(1) })
   $('#bbs-reply-type2').click(() => { $("#bbs-reply-type")[0].style.color='#f66',showReply(2) })
-  $('#bbs-reply-btn-cancel').click(() => { hideReply() })
+  $('#bbs-reply-btn-cancel').click(() => { hideReply(),checkReply = false })
 
   $('#bbs-newReply').click(() => {
     const replyType = $("#bbs-reply-type")[0].value
@@ -101,7 +102,6 @@ function main() {
 
 const keyboardHook = () => {
   const XKey = 88
-  let checkType = false, checkReply = false
 
   $(document).keyup((e) => {
     console.log(e.keyCode)
@@ -110,9 +110,9 @@ const keyboardHook = () => {
       checkType = true
     }
     else if ( !checkReply && checkType && 49 <= e.keyCode && e.keyCode <= 51) {
-      if ( e.keyCode == 49 ) $("#bbs-reply-type")[0].style.color='white',showReply(0)
-      if ( e.keyCode == 50 ) $("#bbs-reply-type")[0].style.color='#ff6',showReply(1)
-      if ( e.keyCode == 51 ) $("#bbs-reply-type")[0].style.color='#f66',showReply(2)
+      if ( e.keyCode == 49 ) $("#bbs-reply-type")[0].style.color='white',showReply(1)
+      if ( e.keyCode == 50 ) $("#bbs-reply-type")[0].style.color='#ff6',showReply(2)
+      if ( e.keyCode == 51 ) $("#bbs-reply-type")[0].style.color='#f66',showReply(0)
       checkType = false
       checkReply = true
     }    
