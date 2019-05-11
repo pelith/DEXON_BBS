@@ -402,7 +402,7 @@ var getTitle = function getTitle(content) {
 exports.getTitle = getTitle;
 
 var getUser = function getUser(address) {
-  return address.replace(/^(0x.{3}).+(.{3})$/, '$1...$2');
+  return address.replace(/^(0x.{4}).+(.{4})$/, '$1…$2');
 };
 
 exports.getUser = getUser;
@@ -459,7 +459,7 @@ var activeDexonRender = function activeDexonRender(account) {
   $("#bbs-register")[0].style.display = 'none';
   $("#bbs-user")[0].style.display = '';
   $("#bbs-post")[0].style.display = '';
-  $("#bbs-user")[0].innerHTML = account.replace(/^(0x.{3}).+(.{3})$/, '$1...$2');
+  $("#bbs-user")[0].innerHTML = account.replace(/^(0x.{4}).+(.{4})$/, '$1…$2');
 };
 
 $('#bbs-login').click(function () {

@@ -170,7 +170,7 @@ var getTitle = function getTitle(content) {
 exports.getTitle = getTitle;
 
 var getUser = function getUser(address) {
-  return address.replace(/^(0x.{3}).+(.{3})$/, '$1...$2');
+  return address.replace(/^(0x.{4}).+(.{4})$/, '$1…$2');
 };
 
 exports.getUser = getUser;
