@@ -11,7 +11,7 @@ function main() {
   const BBS = new web3js.eth.Contract(ABIBBS, BBSContract)
   const BBSExt = new web3js.eth.Contract(ABIBBSExt, BBSExtContract)
 
-  BBS.getPastEvents({fromBlock : '1250000'})
+  BBS.getPastEvents({fromBlock : '1170000'})
   .then(events => {
     events.slice().reverse().forEach(event => {
       // if ( !banList.includes(event.transactionHash) )
