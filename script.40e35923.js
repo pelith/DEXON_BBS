@@ -420,7 +420,7 @@ function main() {
   var BBS = new _dexon.web3js.eth.Contract(_dexon.ABIBBS, _dexon.BBSContract);
   var BBSExt = new _dexon.web3js.eth.Contract(_dexon.ABIBBSExt, _dexon.BBSExtContract);
   BBS.getPastEvents({
-    fromBlock: '1250000'
+    fromBlock: '1170000'
   }).then(function (events) {
     events.slice().reverse().forEach(function (event) {
       // if ( !banList.includes(event.transactionHash) )
