@@ -19,6 +19,7 @@ const showReplyTypeBtn = () => {
   $('#bbs-reply-type1')[0].style.display=''
   $('#bbs-reply-type2')[0].style.display=''
   checkReplyBtn = true
+  checkType = true
 }
 
 const hideReplyTypeBtn = () => {
@@ -35,6 +36,8 @@ const showReply = (type) => {
   $("#bbs-reply")[0].style.display=''
   $("html").stop().animate({scrollTop:$('#bbs-reply').position().top}, 500, 'swing');
   $("#bbs-reply-content")[0].focus()
+  checkType = false
+  checkReply = true
 }
 
 const hideReply = () => {
@@ -44,6 +47,7 @@ const hideReply = () => {
   $('#bbs-reply-btn')[0].style.display=''
   $("#bbs-reply-content")[0].value = ''
   checkReplyBtn = false
+  checkReply = false
 }
 
 function main() {
@@ -57,7 +61,7 @@ function main() {
   $('#bbs-reply-type0').click(() => { $("#bbs-reply-type")[0].style.color='white',showReply(0) })
   $('#bbs-reply-type1').click(() => { $("#bbs-reply-type")[0].style.color='#ff6',showReply(1) })
   $('#bbs-reply-type2').click(() => { $("#bbs-reply-type")[0].style.color='#f66',showReply(2) })
-  $('#bbs-reply-btn-cancel').click(() => { hideReply(),checkReply = false })
+  $('#bbs-reply-btn-cancel').click(() => { hideReply() })
 
   $('#bbs-newReply').click(() => {
     const replyType = $("#bbs-reply-type")[0].value
@@ -107,14 +111,11 @@ const keyboardHook = () => {
     console.log(e.keyCode)
     if (!checkType && !checkReply && e.keyCode == XKey) {
       showReplyTypeBtn()
-      checkType = true
     }
     else if ( !checkReply && checkType && 49 <= e.keyCode && e.keyCode <= 51) {
       if ( e.keyCode == 49 ) $("#bbs-reply-type")[0].style.color='white',showReply(1)
       if ( e.keyCode == 50 ) $("#bbs-reply-type")[0].style.color='#ff6',showReply(2)
       if ( e.keyCode == 51 ) $("#bbs-reply-type")[0].style.color='#f66',showReply(0)
-      checkType = false
-      checkReply = true
     }    
     else if ( checkReply && !checkType && 13 == e.keyCode) {
       if ($("#bbs-reply-content")[0].value.length>0) {
@@ -124,7 +125,6 @@ const keyboardHook = () => {
       }
       else {
         hideReply()
-        checkReply = false
       }      
     }
   })
