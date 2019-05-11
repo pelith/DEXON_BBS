@@ -414,17 +414,17 @@ var _dexon = require("./dexon.js");
 var _utils = require("./utils.js");
 
 // import 'babel-polyfill'
-var banList = ["0xdc0db75c79308f396ed6389537d4ddd2a36c920bb2958ed7f70949b1f9d3375d"];
-
+// const banList = [""]
 function main() {
   (0, _dexon.initDexon)(activeDexonRender);
   var BBS = new _dexon.web3js.eth.Contract(_dexon.ABIBBS, _dexon.BBSContract);
   var BBSExt = new _dexon.web3js.eth.Contract(_dexon.ABIBBSExt, _dexon.BBSExtContract);
   BBS.getPastEvents({
-    fromBlock: '990000'
+    fromBlock: '1250000'
   }).then(function (events) {
     events.slice().reverse().forEach(function (event) {
-      if (!banList.includes(event.transactionHash)) directDisplay((0, _utils.getTitle)(event.returnValues.content.substr(0, 40)).title, event.transactionHash, event.blockNumber);
+      // if ( !banList.includes(event.transactionHash) )
+      directDisplay((0, _utils.getTitle)(event.returnValues.content.substr(0, 40)).title, event.transactionHash, event.blockNumber);
     });
   });
 }
