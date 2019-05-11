@@ -432,6 +432,7 @@ var showReplyTypeBtn = function showReplyTypeBtn() {
   $('#bbs-reply-type1')[0].style.display = '';
   $('#bbs-reply-type2')[0].style.display = '';
   checkReplyBtn = true;
+  checkType = true;
 };
 
 var hideReplyTypeBtn = function hideReplyTypeBtn() {
@@ -450,6 +451,8 @@ var showReply = function showReply(type) {
     scrollTop: $('#bbs-reply').position().top
   }, 500, 'swing');
   $("#bbs-reply-content")[0].focus();
+  checkType = false;
+  checkReply = true;
 };
 
 var hideReply = function hideReply() {
@@ -459,6 +462,7 @@ var hideReply = function hideReply() {
   $('#bbs-reply-btn')[0].style.display = '';
   $("#bbs-reply-content")[0].value = '';
   checkReplyBtn = false;
+  checkReply = false;
 };
 
 function main() {
@@ -479,7 +483,7 @@ function main() {
     $("#bbs-reply-type")[0].style.color = '#f66', showReply(2);
   });
   $('#bbs-reply-btn-cancel').click(function () {
-    hideReply(), checkReply = false;
+    hideReply();
   });
   $('#bbs-newReply').click(function () {
     var replyType = $("#bbs-reply-type")[0].value;
@@ -527,13 +531,10 @@ var keyboardHook = function keyboardHook() {
 
     if (!checkType && !checkReply && e.keyCode == XKey) {
       showReplyTypeBtn();
-      checkType = true;
     } else if (!checkReply && checkType && 49 <= e.keyCode && e.keyCode <= 51) {
       if (e.keyCode == 49) $("#bbs-reply-type")[0].style.color = 'white', showReply(1);
       if (e.keyCode == 50) $("#bbs-reply-type")[0].style.color = '#ff6', showReply(2);
       if (e.keyCode == 51) $("#bbs-reply-type")[0].style.color = '#f66', showReply(0);
-      checkType = false;
-      checkReply = true;
     } else if (checkReply && !checkType && 13 == e.keyCode) {
       if ($("#bbs-reply-content")[0].value.length > 0) {
         var replyType = $("#bbs-reply-type")[0].value;
@@ -541,7 +542,6 @@ var keyboardHook = function keyboardHook() {
         (0, _dexon.newReply)((0, _utils.getUrlParameter)('tx').substr(0, 66), replyType, content);
       } else {
         hideReply();
-        checkReply = false;
       }
     }
   });

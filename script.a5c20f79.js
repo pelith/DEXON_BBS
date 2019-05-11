@@ -459,7 +459,7 @@ var activeDexonRender = function activeDexonRender(account) {
   $("#bbs-register")[0].style.display = 'none';
   $("#bbs-user")[0].style.display = '';
   $("#bbs-post")[0].style.display = '';
-  $("#bbs-user")[0].innerHTML = account.replace(/^(0x.{4}).+(.{4})$/, '$1…$2');
+  $("#bbs-user")[0].innerHTML = (0, _utils.getUser)(account);
 };
 
 $('#bbs-login').click(function () {
