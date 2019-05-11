@@ -414,6 +414,8 @@ var _utils = require("./utils.js");
 var _dexon = require("./dexon.js");
 
 var checkReplyBtn = false;
+var checkType = false,
+    checkReply = false;
 
 var activeDexonRender = function activeDexonRender(account) {
   $("#bbs-login")[0].style.display = 'none';
@@ -477,7 +479,7 @@ function main() {
     $("#bbs-reply-type")[0].style.color = '#f66', showReply(2);
   });
   $('#bbs-reply-btn-cancel').click(function () {
-    hideReply();
+    hideReply(), checkReply = false;
   });
   $('#bbs-newReply').click(function () {
     var replyType = $("#bbs-reply-type")[0].value;
@@ -520,8 +522,6 @@ function main() {
 
 var keyboardHook = function keyboardHook() {
   var XKey = 88;
-  var checkType = false,
-      checkReply = false;
   $(document).keyup(function (e) {
     console.log(e.keyCode);
 
@@ -529,9 +529,9 @@ var keyboardHook = function keyboardHook() {
       showReplyTypeBtn();
       checkType = true;
     } else if (!checkReply && checkType && 49 <= e.keyCode && e.keyCode <= 51) {
-      if (e.keyCode == 49) $("#bbs-reply-type")[0].style.color = 'white', showReply(0);
-      if (e.keyCode == 50) $("#bbs-reply-type")[0].style.color = '#ff6', showReply(1);
-      if (e.keyCode == 51) $("#bbs-reply-type")[0].style.color = '#f66', showReply(2);
+      if (e.keyCode == 49) $("#bbs-reply-type")[0].style.color = 'white', showReply(1);
+      if (e.keyCode == 50) $("#bbs-reply-type")[0].style.color = '#ff6', showReply(2);
+      if (e.keyCode == 51) $("#bbs-reply-type")[0].style.color = '#f66', showReply(0);
       checkType = false;
       checkReply = true;
     } else if (checkReply && !checkType && 13 == e.keyCode) {
