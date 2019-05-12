@@ -365,7 +365,7 @@ var getParseText = function getParseText(str, len) {
 
   for (var i = 0; i < str.length; i++) {
     if (str[i].match(/[\u4e00-\u9fa5]/g)) tmp += str[i], count += 2;else if (str[i].match(/[\u0800-\u4e00]/g)) tmp += str[i], count += 2;else if (str[i].match(/[\uff00-\uffff]/g)) tmp += str[i], count += 2;else tmp += str[i], count++;
-    if (count >= len) break;
+    if (count === len) break;else if (count > len) tmp = tmp.substr(0, tmp.length - 1);
   }
 
   return tmp;
@@ -410,7 +410,7 @@ var main = function main() {
   }).then(function (events) {
     events.slice().forEach(function (event) {
       // if ( !banList.includes(event.transactionHash) )
-      directDisplay((0, _utils.getTitle)(event.returnValues.content.substr(0, 40)).title, event.transactionHash, event.blockNumber);
+      directDisplay((0, _utils.getTitle)(event.returnValues.content.substr(0, 42)).title, event.transactionHash, event.blockNumber);
     });
   });
 };
