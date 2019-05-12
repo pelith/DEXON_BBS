@@ -22,7 +22,9 @@ const getParseText = (str, len) => {
     else if (str[i].match(/[\uff00-\uffff]/g)) tmp+=str[i],count+=2
     else tmp+=str[i],count++
 
-    if (count >= len) break
+    if (count === len) break
+    else if (count>len)
+      tmp = tmp.substr(0,tmp.length-1)
   }
   return tmp
 }

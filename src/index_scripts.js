@@ -16,7 +16,7 @@ const main = () => {
   .then((events) => {
     events.slice().forEach((event) => {
       // if ( !banList.includes(event.transactionHash) )
-      directDisplay(getTitle(event.returnValues.content.substr(0, 40)).title, event.transactionHash, event.blockNumber)
+      directDisplay(getTitle(event.returnValues.content.substr(0, 42)).title, event.transactionHash, event.blockNumber)
     })
   });
 }

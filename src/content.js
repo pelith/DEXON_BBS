@@ -101,8 +101,9 @@ const main = () => {
 
   web3js.eth.getTransaction(tx).then(transaction => {
     const content = htmlEntities(web3js.utils.hexToUtf8('0x' + transaction.input.slice(138)))
+    console.log(content)
     const author = '@' + transaction.blockNumber
-    const title = getTitle(content.substr(0, 40))
+    const title = getTitle(content.substr(0, 42))
 
     document.title = title.title + ' - Gossiping - DEXON BBS'
     $('#main-content-author').text(author)
