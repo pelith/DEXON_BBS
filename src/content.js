@@ -2,6 +2,7 @@ import {htmlEntities, getUrlParameter, getTitle, getUser} from './utils.js'
 import {ABIBBS, ABIBBSExt, BBSContract, BBSExtContract, web3js, initDexon, loginDexon, newReply} from './dexon.js'
 
 let checkReplyBtn = false
+let checkType = false, checkReply = false
 
 const activeDexonRender = (account) => {
   $("#bbs-login")[0].style.display='none'
@@ -18,6 +19,7 @@ const showReplyTypeBtn = () => {
   $('#bbs-reply-type1')[0].style.display=''
   $('#bbs-reply-type2')[0].style.display=''
   checkReplyBtn = true
+  checkType = true
 }
 
 const hideReplyTypeBtn = () => {
@@ -34,6 +36,8 @@ const showReply = (type) => {
   $("#bbs-reply")[0].style.display=''
   $("html").stop().animate({scrollTop:$('#bbs-reply').position().top}, 500, 'swing');
   $("#bbs-reply-content")[0].focus()
+  checkType = false
+  checkReply = true
 }
 
 const hideReply = () => {
@@ -43,6 +47,7 @@ const hideReply = () => {
   $('#bbs-reply-btn')[0].style.display=''
   $("#bbs-reply-content")[0].value = ''
   checkReplyBtn = false
+  checkReply = false
 }
 
 function main() {
@@ -101,20 +106,16 @@ function main() {
 
 const keyboardHook = () => {
   const XKey = 88
-  let checkType = false, checkReply = false
 
   $(document).keyup((e) => {
     console.log(e.keyCode)
     if (!checkType && !checkReply && e.keyCode == XKey) {
       showReplyTypeBtn()
-      checkType = true
     }
     else if ( !checkReply && checkType && 49 <= e.keyCode && e.keyCode <= 51) {
-      if ( e.keyCode == 49 ) $("#bbs-reply-type")[0].style.color='white',showReply(0)
-      if ( e.keyCode == 50 ) $("#bbs-reply-type")[0].style.color='#ff6',showReply(1)
-      if ( e.keyCode == 51 ) $("#bbs-reply-type")[0].style.color='#f66',showReply(2)
-      checkType = false
-      checkReply = true
+      if ( e.keyCode == 49 ) $("#bbs-reply-type")[0].style.color='white',showReply(1)
+      if ( e.keyCode == 50 ) $("#bbs-reply-type")[0].style.color='#ff6',showReply(2)
+      if ( e.keyCode == 51 ) $("#bbs-reply-type")[0].style.color='#f66',showReply(0)
     }    
     else if ( checkReply && !checkType && 13 == e.keyCode) {
       if ($("#bbs-reply-content")[0].value.length>0) {
@@ -124,7 +125,6 @@ const keyboardHook = () => {
       }
       else {
         hideReply()
-        checkReply = false
       }      
     }
   })

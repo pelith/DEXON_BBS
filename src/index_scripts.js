@@ -1,9 +1,9 @@
 // import 'babel-polyfill'
 
 import {ABIBBS, ABIBBSExt, BBSContract, BBSExtContract, web3js, initDexon, loginDexon} from './dexon.js'
-import {htmlEntities, getTitle} from './utils.js'
+import {htmlEntities, getTitle, getUser} from './utils.js'
 
-const banList = ["0xdc0db75c79308f396ed6389537d4ddd2a36c920bb2958ed7f70949b1f9d3375d"]
+// const banList = [""]
 
 function main() {
   initDexon(activeDexonRender)
@@ -11,11 +11,11 @@ function main() {
   const BBS = new web3js.eth.Contract(ABIBBS, BBSContract)
   const BBSExt = new web3js.eth.Contract(ABIBBSExt, BBSExtContract)
 
-  BBS.getPastEvents({fromBlock : '990000'})
+  BBS.getPastEvents({fromBlock : '1170000'})
   .then(events => {
     events.slice().reverse().forEach(event => {
-      if ( !banList.includes(event.transactionHash) )
-        directDisplay(getTitle(event.returnValues.content.substr(0,40)).title, event.transactionHash, event.blockNumber)
+      // if ( !banList.includes(event.transactionHash) )
+      directDisplay(getTitle(event.returnValues.content.substr(0,40)).title, event.transactionHash, event.blockNumber)
     })
   });
 }
@@ -72,7 +72,7 @@ const activeDexonRender = (account) => {
   $("#bbs-register")[0].style.display='none'
   $("#bbs-user")[0].style.display=''
   $("#bbs-post")[0].style.display=''
-  $("#bbs-user")[0].innerHTML = account.replace(/^(0x.{4}).+(.{4})$/, '$1…$2')
+  $("#bbs-user")[0].innerHTML = getUser(account)
 }
 
 $('#bbs-login').click(() => {
