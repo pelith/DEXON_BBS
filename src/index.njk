@@ -1,0 +1,28 @@
+{% extends '_layout.njk' %}
+
+{% set title = 'DEXON BBS' %}
+
+{% block content %}
+<div id="main-container">
+  <div id="action-bar-container">
+    <div class="action-bar">
+      <div class="btn-group btn-group-dir" style="text-align: left; padding: 1px">
+        <a class="btn selected" href="/">看板</a>
+        <a id="bbs-post" class="btn" href="post.njk" style="display: none;">發文</a>
+      </div>
+      <div class="btn-group btn-group-paging" style="text-align: right; padding: 1px">
+  <!--             <a class="btn wide" href="#" style="display: none">最舊</a>
+        <a class="btn wide" href="#" style="display: none">&lsaquo; 上頁</a>
+        <a class="btn wide" style="display: none">下頁 &rsaquo;</a> -->
+        <a class="btn wide" href="#">Top</a>
+      </div>
+    </div>
+  </div>
+  <div class="r-list-container action-bar-margin bbs-screen">
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts_extra %}
+<script language="javascript" type="text/javascript" src="index_scripts.js"></script>
+{% endblock %}

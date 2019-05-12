@@ -3,8 +3,8 @@
   "version": "1.0.0",
   "description": "",
   "scripts": {
-    "dev": "npm run clean && parcel src/*.html --out-dir dist/",
-    "build": "npm run clean && parcel build --no-source-maps src/*.html --out-dir build/ --public-url . --no-minify",
+    "dev": "npm run clean && parcel src/index.njk --out-dir dist/",
+    "build": "npm run clean && parcel build --no-source-maps src/*.njk --out-dir build/ --public-url . --no-minify",
     "clean": "rm -rf .cache dist build",
     "gh-help": "gh-pages --help",
     "deploy-prep": "echo dett.cc > build/CNAME && cp -r .circleci build",
@@ -26,5 +26,8 @@
     "gh-pages": "^2.0.1",
     "parcel-bundler": "^1.12.3"
   },
-  "dependencies": {}
+  "dependencies": {
+    "nunjucks": "^3.2.0",
+    "parcel-plugin-nunjucks": "^1.1.0"
+  }
 }

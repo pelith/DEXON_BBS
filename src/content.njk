@@ -1,0 +1,73 @@
+{% extends '_layout.njk' %}
+
+{% block head_extra %}
+{{ super() }}
+<link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/fancybox/3.5.7/jquery.fancybox.min.css" />
+<style type="text/css">
+    select {
+        height: 24px;
+        border:0 none;
+        padding: 0px;
+        background-color: #000;
+        font-size: 20px;
+        vertical-align: middle;
+        -webkit-appearance: none;
+        -webkit-border-radius: 0px;
+    }
+    button {
+      height: 26px;
+      border:0 none;
+      padding: 0px;
+      font-size: 24px;
+    }
+    input {
+        background-color: silver;
+        height: 26px;
+        border:0 none;
+        padding: 0px;
+        font-size: 24px;
+        width: 60vw;
+        vertical-align: middle;
+    }
+    input:focus {
+        outline: none !important;
+        border-color: none !important;
+        box-shadow: 0 0 0px none;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div id="navigation-container">
+  <div id="navigation" class="bbs-content">
+    <a class="board" href="/">返回看板</a>
+    <div class="bar"></div>
+    <a id="bbs-reply-btn" class="board" href="#" style="display: none;">推文(X)</a>
+    <a id="bbs-reply-type1" class="board" href="#" style="color:#990; display: none;"> 推(1) </a>
+    <a id="bbs-reply-type2" class="board" href="#" style="color:#f66; display: none;"> 噓(2) </a>
+    <a id="bbs-reply-type0" class="board" href="#" style="display: none;"> →(3) </a>
+    <a id="bbs-reply-btn-cancel" class="board" href="#" style="display: none;">取消推文</a>
+  </div>
+</div>
+
+<div id="main-container">
+<div id="main-content" class="bbs-screen bbs-content"><div class="article-metaline"><span class="article-meta-tag">作者</span><span class="article-meta-value"><a id="main-content-author" target="_blank" href="#"></a></span></div><div class="article-metaline-right"><span class="article-meta-tag">看板</span><span class="article-meta-value">Gossiping</span></div><div class="article-metaline"><span class="article-meta-tag">標題</span><span class="article-meta-value" id="main-content-title"></span></div><div class="article-metaline"><span class="article-meta-tag">時間</span><span class="article-meta-value" id="main-content-date"></span></div>
+<span id="main-content-content"></span>
+
+--
+<span class="f2">※ 發信站: DEXON BBS(dett.cc), 來自: <span id="main-content-from">DEXON</span></span>
+<span class="f2">※ 文章網址: <a id="main-content-href" href="#" target="_blank" rel="nofollow"></a></span>
+  <div id="bbs-reply" style="display: none">
+    <select id="bbs-reply-type" class="bbs-content">
+      <option value="0">→</option>
+    　<option value="1">推</option>
+    　<option value="2" style="color: red">噓</option>
+    </select> <span id="bbs-reply-user" class="f3 hl push-userid" style="color: white;vertical-align: middle;"></span><span class="f3 push-content" style="vertical-align: middle;color: white">: </span><span class="f3 push-content"></span><input class="main-content-content" id="bbs-reply-content" type="text" maxlength="40" value=""><button id="bbs-newReply" class="push-ipdatetime">  送出回應  </span>
+  </div>
+</div>
+</div>
+{% endblock %}
+
+{% block scripts_extra %}
+<script language="javascript" type="text/javascript" src="content.js"></script>
+{% endblock %}

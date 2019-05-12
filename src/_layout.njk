@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>{{ title or 'DEXON BBS' }}</title>
+
+    {% block meta -%}
+    <meta property="og:title" content="{{ title or 'DEXON BBS' }}">
+    <meta property="og:description" content="基於 DEXON 智能合約的 BBS 系統">
+    <meta property="og:url" content="https://dett.cc">
+    <meta property="og:type" content="website">
+    <meta property="og:image" content="asserts/meta.png">
+    {%- endblock %}
+
+    {% block head_extra -%}
+    <link rel="stylesheet" type="text/css" href="https://images.ptt.cc/bbs/v2.25/bbs-common.css">
+    <link rel="stylesheet" type="text/css" href="https://images.ptt.cc/bbs/v2.25/bbs-base.css" media="screen">
+    <link rel="stylesheet" type="text/css" href="https://images.ptt.cc/bbs/v2.25/bbs-custom.css">
+    <link rel="stylesheet" type="text/css" href="https://images.ptt.cc/bbs/v2.25/pushstream.css" media="screen">
+    <link rel="stylesheet" type="text/css" href="https://images.ptt.cc/bbs/v2.25/bbs-print.css" media="print">
+    {%- endblock %}
+  </head>
+
+  <body>
+    {% block topbar -%}
+    <div id="topbar-container">
+      <div id="topbar" class="bbs-content">
+        {%- include '_logo.njk' -%}
+        <a id="logo" href="/" style="padding-left: 0;padding-right: 5; font-size: 21px;font-weight:bold">BBS</a>
+        <span>›</span>
+        <a class="board" href="/"><span class="board-label">看板 </span>Gossiping</a>
+        <a id="bbs-user" class="right small" href="#" style="display: none">User</a>
+        <a id="bbs-login" class="right small" href="#">登入</a>
+        <a id="bbs-register" class="right small" href="register.njk">註冊</a>
+      </div>
+    </div>
+    {%- endblock %}
+
+    {% block content -%}
+    {%- endblock %}
+
+    <script language="javascript" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+    <script language="javascript" type="text/javascript" src="https://cdn.jsdelivr.net/gh/ethereum/web3.js@1.0.0-beta.37/dist/web3.min.js"></script>
+    {% block scripts_extra -%}
+    {%- endblock %}
+    <script language="javascript" type="text/javascript" src="dexon.js"></script>
+  </body>
+</html>
