@@ -1,3 +1,4 @@
+import 'babel-polyfill'
 import {htmlEntities, getUrlParameter, getTitle, getUser, getParseText} from './utils.js'
 import {ABIBBS, ABIBBSExt, BBSContract, BBSExtContract, web3js, initDexon, loginDexon, newReply} from './dexon.js'
 
@@ -79,7 +80,7 @@ const hideReply = () => {
   isShowReply = false
 }
 
-const main = () => {
+const main = async () => {
   tx = getUrlParameter('tx')
 
   if (!tx) return
@@ -119,13 +120,18 @@ const main = () => {
 
   const BBSExt = new web3js.eth.Contract(ABIBBSExt, BBSExtContract)
   const originTx = getUrlParameter('tx').substr(0,66)
-  BBSExt.getPastEvents({fromBlock : '990000'})
-  .then(events => {
-    events.slice().forEach(event => {
-      if (originTx == event.returnValues.origin)
-        displayReply(event.returnValues.vote, event.returnValues.content, event.transactionHash, event.blockNumber)
-    })
+  const events = await BBSExt.getPastEvents({fromBlock : '990000'})
+
+  events.slice().filter((event) => {return originTx == event.returnValues.origin})
+  .map(async (event) => {
+    const transaction = await web3js.eth.getTransaction(event.transactionHash)
+    const block = await web3js.eth.getBlock(event.blockNumber)
+    return [event.returnValues.content, transaction.from, block.timestamp, event.returnValues.vote]
   })
+  .reduce( async (n,p) => {
+    await n
+    displayReply(...await p)
+  }, Promise.resolve())
 }
 
 const keyboardHook = () => {
@@ -149,22 +155,15 @@ const keyboardHook = () => {
   })
 }
 
-function displayReply(vote, content, txHash, blockNumber) {
+const displayReply = (content, from, timestamp, vote) => {
   content = htmlEntities(content)
   const voteName = ["→", "推", "噓"]
   const elem = $('<div class="push"></div>')
+  const date = new Date(timestamp)
+  const formatDate = (date.getMonth()+1)+'/'+(''+date.getDate()).padStart(2, '0')+' '+(''+date.getHours()).padStart(2, '0')+':'+(''+date.getMinutes()).padStart(2, '0')
 
-  web3js.eth.getTransaction(txHash).then(transaction => {
-    $(elem).find('.push-userid').text(getUser(transaction.from))
-  })
-
-  elem.html(`<span class="${vote != 1 ? 'f1 ' : ''}hl push-tag">${voteName[vote]} </span><span class="f3 hl push-userid"></span><span class="f3 push-content">: ${content}</span><span class="push-ipdatetime"></span>`)
+  elem.html(`<span class="${vote != 1 ? 'f1 ' : ''}hl push-tag">${voteName[vote]} </span><span class="f3 hl push-userid">${getUser(from)}</span><span class="f3 push-content">: ${content}</span><span class="push-ipdatetime">${formatDate}</span>`)
   $('#main-content.bbs-screen.bbs-content').append(elem)
-
-  web3js.eth.getBlock(blockNumber).then(block => {
-    const date = new Date(block.timestamp)
-    $(elem).find('.push-ipdatetime').text((date.getMonth()+1)+'/'+(''+date.getDate()).padStart(2, '0')+' '+(''+date.getHours()).padStart(2, '0')+':'+(''+date.getMinutes()).padStart(2, '0'))
-  })
 }
 
 $(main)
