@@ -406,7 +406,7 @@ var getUser = function getUser(address) {
 };
 
 exports.getUser = getUser;
-},{}],"mpVp":[function(require,module,exports) {
+},{}],"6HQS":[function(require,module,exports) {
 "use strict";
 
 var _dexon = require("./dexon.js");
@@ -466,4 +466,4 @@ $('#bbs-login').click(function () {
   (0, _dexon.loginDexon)(activeDexonRender);
 });
 $(main);
-},{"./dexon.js":"UN6U","./utils.js":"FO+Z"}]},{},["mpVp"], null)
+},{"./dexon.js":"UN6U","./utils.js":"FO+Z"}]},{},["6HQS"], null)
