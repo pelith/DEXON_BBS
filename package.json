@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "description": "",
   "scripts": {
-    "dev": "npm run clean && parcel src/index.njk --out-dir dist/",
+    "dev": "npm run clean && parcel src/__dev__.html --out-dir dist/",
     "build": "npm run clean && parcel build --no-source-maps src/*.njk --out-dir build/ --public-url . --no-minify",
     "clean": "rm -rf .cache dist build",
     "gh-help": "gh-pages --help",
