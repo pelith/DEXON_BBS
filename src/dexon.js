@@ -25,7 +25,7 @@ const loginDexon = (activeDexonRender) => {
     detectDexonNetwrok(activeDexonRender)
   }
   else 
-    alert('DEXON Wallet not detected. (請安裝 DEXON 瀏覽器擴充套件)')
+    return alert('DEXON Wallet not detected. (請安裝 DEXON 瀏覽器擴充套件)')
 }
 
 const detectDexonNetwrok = (activeDexonRender) => {
@@ -41,65 +41,56 @@ const detectDexonNetwrok = (activeDexonRender) => {
 
 const startInteractingWithWeb3 = (activeDexonRender) => {
   const start = () => {
-    dexonWeb3.eth.getAccounts().then((accounts)=>{
-      if (accounts.length>0){
+    dexonWeb3.eth.getAccounts().then((accounts) => {
+      if (accounts.length){
         activeAccount = accounts[0]
         activeDexonRender(activeAccount)  
       }
     })
   }
+
   start()
   setInterval(start, 1000)
 }
 
-function newPost(title, content) {
-  if (dexonWeb3 === ''){
-    alert('Please connect to your DEXON Wallet.')
-    return
-  }
+const newPost = (title, content) => {
+  if (!dexonWeb3)
+    return alert('Please connect to your DEXON Wallet.')
 
-  if (title.length > 40) {
-    alert('Title\'s length is over 40 characters.')
-    return
-  }
+  if (title.length > 40)
+    return alert('Title\'s length is over 40 characters.')
 
   const post = '[' + title + ']' + content
   const dexBBSExt = new dexonWeb3.eth.Contract(ABIBBSExt, BBSExtContract)
-  dexBBSExt.methods.Post(post).estimateGas().then(gas => {
+  dexBBSExt.methods.Post(post).estimateGas().then((gas) => {
     dexBBSExt.methods.Post(post).send({ from: activeAccount, gas: gas })
-    .then(receipt => {
+    .then((receipt) => {
       window.location = 'index.html'
     })
-    .catch(err => {
+    .catch((err) => {
       alert(err)
     })
   })
 }
 
-function newReply(tx, replyType, content) {
-  if (dexonWeb3 === ''){
-    alert('Please connect to your DEXON Wallet first.')
-    return
-  }
-
-  if (![0, 1, 2].includes(+replyType)){
-    alert('Wrong type of replyType.')
-    return
-  }
-
-  if (content.length === 0){
-    alert('No content.')
-    return
-  }
+const newReply = (tx, replyType, content) => {
+  if (!dexonWeb3) 
+    return alert('Please connect to your DEXON Wallet first.')
+    
+  if (![0, 1, 2].includes(+replyType)) 
+    return alert('Wrong type of replyType.')
+    
+  if (!content.length)
+    return alert('No content.')
 
   if (tx) {
     const dexBBSExt = new dexonWeb3.eth.Contract(ABIBBSExt, BBSExtContract)
-    dexBBSExt.methods.Reply(tx, replyType, content).estimateGas().then(gas => {
-      dexBBSExt.methods.Reply(tx, replyType, content).send({ from: activeAccount, gas: gas })
-      .then(receipt => {
+    dexBBSExt.methods.Reply(tx, +replyType, content).estimateGas().then((gas) => {
+      dexBBSExt.methods.Reply(tx, +replyType, content).send({ from: activeAccount, gas: gas })
+      .then((receipt) => {
         window.location.reload()
       })
-      .catch(err => {
+      .catch((err) => {
         alert(err)
       })
     })

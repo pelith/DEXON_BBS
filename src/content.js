@@ -1,97 +1,121 @@
-import {htmlEntities, getUrlParameter, getTitle, getUser} from './utils.js'
+import {htmlEntities, getUrlParameter, getTitle, getUser, getParseText} from './utils.js'
 import {ABIBBS, ABIBBSExt, BBSContract, BBSExtContract, web3js, initDexon, loginDexon, newReply} from './dexon.js'
 
-let checkReplyBtn = false
-let checkType = false, checkReply = false
+let tx = ''
+let account = ''
+
+let isShowReply = false, isShowReplyType = false
 
 const activeDexonRender = (account) => {
-  $("#bbs-login")[0].style.display='none'
-  $("#bbs-register")[0].style.display='none'
-  $("#bbs-user")[0].style.display=''
-  $("#bbs-user")[0].innerHTML = getUser(account)
-  $("#bbs-reply-user")[0].innerHTML=getUser(account)
-  if (!checkReplyBtn) $("#bbs-reply-btn")[0].style.display = ''
+  account = getUser(account)
+
+  if (account){
+    // show User 
+    $("#bbs-login").hide()
+    $("#bbs-register").hide()
+    $("#bbs-user").show()
+
+    // only show reply btn at first time 
+    if (!$("#reply-user").text()) $("#reply-btn").show()
+  }
+  else{
+    // show Login/Register
+    $("#bbs-login").show()
+    $("#bbs-register").show()
+    $("#bbs-user").hide()
+
+    // hide reply btn
+    $("#reply-btn").hide()
+  }
+  
+  $("#bbs-user").text(account)
+  $("#reply-user").text(account)
 }
 
-const showReplyTypeBtn = () => {
-  $('#bbs-reply-btn')[0].style.display='none'
-  $('#bbs-reply-type0')[0].style.display=''
-  $('#bbs-reply-type1')[0].style.display=''
-  $('#bbs-reply-type2')[0].style.display=''
-  checkReplyBtn = true
-  checkType = true
+const showReplyType = () => {
+  $('#reply-btn').hide()
+  $('#reply-type0').show()
+  $('#reply-type1').show()
+  $('#reply-type2').show()
+
+  isShowReplyType = true
 }
 
 const hideReplyTypeBtn = () => {
-  $('#bbs-reply-type0')[0].style.display='none'
-  $('#bbs-reply-type1')[0].style.display='none'
-  $('#bbs-reply-type2')[0].style.display='none'
-  $('#bbs-reply-btn-cancel')[0].style.display='none'
+  $('#reply-type0').hide()
+  $('#reply-type1').hide()
+  $('#reply-type2').hide()
 }
 
-const showReply = (type) => {
+const showReply = (type) => {  
   hideReplyTypeBtn()
-  $('#bbs-reply-btn-cancel')[0].style.display=''
-  $("#bbs-reply-type")[0].value = type
-  $("#bbs-reply")[0].style.display=''
-  $("html").stop().animate({scrollTop:$('#bbs-reply').position().top}, 500, 'swing');
-  $("#bbs-reply-content")[0].focus()
-  checkType = false
-  checkReply = true
+
+  $("#reply").show()
+  $('#reply-cancel').show()
+  
+  const typeColor = {
+    0: '#f66',
+    1: '#fff',
+    2: '#ff6',
+  }
+  $("#reply-type").css('color',typeColor[type])
+  $("#reply-type").val(type)
+  
+  $("html").stop().animate({scrollTop:$('#reply').position().top}, 500, 'swing')
+  $("#reply-content").focus()
+
+  isShowReply = true
+  isShowReplyType = false
 }
 
 const hideReply = () => {
   hideReplyTypeBtn()
-  $("#bbs-reply")[0].style.display='none'
-  $('#bbs-reply-btn-cancel')[0].style.display='none'
-  $('#bbs-reply-btn')[0].style.display=''
-  $("#bbs-reply-content")[0].value = ''
-  checkReplyBtn = false
-  checkReply = false
+
+  $("#reply").hide()
+  $('#reply-cancel').hide()
+  $('#reply-btn').show()
+  $("#reply-content").val('')
+
+  isShowReply = false
 }
 
-function main() {
+const main = () => {
+  tx = getUrlParameter('tx')
+
+  if (!tx) return
+
   initDexon(activeDexonRender)
 
-  $('#bbs-login').click(() => {
-    loginDexon(activeDexonRender)
-  })
+  $('#bbs-login').click(() => { loginDexon(activeDexonRender) })
 
-  $('#bbs-reply-btn').click(() => { showReplyTypeBtn() })
-  $('#bbs-reply-type0').click(() => { $("#bbs-reply-type")[0].style.color='white',showReply(0) })
-  $('#bbs-reply-type1').click(() => { $("#bbs-reply-type")[0].style.color='#ff6',showReply(1) })
-  $('#bbs-reply-type2').click(() => { $("#bbs-reply-type")[0].style.color='#f66',showReply(2) })
-  $('#bbs-reply-btn-cancel').click(() => { hideReply() })
+  $('#reply-btn').click(() => { showReplyType() })
+  $('#reply-type0').click(() => { showReply(0) })
+  $('#reply-type1').click(() => { showReply(1) })
+  $('#reply-type2').click(() => { showReply(2) })
+  $('#reply-cancel').click(() => { hideReply() })
+  $('#reply-send').click(() => { newReply(tx.substr(0,66), $("#reply-type").val(), $("#reply-content").val()) })
 
-  $('#bbs-newReply').click(() => {
-    const replyType = $("#bbs-reply-type")[0].value
-    const content = 
-    newReply(getUrlParameter('tx').substr(0,66), $("#bbs-reply-type")[0].value, $("#bbs-reply-content")[0].value)
-  })
+  $("#reply-content").blur(() => { $("#reply-content").val(getParseText($("#reply-content").val(), 56)) })
 
   keyboardHook()
 
-  const tx = getUrlParameter('tx')
-  if (tx){
-    web3js.eth.getTransaction(tx).then(transaction => {
-      const content = htmlEntities(web3js.utils.hexToUtf8('0x'+transaction.input.slice(138)))
-      const author = '@'+transaction.blockNumber
-      const title = getTitle(content.substr(0, 40))
+  web3js.eth.getTransaction(tx).then(transaction => {
+    const content = htmlEntities(web3js.utils.hexToUtf8('0x' + transaction.input.slice(138)))
+    const author = '@' + transaction.blockNumber
+    const title = getTitle(content.substr(0, 40))
 
-      document.title = title.title + ' - Gossiping - DEXON BBS'
-      $('#main-content-author')[0].innerHTML = author
-      $('#main-content-author')[0].href = 'https://dexonscan.app/transaction/'+tx
-      $('#main-content-title')[0].innerHTML = title.title
-      $('#main-content-content')[0].innerHTML = title.match ? content.slice(title.title.length+2) : content
-      web3js.eth.getBlock(transaction.blockNumber).then(block => {
-        $('#main-content-date').text((''+new Date(block.timestamp)).substr(0,24))
-      })
-      $('#main-content-href')[0].href = window.location.href
-      $('#main-content-href')[0].innerHTML = window.location.href
-      $('#main-content-from').text(getUser(transaction.from))
+    document.title = title.title + ' - Gossiping - DEXON BBS'
+    $('#main-content-author').text(author)
+    $('#main-content-author')[0].href = 'https://dexonscan.app/transaction/'+tx
+    $('#main-content-title').text(title.title)
+    $('#main-content-content').text(title.match ? content.slice(title.title.length+2) : content)
+    web3js.eth.getBlock(transaction.blockNumber).then(block => {
+      $('#main-content-date').text((''+new Date(block.timestamp)).substr(0,24))
     })
-  }
-
+    $('#main-content-href').attr('href', window.location.href)
+    $('#main-content-href').text(window.location.href)
+    $('#main-content-from').text(getUser(transaction.from))
+  })
 
   const BBSExt = new web3js.eth.Contract(ABIBBSExt, BBSExtContract)
   const originTx = getUrlParameter('tx').substr(0,66)
@@ -101,31 +125,26 @@ function main() {
       if (originTx == event.returnValues.origin)
         displayReply(event.returnValues.vote, event.returnValues.content, event.transactionHash, event.blockNumber)
     })
-  });
+  })
 }
 
 const keyboardHook = () => {
-  const XKey = 88
+  const returnCode = 13
 
   $(document).keyup((e) => {
-    console.log(e.keyCode)
-    if (!checkType && !checkReply && e.keyCode == XKey) {
-      showReplyTypeBtn()
+    if (!isShowReply && !isShowReplyType && e.keyCode == 'X'.charCodeAt()) {
+      showReplyType()
     }
-    else if ( !checkReply && checkType && 49 <= e.keyCode && e.keyCode <= 51) {
-      if ( e.keyCode == 49 ) $("#bbs-reply-type")[0].style.color='white',showReply(1)
-      if ( e.keyCode == 50 ) $("#bbs-reply-type")[0].style.color='#ff6',showReply(2)
-      if ( e.keyCode == 51 ) $("#bbs-reply-type")[0].style.color='#f66',showReply(0)
+    else if (!isShowReply && isShowReplyType && '1'.charCodeAt() <= e.keyCode && e.keyCode <= '3'.charCodeAt()) {
+      if ( e.key == '1' ) showReply(1)
+      else if ( e.key == '2' ) showReply(2)
+      else if ( e.key == '3' ) showReply(0)
     }    
-    else if ( checkReply && !checkType && 13 == e.keyCode) {
-      if ($("#bbs-reply-content")[0].value.length>0) {
-        const replyType = $("#bbs-reply-type")[0].value
-        const content = $("#bbs-reply-content")[0].value
-        newReply(getUrlParameter('tx').substr(0,66), replyType, content)
-      }
-      else {
+    else if ( isShowReply && !isShowReplyType && e.keyCode == returnCode) {
+      if ($("#reply-content").val().length > 0) 
+        newReply(tx.substr(0,66), $("#reply-type").val(), $("#reply-content").val())
+      else 
         hideReply()
-      }      
     }
   })
 }
@@ -133,7 +152,6 @@ const keyboardHook = () => {
 function displayReply(vote, content, txHash, blockNumber) {
   content = htmlEntities(content)
   const voteName = ["→", "推", "噓"]
-  const voteTag = ["→", "推", "噓"]
   const elem = $('<div class="push"></div>')
 
   web3js.eth.getTransaction(txHash).then(transaction => {
