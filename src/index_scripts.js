@@ -21,7 +21,8 @@ const main = async () => {
     const votes = await countVotes(event.transactionHash)
 
     return  [event.returnValues.content, txHash, transaction.from, block.timestamp, votes]
-  }).reduce( async (n,p) => {
+  })
+  .reduce( async (n,p) => {
     await n
     directDisplay(...await p)
   }, Promise.resolve())

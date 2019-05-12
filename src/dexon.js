@@ -50,7 +50,7 @@ const startInteractingWithWeb3 = (activeDexonRender) => {
   setInterval(start, 1000)
 }
 
-const newPost = (title, content) => {
+const newPost = async (title, content) => {
   if (!dexonWeb3)
     return alert('Please connect to your DEXON Wallet.')
 
@@ -59,18 +59,17 @@ const newPost = (title, content) => {
 
   const post = '[' + title + ']' + content
   const dexBBSExt = new dexonWeb3.eth.Contract(ABIBBSExt, BBSExtContract)
-  dexBBSExt.methods.Post(post).estimateGas().then((gas) => {
-    dexBBSExt.methods.Post(post).send({ from: activeAccount, gas: gas })
-    .then((receipt) => {
-      window.location = 'index.html'
-    })
-    .catch((err) => {
-      alert(err)
-    })
-  })
+  const gas = await dexBBSExt.methods.Post(post).estimateGas()
+  try {
+    const receipt = await dexBBSExt.methods.Post(post).send({ from: activeAccount, gas: gas })
+    window.location = 'index.html'
+  }
+  catch(err){
+    alert(err)
+  }
 }
 
-const newReply = (tx, replyType, content) => {
+const newReply = async (tx, replyType, content) => {
   if (!dexonWeb3) 
     return alert('Please connect to your DEXON Wallet first.')
     
@@ -82,15 +81,14 @@ const newReply = (tx, replyType, content) => {
 
   if (tx) {
     const dexBBSExt = new dexonWeb3.eth.Contract(ABIBBSExt, BBSExtContract)
-    dexBBSExt.methods.Reply(tx, +replyType, content).estimateGas().then((gas) => {
-      dexBBSExt.methods.Reply(tx, +replyType, content).send({ from: activeAccount, gas: gas })
-      .then((receipt) => {
-        window.location.reload()
-      })
-      .catch((err) => {
-        alert(err)
-      })
-    })
+    const gas = await  dexBBSExt.methods.Reply(tx, +replyType, content).estimateGas()
+    try {
+      const receipt = await dexBBSExt.methods.Reply(tx, +replyType, content).send({ from: activeAccount, gas: gas })
+      window.location.reload()
+    }
+    catch(err){
+      alert(err)
+    }
   }
 }
 
