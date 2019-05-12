@@ -14,9 +14,9 @@ const main = () => {
 
   BBS.getPastEvents({fromBlock : '1170000'})
   .then((events) => {
-    events.slice().forEach((event) => {
-      // if ( !banList.includes(event.transactionHash) )
+    events.slice().reverse().forEach((event) => {
       directDisplay(getTitle(event.returnValues.content.substr(0, 42)).title, event.transactionHash, event.blockNumber)
+      // if ( !banList.includes(event.transactionHash) )
     })
   });
 }
@@ -31,41 +31,44 @@ const countVotes = (txHash) => {
 }
 
 const directDisplay = (content, txHash, blockNumber) => {
-  content = htmlEntities(content)
-  const elem = $('<div class="r-ent"></div>')
-  elem.html(
-    `<div class="nrec"></div>
-    <div class="title">
-    <a href="content.html?tx=${txHash}">
-      ${content}
-    </a>
-    </div>
-    <div class="meta">
-      <div class="author">
-        <a target="_blank" href="https://dexonscan.app/transaction/${txHash}">
-           @${blockNumber}
-        </a>
+  web3js.eth.getTransaction(txHash).then(transaction => {
+    content = htmlEntities(content)
+    const elem = $('<div class="r-ent"></div>')
+    elem.html(
+      `<div class="nrec"></div>
+      <div class="title">
+      <a href="content.html?tx=${txHash}">
+        ${content}
+      </a>
       </div>
-      <div class="article-menu"></div>
-      <div class="date">...</div>
-    </div>`)
+      <div class="meta">
+        <div class="author">
+          <a target="_blank" href="https://dexonscan.app/transaction/${txHash}">
+            ${getUser(transaction.from)}
+          </a>
+        </div>
+        <div class="article-menu"></div>
+        <div class="date">...</div>
+      </div>`)
 
-  $('.r-list-container.action-bar-margin.bbs-screen').prepend(elem)
+    $('.r-list-container.action-bar-margin.bbs-screen').append(elem)
 
-  web3js.eth.getBlock(blockNumber).then((block) => {
-    const date = new Date(block.timestamp)
-    $(elem).find('.date').text((date.getMonth()+1)+'/'+(''+date.getDate()).padStart(2, '0'))
-                         .attr('title', date.toLocaleString())
+    web3js.eth.getBlock(blockNumber).then((block) => {
+      const date = new Date(block.timestamp)
+      $(elem).find('.date').text((date.getMonth()+1)+'/'+(''+date.getDate()).padStart(2, '0'))
+                           .attr('title', date.toLocaleString())
+    })
+
+    countVotes(txHash).then((votes) => {
+      if (votes > 0){
+        let _class = 'hl f2'
+        if (votes > 99) _class = 'hl f1'
+        else if (votes > 9) _class = 'hl f3'
+        $(elem).find('.nrec').html(`<span class="${_class}"> ${votes} </span>`)
+      }
+    })
   })
 
-  countVotes(txHash).then((votes) => {
-    if (votes > 0){
-      let _class = 'hl f2'
-      if (votes > 99) _class = 'hl f1'
-      else if (votes > 9) _class = 'hl f3'
-      $(elem).find('.nrec').html(`<span class="${_class}"> ${votes} </span>`)
-    }
-  })
 }
 
 const activeDexonRender = (account) => {

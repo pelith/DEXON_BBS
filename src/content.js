@@ -101,13 +101,11 @@ const main = () => {
 
   web3js.eth.getTransaction(tx).then(transaction => {
     const content = htmlEntities(web3js.utils.hexToUtf8('0x' + transaction.input.slice(138)))
-    console.log(content)
-    const author = '@' + transaction.blockNumber
     const title = getTitle(content.substr(0, 42))
 
     document.title = title.title + ' - Gossiping - DEXON BBS'
-    $('#main-content-author').text(author)
-    $('#main-content-author')[0].href = 'https://dexonscan.app/transaction/'+tx
+    $('#main-content-author').text(getUser(transaction.from))
+    $('#main-content-author').attr('href', 'https://dexonscan.app/address/'+transaction.from)
     $('#main-content-title').text(title.title)
     $('#main-content-content').text(title.match ? content.slice(title.title.length+2) : content)
     web3js.eth.getBlock(transaction.blockNumber).then(block => {
@@ -115,7 +113,8 @@ const main = () => {
     })
     $('#main-content-href').attr('href', window.location.href)
     $('#main-content-href').text(window.location.href)
-    $('#main-content-from').text(getUser(transaction.from))
+    $('#main-content-from').text('@'+transaction.blockNumber)
+    $('#main-content-from').attr('href', 'https://dexonscan.app/transaction/'+tx)
   })
 
   const BBSExt = new web3js.eth.Contract(ABIBBSExt, BBSExtContract)

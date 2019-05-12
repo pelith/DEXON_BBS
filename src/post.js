@@ -40,7 +40,7 @@ const keyboardHook = () => {
         checkPost = true
       }
     }
-    else if (!ctrlDown && 48 <= e.keyCode && e.keyCode <= 222) {
+    else if (!ctrlDown && (48 <= e.keyCode && e.keyCode <= 222) || e.keyCode==13) {
       if ( checkSave ) {
         $("#bbs-footer")[0].style.display = ''
         $("#bbs-checksave")[0].style.display = 'none'
