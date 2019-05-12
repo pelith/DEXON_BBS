@@ -180,9 +180,7 @@ exports.getUser = getUser;
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.newPost = newPost;
-exports.newReply = newReply;
-exports.loginDexon = exports.initDexon = exports.web3js = exports.BBSExtContract = exports.BBSContract = exports.ABIBBSExt = exports.ABIBBS = void 0;
+exports.newReply = exports.newPost = exports.loginDexon = exports.initDexon = exports.web3js = exports.BBSExtContract = exports.BBSContract = exports.ABIBBSExt = exports.ABIBBS = void 0;
 var ABIBBS = [{
   "constant": !1,
   "inputs": [{
@@ -323,7 +321,7 @@ var loginDexon = function loginDexon(activeDexonRender) {
   if (window.dexon) {
     window.dexon.enable();
     detectDexonNetwrok(activeDexonRender);
-  } else alert('DEXON Wallet not detected. (請安裝 DEXON 瀏覽器擴充套件)');
+  } else return alert('DEXON Wallet not detected. (請安裝 DEXON 瀏覽器擴充套件)');
 };
 
 exports.loginDexon = loginDexon;
@@ -340,7 +338,7 @@ var detectDexonNetwrok = function detectDexonNetwrok(activeDexonRender) {
 var startInteractingWithWeb3 = function startInteractingWithWeb3(activeDexonRender) {
   var start = function start() {
     dexonWeb3.eth.getAccounts().then(function (accounts) {
-      if (accounts.length > 0) {
+      if (accounts.length) {
         activeAccount = accounts[0];
         activeDexonRender(activeAccount);
       }
@@ -351,17 +349,9 @@ var startInteractingWithWeb3 = function startInteractingWithWeb3(activeDexonRend
   setInterval(start, 1000);
 };
 
-function newPost(title, content) {
-  if (dexonWeb3 === '') {
-    alert('Please connect to your DEXON Wallet.');
-    return;
-  }
-
-  if (title.length > 40) {
-    alert('Title\'s length is over 40 characters.');
-    return;
-  }
-
+var newPost = function newPost(title, content) {
+  if (!dexonWeb3) return alert('Please connect to your DEXON Wallet.');
+  if (title.length > 40) return alert('Title\'s length is over 40 characters.');
   var post = '[' + title + ']' + content;
   var dexBBSExt = new dexonWeb3.eth.Contract(ABIBBSExt, BBSExtContract);
   dexBBSExt.methods.Post(post).estimateGas().then(function (gas) {
@@ -374,28 +364,19 @@ function newPost(title, content) {
       alert(err);
     });
   });
-}
+};
 
-function newReply(tx, replyType, content) {
-  if (dexonWeb3 === '') {
-    alert('Please connect to your DEXON Wallet first.');
-    return;
-  }
+exports.newPost = newPost;
 
-  if (![0, 1, 2].includes(+replyType)) {
-    alert('Wrong type of replyType.');
-    return;
-  }
-
-  if (content.length === 0) {
-    alert('No content.');
-    return;
-  }
+var newReply = function newReply(tx, replyType, content) {
+  if (!dexonWeb3) return alert('Please connect to your DEXON Wallet first.');
+  if (![0, 1, 2].includes(+replyType)) return alert('Wrong type of replyType.');
+  if (!content.length) return alert('No content.');
 
   if (tx) {
     var dexBBSExt = new dexonWeb3.eth.Contract(ABIBBSExt, BBSExtContract);
-    dexBBSExt.methods.Reply(tx, replyType, content).estimateGas().then(function (gas) {
-      dexBBSExt.methods.Reply(tx, replyType, content).send({
+    dexBBSExt.methods.Reply(tx, +replyType, content).estimateGas().then(function (gas) {
+      dexBBSExt.methods.Reply(tx, +replyType, content).send({
         from: activeAccount,
         gas: gas
       }).then(function (receipt) {
@@ -405,7 +386,9 @@ function newReply(tx, replyType, content) {
       });
     });
   }
-}
+};
+
+exports.newReply = newReply;
 },{}],"pILq":[function(require,module,exports) {
 "use strict";
 
@@ -413,105 +396,124 @@ var _utils = require("./utils.js");
 
 var _dexon = require("./dexon.js");
 
-var checkReplyBtn = false;
-var checkType = false,
-    checkReply = false;
+var tx = '';
+var account = '';
+var isShowReply = false,
+    isShowReplyType = false;
 
 var activeDexonRender = function activeDexonRender(account) {
-  $("#bbs-login")[0].style.display = 'none';
-  $("#bbs-register")[0].style.display = 'none';
-  $("#bbs-user")[0].style.display = '';
-  $("#bbs-user")[0].innerHTML = (0, _utils.getUser)(account);
-  $("#bbs-reply-user")[0].innerHTML = (0, _utils.getUser)(account);
-  if (!checkReplyBtn) $("#bbs-reply-btn")[0].style.display = '';
+  account = (0, _utils.getUser)(account);
+
+  if (account) {
+    // show User 
+    $("#bbs-login").hide();
+    $("#bbs-register").hide();
+    $("#bbs-user").show(); // only show reply btn at first time 
+
+    if (!$("#reply-user").text()) $("#reply-btn").show();
+  } else {
+    // show Login/Register
+    $("#bbs-login").show();
+    $("#bbs-register").show();
+    $("#bbs-user").hide(); // hide reply btn
+
+    $("#reply-btn").hide();
+  }
+
+  $("#bbs-user").text(account);
+  $("#reply-user").text(account);
 };
 
-var showReplyTypeBtn = function showReplyTypeBtn() {
-  $('#bbs-reply-btn')[0].style.display = 'none';
-  $('#bbs-reply-type0')[0].style.display = '';
-  $('#bbs-reply-type1')[0].style.display = '';
-  $('#bbs-reply-type2')[0].style.display = '';
-  checkReplyBtn = true;
-  checkType = true;
+var showReplyType = function showReplyType() {
+  $('#reply-btn').hide();
+  $('#reply-type0').show();
+  $('#reply-type1').show();
+  $('#reply-type2').show();
+  isShowReplyType = true;
 };
 
 var hideReplyTypeBtn = function hideReplyTypeBtn() {
-  $('#bbs-reply-type0')[0].style.display = 'none';
-  $('#bbs-reply-type1')[0].style.display = 'none';
-  $('#bbs-reply-type2')[0].style.display = 'none';
-  $('#bbs-reply-btn-cancel')[0].style.display = 'none';
+  $('#reply-type0').hide();
+  $('#reply-type1').hide();
+  $('#reply-type2').hide();
 };
 
 var showReply = function showReply(type) {
   hideReplyTypeBtn();
-  $('#bbs-reply-btn-cancel')[0].style.display = '';
-  $("#bbs-reply-type")[0].value = type;
-  $("#bbs-reply")[0].style.display = '';
+  $("#reply").show();
+  $('#reply-cancel').show();
+  var typeColor = {
+    0: '#f66',
+    1: '#fff',
+    2: '#ff6'
+  };
+  $("#reply-type").css('color', typeColor[type]);
+  $("#reply-type").val(type);
   $("html").stop().animate({
-    scrollTop: $('#bbs-reply').position().top
+    scrollTop: $('#reply').position().top
   }, 500, 'swing');
-  $("#bbs-reply-content")[0].focus();
-  checkType = false;
-  checkReply = true;
+  $("#reply-content").focus();
+  isShowReply = true;
+  isShowReplyType = false;
 };
 
 var hideReply = function hideReply() {
   hideReplyTypeBtn();
-  $("#bbs-reply")[0].style.display = 'none';
-  $('#bbs-reply-btn-cancel')[0].style.display = 'none';
-  $('#bbs-reply-btn')[0].style.display = '';
-  $("#bbs-reply-content")[0].value = '';
-  checkReplyBtn = false;
-  checkReply = false;
+  $("#reply").hide();
+  $('#reply-cancel').hide();
+  $('#reply-btn').show();
+  $("#reply-content").val('');
+  isShowReply = false;
 };
 
-function main() {
+var main = function main() {
+  tx = (0, _utils.getUrlParameter)('tx');
+  if (!tx) return;
   (0, _dexon.initDexon)(activeDexonRender);
   $('#bbs-login').click(function () {
     (0, _dexon.loginDexon)(activeDexonRender);
   });
-  $('#bbs-reply-btn').click(function () {
-    showReplyTypeBtn();
+  $('#reply-btn').click(function () {
+    showReplyType();
   });
-  $('#bbs-reply-type0').click(function () {
-    $("#bbs-reply-type")[0].style.color = 'white', showReply(0);
+  $('#reply-type0').click(function () {
+    showReply(0);
   });
-  $('#bbs-reply-type1').click(function () {
-    $("#bbs-reply-type")[0].style.color = '#ff6', showReply(1);
+  $('#reply-type1').click(function () {
+    showReply(1);
   });
-  $('#bbs-reply-type2').click(function () {
-    $("#bbs-reply-type")[0].style.color = '#f66', showReply(2);
+  $('#reply-type2').click(function () {
+    showReply(2);
   });
-  $('#bbs-reply-btn-cancel').click(function () {
+  $('#reply-cancel').click(function () {
     hideReply();
   });
-  $('#bbs-newReply').click(function () {
-    var replyType = $("#bbs-reply-type")[0].value;
-    var content = (0, _dexon.newReply)((0, _utils.getUrlParameter)('tx').substr(0, 66), $("#bbs-reply-type")[0].value, $("#bbs-reply-content")[0].value);
+  $('#reply-send').click(function () {
+    (0, _dexon.newReply)(tx.substr(0, 66), $("#reply-type").val(), $("#reply-content").val());
+  });
+  $("#reply-content").blur(function () {
+    $("#reply-content").val((0, _utils.getParseText)($("#reply-content").val(), 56));
   });
   keyboardHook();
-  var tx = (0, _utils.getUrlParameter)('tx');
 
-  if (tx) {
-    _dexon.web3js.eth.getTransaction(tx).then(function (transaction) {
-      var content = (0, _utils.htmlEntities)(_dexon.web3js.utils.hexToUtf8('0x' + transaction.input.slice(138)));
-      var author = '@' + transaction.blockNumber;
-      var title = (0, _utils.getTitle)(content.substr(0, 40));
-      document.title = title.title + ' - Gossiping - DEXON BBS';
-      $('#main-content-author')[0].innerHTML = author;
-      $('#main-content-author')[0].href = 'https://dexonscan.app/transaction/' + tx;
-      $('#main-content-title')[0].innerHTML = title.title;
-      $('#main-content-content')[0].innerHTML = title.match ? content.slice(title.title.length + 2) : content;
+  _dexon.web3js.eth.getTransaction(tx).then(function (transaction) {
+    var content = (0, _utils.htmlEntities)(_dexon.web3js.utils.hexToUtf8('0x' + transaction.input.slice(138)));
+    var author = '@' + transaction.blockNumber;
+    var title = (0, _utils.getTitle)(content.substr(0, 40));
+    document.title = title.title + ' - Gossiping - DEXON BBS';
+    $('#main-content-author').text(author);
+    $('#main-content-author')[0].href = 'https://dexonscan.app/transaction/' + tx;
+    $('#main-content-title').text(title.title);
+    $('#main-content-content').text(title.match ? content.slice(title.title.length + 2) : content);
 
-      _dexon.web3js.eth.getBlock(transaction.blockNumber).then(function (block) {
-        $('#main-content-date').text(('' + new Date(block.timestamp)).substr(0, 24));
-      });
-
-      $('#main-content-href')[0].href = window.location.href;
-      $('#main-content-href')[0].innerHTML = window.location.href;
-      $('#main-content-from').text((0, _utils.getUser)(transaction.from));
+    _dexon.web3js.eth.getBlock(transaction.blockNumber).then(function (block) {
+      $('#main-content-date').text(('' + new Date(block.timestamp)).substr(0, 24));
     });
-  }
+
+    $('#main-content-href').attr('href', window.location.href);
+    $('#main-content-href').text(window.location.href);
+    $('#main-content-from').text((0, _utils.getUser)(transaction.from));
+  });
 
   var BBSExt = new _dexon.web3js.eth.Contract(_dexon.ABIBBSExt, _dexon.BBSExtContract);
   var originTx = (0, _utils.getUrlParameter)('tx').substr(0, 66);
@@ -522,27 +524,17 @@ function main() {
       if (originTx == event.returnValues.origin) displayReply(event.returnValues.vote, event.returnValues.content, event.transactionHash, event.blockNumber);
     });
   });
-}
+};
 
 var keyboardHook = function keyboardHook() {
-  var XKey = 88;
+  var returnCode = 13;
   $(document).keyup(function (e) {
-    console.log(e.keyCode);
-
-    if (!checkType && !checkReply && e.keyCode == XKey) {
-      showReplyTypeBtn();
-    } else if (!checkReply && checkType && 49 <= e.keyCode && e.keyCode <= 51) {
-      if (e.keyCode == 49) $("#bbs-reply-type")[0].style.color = 'white', showReply(1);
-      if (e.keyCode == 50) $("#bbs-reply-type")[0].style.color = '#ff6', showReply(2);
-      if (e.keyCode == 51) $("#bbs-reply-type")[0].style.color = '#f66', showReply(0);
-    } else if (checkReply && !checkType && 13 == e.keyCode) {
-      if ($("#bbs-reply-content")[0].value.length > 0) {
-        var replyType = $("#bbs-reply-type")[0].value;
-        var content = $("#bbs-reply-content")[0].value;
-        (0, _dexon.newReply)((0, _utils.getUrlParameter)('tx').substr(0, 66), replyType, content);
-      } else {
-        hideReply();
-      }
+    if (!isShowReply && !isShowReplyType && e.keyCode == 'X'.charCodeAt()) {
+      showReplyType();
+    } else if (!isShowReply && isShowReplyType && '1'.charCodeAt() <= e.keyCode && e.keyCode <= '3'.charCodeAt()) {
+      if (e.key == '1') showReply(1);else if (e.key == '2') showReply(2);else if (e.key == '3') showReply(0);
+    } else if (isShowReply && !isShowReplyType && e.keyCode == returnCode) {
+      if ($("#reply-content").val().length > 0) (0, _dexon.newReply)(tx.substr(0, 66), $("#reply-type").val(), $("#reply-content").val());else hideReply();
     }
   });
 };
@@ -550,7 +542,6 @@ var keyboardHook = function keyboardHook() {
 function displayReply(vote, content, txHash, blockNumber) {
   content = (0, _utils.htmlEntities)(content);
   var voteName = ["→", "推", "噓"];
-  var voteTag = ["→", "推", "噓"];
   var elem = $('<div class="push"></div>');
 
   _dexon.web3js.eth.getTransaction(txHash).then(function (transaction) {

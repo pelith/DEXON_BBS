@@ -123,9 +123,7 @@ parcelRequire = (function (modules, cache, entry, globalName) {
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.newPost = newPost;
-exports.newReply = newReply;
-exports.loginDexon = exports.initDexon = exports.web3js = exports.BBSExtContract = exports.BBSContract = exports.ABIBBSExt = exports.ABIBBS = void 0;
+exports.newReply = exports.newPost = exports.loginDexon = exports.initDexon = exports.web3js = exports.BBSExtContract = exports.BBSContract = exports.ABIBBSExt = exports.ABIBBS = void 0;
 var ABIBBS = [{
   "constant": !1,
   "inputs": [{
@@ -266,7 +264,7 @@ var loginDexon = function loginDexon(activeDexonRender) {
   if (window.dexon) {
     window.dexon.enable();
     detectDexonNetwrok(activeDexonRender);
-  } else alert('DEXON Wallet not detected. (請安裝 DEXON 瀏覽器擴充套件)');
+  } else return alert('DEXON Wallet not detected. (請安裝 DEXON 瀏覽器擴充套件)');
 };
 
 exports.loginDexon = loginDexon;
@@ -283,7 +281,7 @@ var detectDexonNetwrok = function detectDexonNetwrok(activeDexonRender) {
 var startInteractingWithWeb3 = function startInteractingWithWeb3(activeDexonRender) {
   var start = function start() {
     dexonWeb3.eth.getAccounts().then(function (accounts) {
-      if (accounts.length > 0) {
+      if (accounts.length) {
         activeAccount = accounts[0];
         activeDexonRender(activeAccount);
       }
@@ -294,17 +292,9 @@ var startInteractingWithWeb3 = function startInteractingWithWeb3(activeDexonRend
   setInterval(start, 1000);
 };
 
-function newPost(title, content) {
-  if (dexonWeb3 === '') {
-    alert('Please connect to your DEXON Wallet.');
-    return;
-  }
-
-  if (title.length > 40) {
-    alert('Title\'s length is over 40 characters.');
-    return;
-  }
-
+var newPost = function newPost(title, content) {
+  if (!dexonWeb3) return alert('Please connect to your DEXON Wallet.');
+  if (title.length > 40) return alert('Title\'s length is over 40 characters.');
   var post = '[' + title + ']' + content;
   var dexBBSExt = new dexonWeb3.eth.Contract(ABIBBSExt, BBSExtContract);
   dexBBSExt.methods.Post(post).estimateGas().then(function (gas) {
@@ -317,28 +307,19 @@ function newPost(title, content) {
       alert(err);
     });
   });
-}
+};
 
-function newReply(tx, replyType, content) {
-  if (dexonWeb3 === '') {
-    alert('Please connect to your DEXON Wallet first.');
-    return;
-  }
+exports.newPost = newPost;
 
-  if (![0, 1, 2].includes(+replyType)) {
-    alert('Wrong type of replyType.');
-    return;
-  }
-
-  if (content.length === 0) {
-    alert('No content.');
-    return;
-  }
+var newReply = function newReply(tx, replyType, content) {
+  if (!dexonWeb3) return alert('Please connect to your DEXON Wallet first.');
+  if (![0, 1, 2].includes(+replyType)) return alert('Wrong type of replyType.');
+  if (!content.length) return alert('No content.');
 
   if (tx) {
     var dexBBSExt = new dexonWeb3.eth.Contract(ABIBBSExt, BBSExtContract);
-    dexBBSExt.methods.Reply(tx, replyType, content).estimateGas().then(function (gas) {
-      dexBBSExt.methods.Reply(tx, replyType, content).send({
+    dexBBSExt.methods.Reply(tx, +replyType, content).estimateGas().then(function (gas) {
+      dexBBSExt.methods.Reply(tx, +replyType, content).send({
         from: activeAccount,
         gas: gas
       }).then(function (receipt) {
@@ -348,122 +329,7 @@ function newReply(tx, replyType, content) {
       });
     });
   }
-}
-},{}],"FO+Z":[function(require,module,exports) {
-"use strict";
-
-Object.defineProperty(exports, "__esModule", {
-  value: true
-});
-exports.getUser = exports.getTitle = exports.getParseText = exports.getUrlParameter = exports.htmlEntities = void 0;
-
-var htmlEntities = function htmlEntities(str) {
-  return String(str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
 };
 
-exports.htmlEntities = htmlEntities;
-
-var getUrlParameter = function getUrlParameter(sParam) {
-  var sPageURL = window.location.search.substring(1),
-      sURLVariables = sPageURL.split('&'),
-      sParameterName = [];
-
-  for (var i = 0; i < sURLVariables.length; i++) {
-    sParameterName = sURLVariables[i].split('=');
-    if (sParameterName[0] === sParam) return sParameterName[1] === undefined ? true : decodeURIComponent(sParameterName[1]);
-  }
-};
-
-exports.getUrlParameter = getUrlParameter;
-
-var getParseText = function getParseText(str, len) {
-  var tmp = '',
-      count = 0;
-
-  for (var i = 0; i < str.length; i++) {
-    if (str[i].match(/[\u4e00-\u9fa5]/g)) tmp += str[i], count += 2;else if (str[i].match(/[\u0800-\u4e00]/g)) tmp += str[i], count += 2;else if (str[i].match(/[\uff00-\uffff]/g)) tmp += str[i], count += 2;else tmp += str[i], count++;
-    if (count >= len) break;
-  }
-
-  return tmp;
-};
-
-exports.getParseText = getParseText;
-
-var getTitle = function getTitle(content) {
-  content = getParseText(content, 42);
-  var match = content.match(/^(\[).*(\])/);
-  return {
-    match: match,
-    title: match ? match[0].substr(1, match[0].length - 2) : content
-  };
-};
-
-exports.getTitle = getTitle;
-
-var getUser = function getUser(address) {
-  return address.replace(/^(0x.{4}).+(.{4})$/, '$1…$2');
-};
-
-exports.getUser = getUser;
-},{}],"6HQS":[function(require,module,exports) {
-"use strict";
-
-var _dexon = require("./dexon.js");
-
-var _utils = require("./utils.js");
-
-// import 'babel-polyfill'
-// const banList = [""]
-function main() {
-  (0, _dexon.initDexon)(activeDexonRender);
-  var BBS = new _dexon.web3js.eth.Contract(_dexon.ABIBBS, _dexon.BBSContract);
-  var BBSExt = new _dexon.web3js.eth.Contract(_dexon.ABIBBSExt, _dexon.BBSExtContract);
-  BBS.getPastEvents({
-    fromBlock: '1170000'
-  }).then(function (events) {
-    events.slice().reverse().forEach(function (event) {
-      // if ( !banList.includes(event.transactionHash) )
-      directDisplay((0, _utils.getTitle)(event.returnValues.content.substr(0, 40)).title, event.transactionHash, event.blockNumber);
-    });
-  });
-}
-
-function countVotes(txHash) {
-  var BBSExt = new _dexon.web3js.eth.Contract(_dexon.ABIBBSExt, _dexon.BBSExtContract);
-  return BBSExt.methods.upvotes(txHash.substr(0, 66)).call().then(function (upvotes) {
-    return BBSExt.methods.downvotes(txHash.substr(0, 66)).call().then(function (downvotes) {
-      return upvotes - downvotes;
-    });
-  });
-}
-
-function directDisplay(content, txHash, blockNumber) {
-  content = (0, _utils.htmlEntities)(content);
-  var elem = $('<div class="r-ent"></div>');
-  elem.html("<div class=\"nrec\"></div>\n    <div class=\"title\">\n    <a href=\"content.html?tx=".concat(txHash, "\">\n      ").concat(content, "\n    </a>\n    </div>\n    <div class=\"meta\">\n      <div class=\"author\">\n        <a target=\"_blank\" href=\"https://dexonscan.app/transaction/").concat(txHash, "\">\n           @").concat(blockNumber, "\n        </a>\n      </div>\n      <div class=\"article-menu\"></div>\n      <div class=\"date\">...</div>\n    </div>"));
-  $('.r-list-container.action-bar-margin.bbs-screen').append(elem);
-
-  _dexon.web3js.eth.getBlock(blockNumber).then(function (block) {
-    var date = new Date(block.timestamp);
-    $(elem).find('.date').text(date.getMonth() + 1 + '/' + ('' + date.getDate()).padStart(2, '0')).attr('title', date.toLocaleString());
-  });
-
-  countVotes(txHash).then(function (votes) {
-    if (votes > 99) $(elem).find('.nrec').html("<span class=\"hl f1\"> ".concat(votes, " </span>"));else if (votes > 9) $(elem).find('.nrec').html("<span class=\"hl f3\"> ".concat(votes, " </span>"));else if (votes > 0) $(elem).find('.nrec').html("<span class=\"hl f2\"> ".concat(votes, " </span>"));
-  });
-}
-
-var activeDexonRender = function activeDexonRender(account) {
-  $("#bbs-login")[0].style.display = 'none';
-  $("#bbs-register")[0].style.display = 'none';
-  $("#bbs-user")[0].style.display = '';
-  $("#bbs-post")[0].style.display = '';
-  $("#bbs-user")[0].innerHTML = (0, _utils.getUser)(account);
-};
-
-$('#bbs-login').click(function () {
-  (0, _dexon.loginDexon)(activeDexonRender);
-});
-$(main);
-},{"./dexon.js":"UN6U","./utils.js":"FO+Z"}]},{},["6HQS"], null)
+exports.newReply = newReply;
+},{}]},{},["UN6U"], null)
