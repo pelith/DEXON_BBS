@@ -6,8 +6,8 @@ let account = ''
 
 let isShowReply = false, isShowReplyType = false
 
-const activeDexonRender = (account) => {
-  account = getUser(account)
+const activeDexonRender = (_account) => {
+  account = _account
 
   if (account){
     // show User
@@ -28,12 +28,16 @@ const activeDexonRender = (account) => {
     $("#reply-btn").hide()
   }
 
-  $("#bbs-user").text(account)
-  $("#reply-user").text(account)
+  $("#bbs-user").text(getUser(account))
+  $("#reply-user").text(getUser(account))
 }
 
-const showReplyType = () => {
+const showReplyType = async () => {
   $('#reply-btn').hide()
+
+  const voted = await BBSExt.methods.voted(account, tx).call()
+  if (voted) return showReply(0)
+
   $('#reply-type0').show()
   $('#reply-type1').show()
   $('#reply-type2').show()
@@ -130,13 +134,7 @@ const main = async () => {
   $('#main-content-from').text('@'+transaction.blockNumber)
   $('#main-content-from').attr('href', 'https://dexonscan.app/transaction/'+tx)
 
-  // #####
   const events = await BBSExt.getPastEvents({fromBlock : '990000'})
-// 
-  const voted = await BBSExt.methods.voted(account, tx.substr(0, 34)).call()
-  // console.log(voted)
-// 
-
 
   events.slice().filter((event) => {return tx == event.returnValues.origin})
   .map(async (event) => {
@@ -168,7 +166,7 @@ const keyboardHook = () => {
     }
     else if ( isShowReply && !isShowReplyType && ctrlDown && e.keyCode == returnCode) {
       if ($("#reply-content").val().length > 0)
-        newReply(tx.substr(0,66), $("#reply-type").val(), $("#reply-content").val())
+        newReply(tx, $("#reply-type").val(), $("#reply-content").val())
       else
         hideReply()
     }
