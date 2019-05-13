@@ -7,6 +7,17 @@
   font-family: Inconsolata, MingLiU, SymMingLiU, 'AR PL UMing TW', LiSongPro, monospace;
 }
 
+#logo {
+  padding-left: 5px;
+  padding-right: 5px;
+  font-size: 21px;
+  font-weight: bold;
+}
+
 #logo > svg {
   vertical-align: -1rem;
+}
+
+#logo:hover > svg > path {
+  fill: white;
 }
