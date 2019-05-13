@@ -8,8 +8,7 @@ const main = async () => {
 
   $('#bbs-login').click(() => { loginDexon(activeDexonRender) })
 
-  const BBS = new web3js.eth.Contract(ABIBBS, BBSContract)
-  const BBSExt = new web3js.eth.Contract(ABIBBSExt, BBSExtContract)
+
 
   const events = await BBS.getPastEvents({fromBlock : '1170000'})
 

@@ -1,9 +1,13 @@
+
 const ABIBBS = [{"constant":!1,"inputs":[{"name":"content","type":"string"}],"name":"Post","outputs":[],"payable":!1,"stateMutability":"nonpayable","type":"function"},{"anonymous":!1,"inputs":[{"indexed":!1,"name":"content","type":"string"}],"name":"Posted","type":"event"}]
 const ABIBBSExt = [{"constant":false,"inputs":[{"name":"content","type":"string"}],"name":"Post","outputs":[],"payable":false,"stateMutability":"nonpayable","type":"function"},{"constant":false,"inputs":[{"name":"origin","type":"bytes32"},{"name":"vote","type":"uint256"},{"name":"content","type":"string"}],"name":"Reply","outputs":[],"payable":false,"stateMutability":"nonpayable","type":"function"},{"anonymous":false,"inputs":[{"indexed":false,"name":"origin","type":"bytes32"},{"indexed":false,"name":"vote","type":"uint256"},{"indexed":false,"name":"content","type":"string"}],"name":"Replied","type":"event"},{"constant":true,"inputs":[{"name":"","type":"bytes32"}],"name":"downvotes","outputs":[{"name":"","type":"uint256"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":true,"inputs":[{"name":"","type":"bytes32"}],"name":"upvotes","outputs":[{"name":"","type":"uint256"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":true,"inputs":[{"name":"","type":"address"},{"name":"","type":"bytes32"}],"name":"voted","outputs":[{"name":"","type":"bool"}],"payable":false,"stateMutability":"view","type":"function"}]
-const BBSContract = "0x663002C4E41E5d04860a76955A7B9B8234475952"
-const BBSExtContract = "0xec368ba43010056abb3e5afd01957ea1fdbd3d8f"
+const BBSContract = '0x663002C4E41E5d04860a76955A7B9B8234475952'
+const BBSExtContract = '0xec368ba43010056abb3e5afd01957ea1fdbd3d8f'
 
 const web3js = new Web3('https://mainnet-rpc.dexon.org')
+
+const BBS = new web3js.eth.Contract(ABIBBS, BBSContract)
+const BBSExt = new web3js.eth.Contract(ABIBBSExt, BBSExtContract)
 
 let dexonWeb3 = ''
 let activeAccount = ''
@@ -92,4 +96,4 @@ const newReply = async (tx, replyType, content) => {
   }
 }
 
-export {ABIBBS, ABIBBSExt, BBSContract, BBSExtContract, web3js, initDexon, loginDexon, newPost, newReply}
+export {ABIBBS, ABIBBSExt, BBSContract, BBSExtContract, web3js, BBS, BBSExt, initDexon, loginDexon, newPost, newReply}
