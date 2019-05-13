@@ -1,4 +1,4 @@
-import {ABIBBS, ABIBBSExt, BBSContract, BBSExtContract, web3js, BBS, BBSExt initDexon, loginDexon} from './dexon.js'
+import {ABIBBS, ABIBBSExt, BBSContract, BBSExtContract, web3js, BBS, BBSExt, initDexon, loginDexon} from './dexon.js'
 import {htmlEntities, getTitle, getUser} from './utils.js'
 
 let account = ''
