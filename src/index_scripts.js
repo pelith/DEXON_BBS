@@ -1,4 +1,4 @@
-import {ABIBBS, ABIBBSExt, BBSContract, BBSExtContract, web3js, initDexon, loginDexon} from './dexon.js'
+import {ABIBBS, ABIBBSExt, BBSContract, BBSExtContract, web3js, BBS, BBSExt initDexon, loginDexon} from './dexon.js'
 import {htmlEntities, getTitle, getUser} from './utils.js'
 
 let account = ''
@@ -7,8 +7,6 @@ const main = async () => {
   initDexon(activeDexonRender)
 
   $('#bbs-login').click(() => { loginDexon(activeDexonRender) })
-
-
 
   const events = await BBS.getPastEvents({fromBlock : '1170000'})
 
@@ -27,7 +25,6 @@ const main = async () => {
 }
 
 const countVotes = async (txHash) => {
-  const BBSExt = new web3js.eth.Contract(ABIBBSExt, BBSExtContract)
   const tx = txHash.substr(0, 66)
   const upvotes = await BBSExt.methods.upvotes(tx).call()
   const downvotes = await BBSExt.methods.downvotes(tx).call()
