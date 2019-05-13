@@ -156,16 +156,18 @@ const main = async () => {
 }
 
 const keyboardHook = () => {
-  const ctrlKey = 17, returnCode = 13
+  const returnCode = 13
 
   $(document).keyup((e) => {
     if (!isShowReply && !isShowReplyType && e.keyCode == 'X'.charCodeAt()) {
       showReplyType()
     }
-    else if (!isShowReply && isShowReplyType && '1'.charCodeAt() <= e.keyCode && e.keyCode <= '3'.charCodeAt()) {
-      if ( e.key == '1' ) showReply(1)
-      else if ( e.key == '2' ) showReply(2)
-      else if ( e.key == '3' ) showReply(0)
+    else if (!isShowReply && isShowReplyType) {
+      switch (e.key) {
+        case '1': return showReply(1)
+        case '2': return showReply(2)
+        case '3': return showReply(0)
+      }
     }
     else if ( isShowReply && !isShowReplyType && e.ctrlKey && e.keyCode == returnCode) {
       if ($("#reply-content").val().length > 0)
@@ -177,14 +179,18 @@ const keyboardHook = () => {
 }
 
 const displayReply = (content, from, timestamp, vote) => {
-  content = htmlEntities(content)
+  const contentNodeList = parseContent(content)
   const voteName = ["→", "推", "噓"]
   const elem = $('<div class="push"></div>')
   const date = new Date(timestamp)
   const formatDate = (date.getMonth()+1)+'/'+(''+date.getDate()).padStart(2, '0')+' '+(''+date.getHours()).padStart(2, '0')+':'+(''+date.getMinutes()).padStart(2, '0')
 
   elem.html(`<span class="${vote != 1 ? 'f1 ' : ''}hl push-tag">${voteName[vote]} </span><span class="f3 hl push-userid">${getUser(from)}</span>`)
-  elem.append(`<span class="f3 push-content">: ${content}</span>`)
+
+  const contentNode = $('<span class="f3 push-content">: </span>')
+  contentNodeList.forEach(el => contentNode.append(el))
+  elem.append(contentNode)
+
   elem.append(`<span class="push-ipdatetime">${formatDate}</span>`)
   $('#main-content.bbs-screen.bbs-content').append(elem)
 }
