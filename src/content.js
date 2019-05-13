@@ -115,16 +115,17 @@ const main = async () => {
        transaction.to.toLowerCase() !== '0x9b985Ef27464CF25561f0046352E03a09d2C2e0C'.toLowerCase()
   ) return
 
-  const content = htmlEntities(web3js.utils.hexToUtf8('0x' + transaction.input.slice(138)))
+  const content = web3js.utils.hexToUtf8('0x' + transaction.input.slice(138))
   const title = getTitle(content.substr(0, 42))
   const contentDisplay = title.match ? content.slice(title.title.length+2) : content
-  const contentNormalized = replaceUrlToLink(contentDisplay.trim().replace(/\n\s*?\n+/g, '\n\n'))
+  // const contentNormalized = contentDisplay.trim()
+    // .replace(/\n\s*?\n+/g, '\n\n')
 
   document.title = title.title + ' - Gossiping - DEXON BBS'
   $('#main-content-author').text(getUser(transaction.from))
   // $('#main-content-author').attr('href', 'https://dexonscan.app/address/'+transaction.from)
   $('#main-content-title').text(title.title)
-  $('#main-content-content').html(contentNormalized)
+  $('#main-content-content').text(contentDisplay)
   web3js.eth.getBlock(transaction.blockNumber).then(block => {
     $('#main-content-date').text((''+new Date(block.timestamp)).substr(0,24))
   })
