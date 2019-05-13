@@ -1394,9 +1394,9 @@ var showReply = function showReply(type) {
   $('#reply-send').show();
   $('#reply-cancel').show();
   var typeColor = {
-    0: '#f66',
-    1: '#fff',
-    2: '#ff6'
+    0: '#fff',
+    1: '#ff6',
+    2: '#f66'
   };
   $("#reply-type").css('color', typeColor[type]);
   $("#reply-type").val(type);
@@ -1586,12 +1586,18 @@ function () {
 var keyboardHook = function keyboardHook() {
   var ctrlKey = 17,
       returnCode = 13;
+  var ctrlDown = false;
+  $(document).keydown(function (e) {
+    if (e.keyCode == ctrlKey) ctrlDown = true;
+  }).keyup(function (e) {
+    if (e.keyCode == ctrlKey) ctrlDown = false;
+  });
   $(document).keyup(function (e) {
     if (!isShowReply && !isShowReplyType && e.keyCode == 'X'.charCodeAt()) {
       showReplyType();
     } else if (!isShowReply && isShowReplyType && '1'.charCodeAt() <= e.keyCode && e.keyCode <= '3'.charCodeAt()) {
       if (e.key == '1') showReply(1);else if (e.key == '2') showReply(2);else if (e.key == '3') showReply(0);
-    } else if (isShowReply && !isShowReplyType && e.keyCode == returnCode) {
+    } else if (isShowReply && !isShowReplyType && ctrlDown && e.keyCode == returnCode) {
       if ($("#reply-content").val().length > 0) (0, _dexon.newReply)(tx.substr(0, 66), $("#reply-type").val(), $("#reply-content").val());else hideReply();
     }
   });
