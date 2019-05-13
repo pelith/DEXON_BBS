@@ -17,21 +17,18 @@ const activeDexonRender = (account) => {
 
 const keyboardHook = () => {
   const ctrlKey = 17, QKey = 81, XKey = 88, YKey = 89
-  let ctrlDown = false
+
   let checkSave = false, checkPost = false
 
-  $(document).keydown((e) => { if (e.keyCode == ctrlKey) ctrlDown = true})
-             .keyup((e) => {if (e.keyCode == ctrlKey) ctrlDown = false})
-
   $(document).keydown((e) => {
-    if (ctrlDown && e.keyCode == QKey) {
+    if (e.ctrlKey && e.keyCode == QKey) {
       $("#bbs-footer")[0].style.display = 'none'
       $("#bbs-checksave")[0].style.display = ''
       $("#bbs-title")[0].disabled=true
       $("#bbs-content")[0].disabled=true
       checkSave = true
     }
-    else if (ctrlDown && e.keyCode == XKey) {
+    else if (e.ctrlKey && e.keyCode == XKey) {
       if (check()) {
         $("#bbs-footer")[0].style.display = 'none'
         $("#bbs-checkpost")[0].style.display = ''
@@ -40,7 +37,7 @@ const keyboardHook = () => {
         checkPost = true
       }
     }
-    else if (!ctrlDown && (48 <= e.keyCode && e.keyCode <= 222) || e.keyCode==13) {
+    else if (!e.ctrlKey && (48 <= e.keyCode && e.keyCode <= 222) || e.keyCode==13) {
       if ( checkSave ) {
         $("#bbs-footer")[0].style.display = ''
         $("#bbs-checksave")[0].style.display = 'none'

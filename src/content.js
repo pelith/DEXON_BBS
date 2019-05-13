@@ -49,6 +49,8 @@ const hideReplyTypeBtn = () => {
   $('#reply-type0').hide()
   $('#reply-type1').hide()
   $('#reply-type2').hide()
+
+  isShowReplyType = false
 }
 
 const showReply = (type) => {
@@ -70,7 +72,7 @@ const showReply = (type) => {
   $("#reply-content").focus()
 
   isShowReply = true
-  isShowReplyType = false
+  
 }
 
 const hideReply = () => {
@@ -150,10 +152,6 @@ const main = async () => {
 
 const keyboardHook = () => {
   const ctrlKey = 17, returnCode = 13
-  let ctrlDown = false
-
-  $(document).keydown((e) => { if (e.keyCode == ctrlKey) ctrlDown = true})
-             .keyup((e) => {if (e.keyCode == ctrlKey) ctrlDown = false})
 
   $(document).keyup((e) => {
     if (!isShowReply && !isShowReplyType && e.keyCode == 'X'.charCodeAt()) {
@@ -164,7 +162,7 @@ const keyboardHook = () => {
       else if ( e.key == '2' ) showReply(2)
       else if ( e.key == '3' ) showReply(0)
     }
-    else if ( isShowReply && !isShowReplyType && ctrlDown && e.keyCode == returnCode) {
+    else if ( isShowReply && !isShowReplyType && e.ctrlKey && e.keyCode == returnCode) {
       if ($("#reply-content").val().length > 0)
         newReply(tx, $("#reply-type").val(), $("#reply-content").val())
       else
