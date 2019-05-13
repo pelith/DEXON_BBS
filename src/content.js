@@ -138,6 +138,10 @@ const main = async () => {
 
 const keyboardHook = () => {
   const ctrlKey = 17, returnCode = 13
+  let ctrlDown = false
+
+  $(document).keydown((e) => { if (e.keyCode == ctrlKey) ctrlDown = true})
+             .keyup((e) => {if (e.keyCode == ctrlKey) ctrlDown = false})
 
   $(document).keyup((e) => {
     if (!isShowReply && !isShowReplyType && e.keyCode == 'X'.charCodeAt()) {
@@ -148,7 +152,7 @@ const keyboardHook = () => {
       else if ( e.key == '2' ) showReply(2)
       else if ( e.key == '3' ) showReply(0)
     }    
-    else if ( isShowReply && !isShowReplyType && e.keyCode == returnCode) {
+    else if ( isShowReply && !isShowReplyType && ctrlDown && e.keyCode == returnCode) {
       if ($("#reply-content").val().length > 0) 
         newReply(tx.substr(0,66), $("#reply-type").val(), $("#reply-content").val())
       else 
