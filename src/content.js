@@ -180,7 +180,7 @@ const displayReply = (content, from, timestamp, vote) => {
   const date = new Date(timestamp)
   const formatDate = (date.getMonth()+1)+'/'+(''+date.getDate()).padStart(2, '0')+' '+(''+date.getHours()).padStart(2, '0')+':'+(''+date.getMinutes()).padStart(2, '0')
 
-  elem.html(`<span class="${vote != 1 ? 'f1 ' : ''}hl push-tag">${voteName[vote]} </span><span class="f3 hl push-userid">${getUser(from)}</span><span class="f3 push-content">: ${content}</span><span class="push-ipdatetime">${formatDate}</span>`)
+  elem.html(`<span class="${vote != 1 ? 'f1 ' : ''}hl push-tag">${voteName[vote]} </span><a class="f3 hl push-userid" target="_blank" href="${'https://dexonscan.app/address/'+from}">${getUser(from)}</a><span class="f3 push-content">: ${content}</span><span class="push-ipdatetime">${formatDate}</span>`)
   $('#main-content.bbs-screen.bbs-content').append(elem)
 }
 
