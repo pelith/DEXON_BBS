@@ -27,6 +27,10 @@ jobs:
             git config --global user.name $GH_NAME
             npm run build
             npm run deploy-ci
+      - run:
+          name: Purge Cloudflare Cache
+          command: npm run purge-cloudflare-cache
+
 workflows:
   version: 2
   workflow:
