@@ -1355,10 +1355,10 @@ var activeDexonRender = function activeDexonRender(account) {
   account = (0, _utils.getUser)(account);
 
   if (account) {
-    // show User 
+    // show User
     $("#bbs-login").hide();
     $("#bbs-register").hide();
-    $("#bbs-user").show(); // only show reply btn at first time 
+    $("#bbs-user").show(); // only show reply btn at first time
 
     if (!$("#reply-user").text()) $("#reply-btn").show();
   } else {
@@ -1424,7 +1424,7 @@ function () {
   var _ref = _asyncToGenerator(
   /*#__PURE__*/
   _regenerator.default.mark(function _callee3() {
-    var transaction, content, title, BBSExt, originTx, events;
+    var transaction, content, title, contentDisplay, contentNormalized, BBSExt, originTx, events;
     return _regenerator.default.wrap(function _callee3$(_context3) {
       while (1) {
         switch (_context3.prev = _context3.next) {
@@ -1472,11 +1472,13 @@ function () {
             transaction = _context3.sent;
             content = (0, _utils.htmlEntities)(_dexon.web3js.utils.hexToUtf8('0x' + transaction.input.slice(138)));
             title = (0, _utils.getTitle)(content.substr(0, 42));
+            contentDisplay = title.match ? content.slice(title.title.length + 2) : content;
+            contentNormalized = contentDisplay.trim().replace(/\n\s*?\n+/g, '\n\n');
             document.title = title.title + ' - Gossiping - DEXON BBS';
             $('#main-content-author').text((0, _utils.getUser)(transaction.from)); // $('#main-content-author').attr('href', 'https://dexonscan.app/address/'+transaction.from)
 
             $('#main-content-title').text(title.title);
-            $('#main-content-content').text(title.match ? content.slice(title.title.length + 2) : content);
+            $('#main-content-content').text(contentNormalized);
 
             _dexon.web3js.eth.getBlock(transaction.blockNumber).then(function (block) {
               $('#main-content-date').text(('' + new Date(block.timestamp)).substr(0, 24));
@@ -1488,12 +1490,12 @@ function () {
             $('#main-content-from').attr('href', 'https://dexonscan.app/transaction/' + tx);
             BBSExt = new _dexon.web3js.eth.Contract(_dexon.ABIBBSExt, _dexon.BBSExtContract);
             originTx = (0, _utils.getUrlParameter)('tx').substr(0, 66);
-            _context3.next = 31;
+            _context3.next = 33;
             return BBSExt.getPastEvents({
               fromBlock: '990000'
             });
 
-          case 31:
+          case 33:
             events = _context3.sent;
             events.slice().filter(function (event) {
               return originTx == event.returnValues.origin;
@@ -1570,7 +1572,7 @@ function () {
               };
             }(), Promise.resolve());
 
-          case 33:
+          case 35:
           case "end":
             return _context3.stop();
         }

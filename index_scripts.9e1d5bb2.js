@@ -1521,7 +1521,7 @@ var activeDexonRender = function activeDexonRender(account) {
   account = (0, _utils.getUser)(account);
 
   if (account) {
-    // show User 
+    // show User
     $("#bbs-login").hide();
     $("#bbs-register").hide();
     $("#bbs-user").show(); // show post btn
