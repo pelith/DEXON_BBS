@@ -4,7 +4,7 @@
   "description": "",
   "scripts": {
     "dev": "npm run clean && parcel src/__dev__.html --out-dir dist/",
-    "build": "npm run clean && parcel build --no-source-maps src/*.njk --out-dir build/ --public-url . --no-minify",
+    "build": "npm run clean && parcel build --no-source-maps src/*.njk --out-dir build/ --public-url .",
     "clean": "rm -rf .cache dist build",
     "gh-help": "gh-pages --help",
     "deploy-prep": "echo dett.cc > build/CNAME && cp -r .circleci build",
