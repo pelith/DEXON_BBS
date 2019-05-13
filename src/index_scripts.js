@@ -66,9 +66,9 @@ const directDisplay = (content, txHash, from, timestamp, votes) => {
   }
 }
 
-const activeDexonRender = (account) => {
-  account = getUser(account)
-
+const activeDexonRender = (_account) => {
+  account = _account
+  
   if (account){
     // show User
     $("#bbs-login").hide()
@@ -88,7 +88,7 @@ const activeDexonRender = (account) => {
     $("#bbs-post").show()
   }
 
-  $("#bbs-user").text(account)
+  $("#bbs-user").text(getUser(account))
 }
 
 $(main)

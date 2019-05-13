@@ -1,9 +1,11 @@
 import {getUser} from './utils.js'
 import {initDexon, loginDexon} from './dexon.js'
 
-const activeDexonRender = (account) => {
-  account = getUser(account)
-  
+let account = ''
+
+const activeDexonRender = (_account) => {
+  account = _account
+
   if (account){
     // show User 
     $("#bbs-login").hide()
@@ -17,7 +19,7 @@ const activeDexonRender = (account) => {
     $("#bbs-user").hide()
   }
   
-  $("#bbs-user").text(account)
+  $("#bbs-user").text(getUser(account))
 }
 
 
