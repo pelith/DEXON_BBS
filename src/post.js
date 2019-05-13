@@ -1,4 +1,3 @@
-import 'babel-polyfill'
 import {getParseText, getUser} from './utils.js'
 import {initDexon, newPost} from './dexon.js'
 
