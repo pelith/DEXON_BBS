@@ -5,6 +5,8 @@ import {htmlEntities, parseUser} from './utils.js'
 
 let account = ''
 
+let focusPost
+
 const render = (_account) => {
   account = _account
 
@@ -40,12 +42,72 @@ const main = async () => {
 
   const dett = new Dett(_dexon.dexonWeb3)
 
+  keyboardHook()
+  mouseHook()
+
   const articles = await dett.getArticles()
 
   articles.reduce( async (n,p) => {
     await n
     directDisplay(...await p)
   }, Promise.resolve())
+}
+
+const focusOnPost = (post, scroll) => {
+  if (focusPost) {
+    $(focusPost).removeClass('focus')
+  }
+  focusPost = post
+  $(focusPost).addClass('focus')
+  if (scroll) {
+    focusPost.scrollIntoView(false)
+  }
+  // TODO: write cookie?
+}
+
+const keyboardHook = () => {
+  const upCode = 38, rightCode = 39, downCode = 40
+  $(document).keydown((e) => {
+    if (e.keyCode === upCode) {
+      let posts = $('.r-list-container > .r-ent')
+      if (posts.length === 0) {
+        return
+      }
+      e.preventDefault()
+      for (let i = 1; i < posts.length; ++i) {
+        if (posts[i] === focusPost) {
+          focusOnPost(posts[i - 1], true)
+          return
+        }
+      }
+      focusOnPost(posts[posts.length - 1], true)
+      return
+    }
+    if (e.keyCode === downCode) {
+      let posts = $('.r-list-container > .r-ent')
+      if (posts.length === 0) {
+        return
+      }
+      e.preventDefault()
+      for (let i = 0; i < posts.length - 1; ++i) {
+        if (posts[i] === focusPost) {
+          focusOnPost(posts[i + 1], true)
+          return
+        }
+      }
+      focusOnPost(posts[0], true)
+      return
+    }
+    if (e.keyCode == rightCode && focusPost) {
+      window.location = $('.title > a', focusPost).attr('href')
+    }
+  })
+}
+
+const mouseHook = () => {
+  $('.r-list-container').on('mouseover', '.r-ent', (e) => {
+    focusOnPost(e.currentTarget)
+  })
 }
 
 const directDisplay = (article, votes, banned) => {

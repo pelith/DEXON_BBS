@@ -116,3 +116,7 @@ a.--link-to-addr.hover:hover:after {
 
 /* event: hover */
 .tooltip:hover span{ display: block; }
+
+.r-ent.focus {
+  background: rgba(255, 255, 255, 0.2);
+}
