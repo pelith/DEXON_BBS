@@ -49,7 +49,7 @@ const directDisplay = (content, txHash, from, timestamp, votes) => {
     </div>
     <div class="meta">
       <div class="author">
-        <a target="_blank" href="https://dexonscan.app/transaction/${txHash}">
+        <a>
           ${getUser(from)}
         </a>
       </div>

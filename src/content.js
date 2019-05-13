@@ -51,7 +51,8 @@ const hideReplyTypeBtn = () => {
 const showReply = (type) => {  
   hideReplyTypeBtn()
 
-  $("#reply").show()
+  $('#reply').show()
+  $('#reply-send').show()
   $('#reply-cancel').show()
   
   const typeColor = {
@@ -73,6 +74,7 @@ const hideReply = () => {
   hideReplyTypeBtn()
 
   $("#reply").hide()
+  $('#reply-send').hide()
   $('#reply-cancel').hide()
   $('#reply-btn').show()
   $("#reply-content").val('')
@@ -100,23 +102,24 @@ const main = async () => {
 
   keyboardHook()
 
-  web3js.eth.getTransaction(tx).then(transaction => {
-    const content = htmlEntities(web3js.utils.hexToUtf8('0x' + transaction.input.slice(138)))
-    const title = getTitle(content.substr(0, 42))
+  const transaction = await web3js.eth.getTransaction(tx)
+  
+  const content = htmlEntities(web3js.utils.hexToUtf8('0x' + transaction.input.slice(138)))
+  const title = getTitle(content.substr(0, 42))
 
-    document.title = title.title + ' - Gossiping - DEXON BBS'
-    $('#main-content-author').text(getUser(transaction.from))
-    $('#main-content-author').attr('href', 'https://dexonscan.app/address/'+transaction.from)
-    $('#main-content-title').text(title.title)
-    $('#main-content-content').text(title.match ? content.slice(title.title.length+2) : content)
-    web3js.eth.getBlock(transaction.blockNumber).then(block => {
-      $('#main-content-date').text((''+new Date(block.timestamp)).substr(0,24))
-    })
-    $('#main-content-href').attr('href', window.location.href)
-    $('#main-content-href').text(window.location.href)
-    $('#main-content-from').text('@'+transaction.blockNumber)
-    $('#main-content-from').attr('href', 'https://dexonscan.app/transaction/'+tx)
+  document.title = title.title + ' - Gossiping - DEXON BBS'
+  $('#main-content-author').text(getUser(transaction.from))
+  // $('#main-content-author').attr('href', 'https://dexonscan.app/address/'+transaction.from)
+  $('#main-content-title').text(title.title)
+  $('#main-content-content').text(title.match ? content.slice(title.title.length+2) : content)
+  web3js.eth.getBlock(transaction.blockNumber).then(block => {
+    $('#main-content-date').text((''+new Date(block.timestamp)).substr(0,24))
   })
+  $('#main-content-href').attr('href', window.location.href)
+  $('#main-content-href').text(window.location.href)
+  $('#main-content-from').text('@'+transaction.blockNumber)
+  $('#main-content-from').attr('href', 'https://dexonscan.app/transaction/'+tx)
+  
 
   const BBSExt = new web3js.eth.Contract(ABIBBSExt, BBSExtContract)
   const originTx = getUrlParameter('tx').substr(0,66)
@@ -135,7 +138,7 @@ const main = async () => {
 }
 
 const keyboardHook = () => {
-  const returnCode = 13
+  const ctrlKey = 17, returnCode = 13
 
   $(document).keyup((e) => {
     if (!isShowReply && !isShowReplyType && e.keyCode == 'X'.charCodeAt()) {
