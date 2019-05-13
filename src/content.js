@@ -55,9 +55,9 @@ const showReply = (type) => {
   $('#reply-cancel').show()
   
   const typeColor = {
-    0: '#f66',
-    1: '#fff',
-    2: '#ff6',
+    0: '#fff',
+    1: '#ff6',
+    2: '#f66',
   }
   $("#reply-type").css('color',typeColor[type])
   $("#reply-type").val(type)

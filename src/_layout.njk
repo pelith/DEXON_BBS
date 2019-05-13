@@ -35,7 +35,7 @@
         <a class="board" href="/"><span class="board-label">看板 </span>Gossiping</a>
         <a id="bbs-user" class="right small" href="#" style="display: none">User</a>
         <a id="bbs-login" class="right small" href="#">登入</a>
-        <a id="bbs-register" class="right small" href="register.njk">註冊</a>
+        <a id="bbs-register" class="right small" href="register.njk">幫助</a>
       </div>
     </div>
     {%- endblock %}
@@ -48,5 +48,15 @@
     {% block scripts_extra -%}
     {%- endblock %}
     <script language="javascript" type="text/javascript" src="dexon.js"></script>
+    
+    <!-- Global site tag (gtag.js) - Google Analytics -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=UA-140044770-1"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+
+      gtag('config', 'UA-140044770-1');
+    </script>
   </body>
 </html>
