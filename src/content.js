@@ -1,5 +1,5 @@
 import {htmlEntities, getUrlParameter, getTitle, getUser, getParseText, replaceUrlToLink} from './utils.js'
-import {ABIBBS, ABIBBSExt, BBSContract, BBSExtContract, web3js, initDexon, loginDexon, newReply} from './dexon.js'
+import {ABIBBS, ABIBBSExt, BBSContract, BBSExtContract, web3js, BBS, BBSExt, initDexon, loginDexon, newReply} from './dexon.js'
 
 let tx = ''
 let account = ''
@@ -86,6 +86,8 @@ const main = async () => {
 
   if (!tx) return
 
+  if (!tx.match(/^0x[a-fA-F0-9]{64}$/g)) return
+
   initDexon(activeDexonRender)
 
   $('#bbs-login').click(() => { loginDexon(activeDexonRender) })
@@ -102,6 +104,12 @@ const main = async () => {
   keyboardHook()
 
   const transaction = await web3js.eth.getTransaction(tx)
+
+  // check transaction to address is bbs contract 
+  if ( transaction.to.toLowerCase() !== BBSExtContract.toLowerCase() &&
+       transaction.to.toLowerCase() !== BBSContract.toLowerCase() &&
+       transaction.to.toLowerCase() !== '0x9b985Ef27464CF25561f0046352E03a09d2C2e0C'.toLowerCase()
+  ) return
 
   const content = htmlEntities(web3js.utils.hexToUtf8('0x' + transaction.input.slice(138)))
   const title = getTitle(content.substr(0, 42))
@@ -121,12 +129,15 @@ const main = async () => {
   $('#main-content-from').text('@'+transaction.blockNumber)
   $('#main-content-from').attr('href', 'https://dexonscan.app/transaction/'+tx)
 
-
-  const BBSExt = new web3js.eth.Contract(ABIBBSExt, BBSExtContract)
-  const originTx = getUrlParameter('tx').substr(0,66)
+  // #####
   const events = await BBSExt.getPastEvents({fromBlock : '990000'})
+// 
+  // const voted = await BBSExt.methods.voted(account, tx.substr(0, 34)).call()
+  // console.log(voted)
+// 
 
-  events.slice().filter((event) => {return originTx == event.returnValues.origin})
+
+  events.slice().filter((event) => {return tx == event.returnValues.origin})
   .map(async (event) => {
     const transaction = await web3js.eth.getTransaction(event.transactionHash)
     const block = await web3js.eth.getBlock(event.blockNumber)
