@@ -1,3 +1,5 @@
+window.linkify = require('linkify-it')();
+
 const htmlEntities = (str) => {
   return String(str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;')
 }
@@ -42,4 +44,31 @@ const getUser = (address) => {
   return address.replace(/^(0x.{4}).+(.{4})$/, '$1…$2')
 }
 
-export {htmlEntities, getUrlParameter, getParseText, getTitle, getUser}
+const replaceUrlToLink = (content) => {
+  let matches = linkify.match(content)
+  let out = ''
+  let result = []
+  let last
+
+  if (matches) {
+    last = 0
+    matches.forEach(function (match) {
+      if (last < match.index) {
+        result.push((content.slice(last, match.index)));
+      }
+      result.push('<a target="_blank" href="');
+      result.push(match.url);
+      result.push('">');
+      result.push(match.text);
+      result.push('</a>');
+      last = match.lastIndex;
+    });
+    if (last < content.length) {
+      result.push((content.slice(last)));
+    }
+    out = result.join('');
+  }
+  return out;
+}
+
+export {htmlEntities, getUrlParameter, getParseText, getTitle, getUser, replaceUrlToLink}

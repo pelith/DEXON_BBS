@@ -1,4 +1,4 @@
-import {htmlEntities, getUrlParameter, getTitle, getUser, getParseText} from './utils.js'
+import {htmlEntities, getUrlParameter, getTitle, getUser, getParseText, replaceUrlToLink} from './utils.js'
 import {ABIBBS, ABIBBSExt, BBSContract, BBSExtContract, web3js, initDexon, loginDexon, newReply} from './dexon.js'
 
 let tx = ''
@@ -106,14 +106,13 @@ const main = async () => {
   const content = htmlEntities(web3js.utils.hexToUtf8('0x' + transaction.input.slice(138)))
   const title = getTitle(content.substr(0, 42))
   const contentDisplay = title.match ? content.slice(title.title.length+2) : content
-  const contentNormalized = contentDisplay.trim()
-    .replace(/\n\s*?\n+/g, '\n\n')
+  const contentNormalized = replaceUrlToLink(contentDisplay.trim().replace(/\n\s*?\n+/g, '\n\n'))
 
   document.title = title.title + ' - Gossiping - DEXON BBS'
   $('#main-content-author').text(getUser(transaction.from))
   // $('#main-content-author').attr('href', 'https://dexonscan.app/address/'+transaction.from)
   $('#main-content-title').text(title.title)
-  $('#main-content-content').text(contentNormalized)
+  $('#main-content-content').html(contentNormalized)
   web3js.eth.getBlock(transaction.blockNumber).then(block => {
     $('#main-content-date').text((''+new Date(block.timestamp)).substr(0,24))
   })
