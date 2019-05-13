@@ -1,4 +1,4 @@
-import {htmlEntities, getUrlParameter, getTitle, getUser, getParseText} from './utils.js'
+import {htmlEntities, getUrlParameter, getTitle, getUser, getParseText, parseContent} from './utils.js'
 import {ABIBBS, ABIBBSExt, BBSContract, BBSExtContract, web3js, BBS, BBSExt, initDexon, loginDexon, newReply} from './dexon.js'
 
 let tx = ''
@@ -111,7 +111,7 @@ const main = async () => {
 
   const transaction = await web3js.eth.getTransaction(tx)
 
-  // check transaction to address is bbs contract 
+  // check transaction to address is bbs contract
   if ( transaction.to.toLowerCase() !== BBSExtContract.toLowerCase() &&
        transaction.to.toLowerCase() !== BBSContract.toLowerCase() &&
        transaction.to.toLowerCase() !== '0x9b985Ef27464CF25561f0046352E03a09d2C2e0C'.toLowerCase()
@@ -120,14 +120,17 @@ const main = async () => {
   const content = web3js.utils.hexToUtf8('0x' + transaction.input.slice(138))
   const title = getTitle(content.substr(0, 42))
   const contentDisplay = title.match ? content.slice(title.title.length+2) : content
-  // const contentNormalized = contentDisplay.trim()
-    // .replace(/\n\s*?\n+/g, '\n\n')
+
+  const contentNodeList = parseContent(contentDisplay.trim(), 'post')
 
   document.title = title.title + ' - Gossiping - DEXON BBS'
   $('#main-content-author').text(getUser(transaction.from))
   // $('#main-content-author').attr('href', 'https://dexonscan.app/address/'+transaction.from)
   $('#main-content-title').text(title.title)
-  $('#main-content-content').text(contentDisplay)
+
+  const elContent = $('#main-content-content')
+  contentNodeList.forEach(el => elContent.append(el))
+
   web3js.eth.getBlock(transaction.blockNumber).then(block => {
     $('#main-content-date').text((''+new Date(block.timestamp)).substr(0,24))
   })
@@ -178,7 +181,11 @@ const displayReply = (content, from, timestamp, vote) => {
   const date = new Date(timestamp)
   const formatDate = (date.getMonth()+1)+'/'+(''+date.getDate()).padStart(2, '0')+' '+(''+date.getHours()).padStart(2, '0')+':'+(''+date.getMinutes()).padStart(2, '0')
 
-  elem.html(`<span class="${vote != 1 ? 'f1 ' : ''}hl push-tag">${voteName[vote]} </span><a class="f3 hl push-userid" target="_blank" href="${'https://dexonscan.app/address/'+from}">${getUser(from)}</a><span class="f3 push-content">: ${content}</span><span class="push-ipdatetime">${formatDate}</span>`)
+  elem.html(`<span class="${vote != 1 ? 'f1 ' : ''}hl push-tag">${voteName[vote]} </span><span class="f3 hl push-userid">${getUser(from)}</span>`)
+  elem.append(`<span class="f3 push-content">: `)
+  elem.append(`${content}`)
+  elem.append('</span>')
+  elem.append(`<span class="push-ipdatetime">${formatDate}</span>`)
   $('#main-content.bbs-screen.bbs-content').append(elem)
 }
 
