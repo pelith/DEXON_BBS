@@ -119,7 +119,7 @@ const main = async () => {
   const title = getTitle(content.substr(0, 42))
   const contentDisplay = title.match ? content.slice(title.title.length+2) : content
 
-  const contentNodeList = parseContent(contentDisplay.trim())
+  const contentNodeList = parseContent(contentDisplay.trim(), 'post')
 
   document.title = title.title + ' - Gossiping - DEXON BBS'
   $('#main-content-author').text(getUser(transaction.from))
@@ -183,7 +183,11 @@ const displayReply = (content, from, timestamp, vote) => {
   const date = new Date(timestamp)
   const formatDate = (date.getMonth()+1)+'/'+(''+date.getDate()).padStart(2, '0')+' '+(''+date.getHours()).padStart(2, '0')+':'+(''+date.getMinutes()).padStart(2, '0')
 
-  elem.html(`<span class="${vote != 1 ? 'f1 ' : ''}hl push-tag">${voteName[vote]} </span><span class="f3 hl push-userid">${getUser(from)}</span><span class="f3 push-content">: ${content}</span><span class="push-ipdatetime">${formatDate}</span>`)
+  elem.html(`<span class="${vote != 1 ? 'f1 ' : ''}hl push-tag">${voteName[vote]} </span><span class="f3 hl push-userid">${getUser(from)}</span>`)
+  elem.append(`<span class="f3 push-content">: `)
+  elem.append(`${content}`)
+  elem.append('</span>')
+  elem.append(`<span class="push-ipdatetime">${formatDate}</span>`)
   $('#main-content.bbs-screen.bbs-content').append(elem)
 }
 

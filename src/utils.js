@@ -84,7 +84,7 @@ const createEmbedObject = (url) => {
   return ret
 }
 
-const parseContent = content => {
+const parseContent = (content, loc) => {
   let matches = linkify.match(content)
   let result = []
 
@@ -100,9 +100,9 @@ const parseContent = content => {
       el.text(match.text)
       result.push(el[0])
 
-      // Handle embedded links
-      let embedObject = createEmbedObject(match.url)
-      if (embedObject.allowed) {
+      // Handle embedded links, only in post not reply
+      let embedObject = loc === 'post' ? createEmbedObject(match.url) : null
+      if (embedObject && embedObject.allowed) {
         result.push("<br/><br/>")
         result.push(embedObject.element)
         result.push("<br/><br/>")
