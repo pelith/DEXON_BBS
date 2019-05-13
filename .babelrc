@@ -1,0 +1,19 @@
+{
+  "presets": [
+    ["@babel/env", {
+      "targets": {
+        "chrome": 52,
+        "browsers": ["last 2 versions", "safari 7"]
+      },
+      "modules": false,
+      "useBuiltIns": "usage",
+      "debug": false
+    }]
+  ],
+  "plugins": [
+    ["@babel/transform-runtime", {
+      "helpers": false,
+      "regenerator": true,
+    }]
+  ]
+}

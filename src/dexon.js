@@ -8,14 +8,13 @@ const web3js = new Web3('https://mainnet-rpc.dexon.org')
 let dexonWeb3 = ''
 let activeAccount = ''
 
-const initDexon = (activeDexonRender) => {
+const initDexon = async (activeDexonRender) => {
   if (window.dexon) {
     dexonWeb3 = new Web3(window.dexon)
-    dexonWeb3.eth.getAccounts().then((accounts) => {
-      if (accounts.length>0){
-        detectDexonNetwrok(activeDexonRender)
-      }
-    })
+    const accounts = await dexonWeb3.eth.getAccounts()
+    if (accounts.length){
+      detectDexonNetwrok(activeDexonRender)
+    }
   }
 }
 
@@ -28,32 +27,30 @@ const loginDexon = (activeDexonRender) => {
     return alert('DEXON Wallet not detected. (請安裝 DEXON 瀏覽器擴充套件)')
 }
 
-const detectDexonNetwrok = (activeDexonRender) => {
-  dexonWeb3.eth.net.getId().then(networkID => {
-    if (networkID === 237) {
-      startInteractingWithWeb3(activeDexonRender)
-      console.log('DEXON Wallet connected')
-    }
-    else
-      alert('Wrong network')
-  })
+const detectDexonNetwrok = async (activeDexonRender) => {
+  const networkID = await dexonWeb3.eth.net.getId()
+  if (networkID === 237) {
+    startInteractingWithWeb3(activeDexonRender)
+    console.log('DEXON Wallet connected')
+  }
+  else
+    return alert('Wrong network')
 }
 
 const startInteractingWithWeb3 = (activeDexonRender) => {
-  const start = () => {
-    dexonWeb3.eth.getAccounts().then((accounts) => {
-      if (accounts.length){
-        activeAccount = accounts[0]
-        activeDexonRender(activeAccount)  
-      }
-    })
+  const start = async () => {
+    const accounts = await dexonWeb3.eth.getAccounts()
+    if (accounts.length){
+      activeAccount = accounts[0]
+      activeDexonRender(activeAccount)
+    }
   }
 
   start()
   setInterval(start, 1000)
 }
 
-const newPost = (title, content) => {
+const newPost = async (title, content) => {
   if (!dexonWeb3)
     return alert('Please connect to your DEXON Wallet.')
 
@@ -62,18 +59,17 @@ const newPost = (title, content) => {
 
   const post = '[' + title + ']' + content
   const dexBBSExt = new dexonWeb3.eth.Contract(ABIBBSExt, BBSExtContract)
-  dexBBSExt.methods.Post(post).estimateGas().then((gas) => {
-    dexBBSExt.methods.Post(post).send({ from: activeAccount, gas: gas })
-    .then((receipt) => {
-      window.location = 'index.html'
-    })
-    .catch((err) => {
-      alert(err)
-    })
-  })
+  const gas = await dexBBSExt.methods.Post(post).estimateGas()
+  try {
+    const receipt = await dexBBSExt.methods.Post(post).send({ from: activeAccount, gas: gas })
+    window.location = 'index.html'
+  }
+  catch(err){
+    alert(err)
+  }
 }
 
-const newReply = (tx, replyType, content) => {
+const newReply = async (tx, replyType, content) => {
   if (!dexonWeb3) 
     return alert('Please connect to your DEXON Wallet first.')
     
@@ -85,15 +81,14 @@ const newReply = (tx, replyType, content) => {
 
   if (tx) {
     const dexBBSExt = new dexonWeb3.eth.Contract(ABIBBSExt, BBSExtContract)
-    dexBBSExt.methods.Reply(tx, +replyType, content).estimateGas().then((gas) => {
-      dexBBSExt.methods.Reply(tx, +replyType, content).send({ from: activeAccount, gas: gas })
-      .then((receipt) => {
-        window.location.reload()
-      })
-      .catch((err) => {
-        alert(err)
-      })
-    })
+    const gas = await  dexBBSExt.methods.Reply(tx, +replyType, content).estimateGas()
+    try {
+      const receipt = await dexBBSExt.methods.Reply(tx, +replyType, content).send({ from: activeAccount, gas: gas })
+      window.location.reload()
+    }
+    catch(err){
+      alert(err)
+    }
   }
 }
 
