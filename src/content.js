@@ -132,7 +132,7 @@ const main = async () => {
   // #####
   const events = await BBSExt.getPastEvents({fromBlock : '990000'})
 // 
-  // const voted = await BBSExt.methods.voted(account, tx.substr(0, 34)).call()
+  const voted = await BBSExt.methods.voted(account, tx.substr(0, 34)).call()
   // console.log(voted)
 // 
 
