@@ -7,16 +7,16 @@
 
     {% block meta -%}
     <meta property="og:title" content="{{ title or 'DEXON BBS' }}">
-    <meta property="og:description" content="基於 DEXON 智慧合約的 BBS 系統">
-    <meta property="og:url" content="https://dett.cc">
+    <meta property="og:description" content="{{ description or '基於 DEXON 智慧合約的 BBS 系統' }}">
+    <meta property="og:url" content="{{ canonicalUrl or 'https://dett.cc' }}">
     <meta property="og:type" content="website">
-    <meta property="og:image" content="assets/meta.png">
+    <meta property="og:image" content="{{ 'assets/meta.png' | prefixUrl }}">
     <meta property="og:image:width" content="830">
     <meta property="og:image:height" content="480">
     {%- endblock %}
 
     {% block head_extra -%}
-    <link rel="shortcut icon" type="image/png" href="favicon.ico"/>
+    <link rel="shortcut icon" type="image/png" href="favicon.ico">
     <link rel="stylesheet" type="text/css" href="https://images.ptt.cc/bbs/v2.25/bbs-common.css">
     <link rel="stylesheet" type="text/css" href="https://images.ptt.cc/bbs/v2.25/bbs-base.css" media="screen">
     <link rel="stylesheet" type="text/css" href="https://images.ptt.cc/bbs/v2.25/bbs-custom.css">
@@ -31,7 +31,7 @@
     <div id="topbar-container">
       <div id="topbar" class="bbs-content">
 
-        <a id="logo" href="/" style="padding-left: 0;padding-right: 5; font-size: 21px;font-weight:bold">{%- include '_logo.njk' -%} BBS</a>
+        <a id="logo" href="/">{%- include '_logo.njk' -%} BBS</a>
         <span>›</span>
         <a class="board" href="/"><span class="board-label">看板 </span>Gossiping</a>
         <a id="bbs-user" class="right small" href="#" style="display: none">User</a>
