@@ -1,5 +1,12 @@
 <!DOCTYPE html>
-<script>location.href = '/index.html'</script>
+<script>
+fetch('/index.html')
+  .then(resp => resp.text())
+  .then(content => {
+    const newDoc = document.open('text/html', 'replace')
+    newDoc.write(content)
+    newDoc.close()
+})</script>
 <!-- a workaround to build all assets but still maintains a single entry -->
 <a href='./index.njk'></a>
 <a href='./content.njk'></a>
