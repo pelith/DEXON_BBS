@@ -143,8 +143,10 @@ const main = async () => {
 
   events.slice().filter((event) => {return tx == event.returnValues.origin})
   .map(async (event) => {
-    const transaction = await web3js.eth.getTransaction(event.transactionHash)
-    const block = await web3js.eth.getBlock(event.blockNumber)
+    const [transaction, block] = await Promise.all([
+      web3js.eth.getTransaction(event.transactionHash),
+      web3js.eth.getBlock(event.blockNumber),
+    ])
     return [event.returnValues.content, transaction.from, block.timestamp, event.returnValues.vote]
   })
   .reduce( async (n,p) => {
@@ -182,9 +184,7 @@ const displayReply = (content, from, timestamp, vote) => {
   const formatDate = (date.getMonth()+1)+'/'+(''+date.getDate()).padStart(2, '0')+' '+(''+date.getHours()).padStart(2, '0')+':'+(''+date.getMinutes()).padStart(2, '0')
 
   elem.html(`<span class="${vote != 1 ? 'f1 ' : ''}hl push-tag">${voteName[vote]} </span><span class="f3 hl push-userid">${getUser(from)}</span>`)
-  elem.append(`<span class="f3 push-content">: `)
-  elem.append(`${content}`)
-  elem.append('</span>')
+  elem.append(`<span class="f3 push-content">: ${content}</span>`)
   elem.append(`<span class="push-ipdatetime">${formatDate}</span>`)
   $('#main-content.bbs-screen.bbs-content').append(elem)
 }
