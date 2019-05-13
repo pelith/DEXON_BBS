@@ -48,7 +48,6 @@ const getUser = (address) => {
 
 const parseContent = content => {
   let matches = linkify.match(content)
-  let out = ''
   let result = []
 
   if (matches) {
@@ -69,7 +68,7 @@ const parseContent = content => {
       result.push(document.createTextNode(content.slice(last)))
     }
   } else {
-    out = document.createTextNode(content)
+    result.push(document.createTextNode(content))
   }
 
   return result
