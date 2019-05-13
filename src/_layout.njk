@@ -8,9 +8,9 @@
     {% block meta -%}
     <meta property="og:title" content="{{ title or 'DEXON BBS' }}">
     <meta property="og:description" content="{{ description or '基於 DEXON 智慧合約的 BBS 系統' }}">
-    <meta property="og:url" content="https://dett.cc">
+    <meta property="og:url" content="{{ canonicalUrl or 'https://dett.cc' }}">
     <meta property="og:type" content="website">
-    <meta property="og:image" content="assets/meta.png">
+    <meta property="og:image" content="{{ 'assets/meta.png' | prefixUrl }}">
     <meta property="og:image:width" content="830">
     <meta property="og:image:height" content="480">
     {%- endblock %}
