@@ -50,7 +50,7 @@ const keyboardHook = () => {
 
         if (e.keyCode == YKey)
           window.location = 'index.html'
-      } 
+      }
       else if ( checkPost ) {
         $("#bbs-footer")[0].style.display = ''
         $("#bbs-checkpost")[0].style.display = 'none'

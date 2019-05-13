@@ -22,6 +22,7 @@
     <link rel="stylesheet" type="text/css" href="https://images.ptt.cc/bbs/v2.25/bbs-custom.css">
     <link rel="stylesheet" type="text/css" href="https://images.ptt.cc/bbs/v2.25/pushstream.css" media="screen">
     <link rel="stylesheet" type="text/css" href="https://images.ptt.cc/bbs/v2.25/bbs-print.css" media="print">
+    <link rel="stylesheet" type="text/css" href="style.css">
     {%- endblock %}
   </head>
 
@@ -29,8 +30,8 @@
     {% block topbar -%}
     <div id="topbar-container">
       <div id="topbar" class="bbs-content">
-        {%- include '_logo.njk' -%}
-        <a id="logo" href="/" style="padding-left: 0;padding-right: 5; font-size: 21px;font-weight:bold">BBS</a>
+
+        <a id="logo" href="/" style="padding-left: 0;padding-right: 5; font-size: 21px;font-weight:bold">{%- include '_logo.njk' -%} BBS</a>
         <span>›</span>
         <a class="board" href="/"><span class="board-label">看板 </span>Gossiping</a>
         <a id="bbs-user" class="right small" href="#" style="display: none">User</a>
@@ -48,7 +49,7 @@
     {% block scripts_extra -%}
     {%- endblock %}
     <script language="javascript" type="text/javascript" src="dexon.js"></script>
-    
+
     <!-- Global site tag (gtag.js) - Google Analytics -->
     <script async src="https://www.googletagmanager.com/gtag/js?id=UA-140044770-1"></script>
     <script>

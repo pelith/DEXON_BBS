@@ -74,7 +74,7 @@ const activeDexonRender = (account) => {
   account = getUser(account)
 
   if (account){
-    // show User 
+    // show User
     $("#bbs-login").hide()
     $("#bbs-register").hide()
     $("#bbs-user").show()
@@ -91,8 +91,8 @@ const activeDexonRender = (account) => {
     // hide post btn
     $("#bbs-post").show()
   }
-  
-  $("#bbs-user").text(account)  
+
+  $("#bbs-user").text(account)
 }
 
 $(main)
