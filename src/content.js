@@ -1,5 +1,5 @@
 import {htmlEntities, getUrlParameter, getTitle, getUser, getParseText, parseContent} from './utils.js'
-import {ABIBBS, ABIBBSExt, BBSContract, BBSExtContract, BBS, BBSExt, web3js, initDexon, loginDexon, newReply} from './dexon.js'
+import {ABIBBS, ABIBBSExt, BBSContract, BBSExtContract, web3js, BBS, BBSExt, initDexon, loginDexon, newReply} from './dexon.js'
 
 let tx = ''
 let account = ''
