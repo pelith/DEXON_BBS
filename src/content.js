@@ -1,5 +1,5 @@
-import {htmlEntities, getUrlParameter, getTitle, getUser, getParseText, replaceUrlToLink} from './utils.js'
-import {ABIBBS, ABIBBSExt, BBSContract, BBSExtContract, web3js, BBS, BBSExt, initDexon, loginDexon, newReply} from './dexon.js'
+import {htmlEntities, getUrlParameter, getTitle, getUser, getParseText, parseContent} from './utils.js'
+import {ABIBBS, ABIBBSExt, BBSContract, BBSExtContract, BBS, BBSExt, web3js, initDexon, loginDexon, newReply} from './dexon.js'
 
 let tx = ''
 let account = ''
@@ -109,7 +109,7 @@ const main = async () => {
 
   const transaction = await web3js.eth.getTransaction(tx)
 
-  // check transaction to address is bbs contract 
+  // check transaction to address is bbs contract
   if ( transaction.to.toLowerCase() !== BBSExtContract.toLowerCase() &&
        transaction.to.toLowerCase() !== BBSContract.toLowerCase() &&
        transaction.to.toLowerCase() !== '0x9b985Ef27464CF25561f0046352E03a09d2C2e0C'.toLowerCase()
@@ -118,14 +118,17 @@ const main = async () => {
   const content = web3js.utils.hexToUtf8('0x' + transaction.input.slice(138))
   const title = getTitle(content.substr(0, 42))
   const contentDisplay = title.match ? content.slice(title.title.length+2) : content
-  // const contentNormalized = contentDisplay.trim()
-    // .replace(/\n\s*?\n+/g, '\n\n')
+
+  const contentNodeList = parseContent(contentDisplay.trim())
 
   document.title = title.title + ' - Gossiping - DEXON BBS'
   $('#main-content-author').text(getUser(transaction.from))
   // $('#main-content-author').attr('href', 'https://dexonscan.app/address/'+transaction.from)
   $('#main-content-title').text(title.title)
-  $('#main-content-content').text(replaceUrlToLink(contentDisplay))
+
+  const elContent = $('#main-content-content')
+  contentNodeList.forEach(el => elContent.append(el))
+
   web3js.eth.getBlock(transaction.blockNumber).then(block => {
     $('#main-content-date').text((''+new Date(block.timestamp)).substr(0,24))
   })

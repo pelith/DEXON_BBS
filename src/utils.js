@@ -1,4 +1,6 @@
-window.linkify = require('linkify-it')();
+import LinkifyIt from 'linkify-it';
+
+const linkify = LinkifyIt()
 
 const htmlEntities = (str) => {
   return String(str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;')
@@ -44,31 +46,33 @@ const getUser = (address) => {
   return address.replace(/^(0x.{4}).+(.{4})$/, '$1…$2')
 }
 
-const replaceUrlToLink = (content) => {
+const parseContent = content => {
   let matches = linkify.match(content)
   let out = ''
   let result = []
-  let last
 
   if (matches) {
-    last = 0
-    matches.forEach(function (match) {
+    let last = 0
+    matches.forEach(match => {
       if (last < match.index) {
-        result.push((content.slice(last, match.index)));
+        result.push(document.createTextNode(content.slice(last, match.index)));
       }
-      result.push('<a target="_blank" href="');
-      result.push(match.url);
-      result.push('">');
-      result.push(match.text);
-      result.push('</a>');
-      last = match.lastIndex;
+
+      const el = $('<a target="_blank"></a>')
+      el.attr('href', match.url)
+      el.text(match.text)
+      result.push(el[0])
+
+      last = match.lastIndex
     });
     if (last < content.length) {
-      result.push((content.slice(last)));
+      result.push(document.createTextNode(content.slice(last)))
     }
-    out = result.join('');
+  } else {
+    out = document.createTextNode(content)
   }
-  return out;
+
+  return result
 }
 
-export {htmlEntities, getUrlParameter, getParseText, getTitle, getUser, replaceUrlToLink}
+export {htmlEntities, getUrlParameter, getParseText, getTitle, getUser, parseContent}
