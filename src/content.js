@@ -1,4 +1,3 @@
-import 'babel-polyfill'
 import {htmlEntities, getUrlParameter, getTitle, getUser, getParseText} from './utils.js'
 import {ABIBBS, ABIBBSExt, BBSContract, BBSExtContract, web3js, initDexon, loginDexon, newReply} from './dexon.js'
 

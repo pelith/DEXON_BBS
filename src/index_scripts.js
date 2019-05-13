@@ -1,4 +1,3 @@
-import 'babel-polyfill'
 import {ABIBBS, ABIBBSExt, BBSContract, BBSExtContract, web3js, initDexon, loginDexon} from './dexon.js'
 import {htmlEntities, getTitle, getUser} from './utils.js'
 

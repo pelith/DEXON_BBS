@@ -1,6 +1,6 @@
 {
   "presets": [
-    ["env", {
+    ["@babel/env", {
       "targets": {
         "chrome": 52,
         "browsers": ["last 2 versions", "safari 7"]
@@ -9,9 +9,11 @@
       "useBuiltIns": "usage",
       "debug": false
     }]
+  ],
+  "plugins": [
+    ["@babel/transform-runtime", {
+      "helpers": false,
+      "regenerator": true,
+    }]
   ]
 }
-
-// {
-//   "plugins": ["transform-runtime"]
-// }
