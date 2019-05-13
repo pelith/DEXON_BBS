@@ -196,24 +196,38 @@ const main = async () => {
 }
 
 const keyboardHook = () => {
-  const returnCode = 13
-
-  $(document).keyup((e) => {
-    if (!isShowReply && !isShowReplyType && e.keyCode == 'X'.charCodeAt()) {
+  const returnCode = 13, escCode = 27, leftCode = 37, Xcode = 88
+  $(document).keydown((e) => {
+    if (!isShowReply && !isShowReplyType && e.keyCode === Xcode && e.ctrlKey) {
       showReplyType()
+      return
     }
-    else if (!isShowReply && isShowReplyType) {
+
+    if (!isShowReply && !isShowReplyType && e.keyCode === leftCode) {
+      window.location = '/'
+      return
+    }
+
+    if (isShowReplyType) {
       switch (e.key) {
-        case '1': return showReply(1)
-        case '2': return showReply(2)
-        case '3': return showReply(0)
+        case '1': showReply(1); break;
+        case '2': showReply(2); break;
+        case '3': showReply(3); break;
       }
+      return
     }
-    else if ( isShowReply && !isShowReplyType && e.ctrlKey && e.keyCode == returnCode) {
-      if ($("#reply-content").val().length > 0)
-        dett.reply(tx, $("#reply-type").val(), $("#reply-content").val())
-      else
+
+    if (isShowReply && e.keyCode === returnCode && e.ctrlKey) {
+      if ($("#reply-content").val().length > 0) {
+        newReply(tx, $("#reply-type").val(), $("#reply-content").val())
+      } else {
         hideReply()
+      }
+      return
+    }
+
+    if (isShowReply && e.keyCode === escCode) {
+      hideReply()
     }
   })
 }
