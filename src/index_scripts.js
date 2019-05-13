@@ -12,11 +12,13 @@ const main = async () => {
 
   events.slice().reverse().map(async (event) => {
     const txHash = event.transactionHash
-    const transaction = await web3js.eth.getTransaction(txHash)
-    const block = await web3js.eth.getBlock(event.blockNumber)
-    const votes = await countVotes(event.transactionHash)
+    const [transaction, block, votes] = await Promise.all([
+      web3js.eth.getTransaction(txHash),
+      web3js.eth.getBlock(event.blockNumber),
+      countVotes(txHash),
+    ])
 
-    return  [event.returnValues.content, txHash, transaction.from, block.timestamp, votes]
+    return [event.returnValues.content, txHash, transaction.from, block.timestamp, votes]
   })
   .reduce( async (n,p) => {
     await n
@@ -26,8 +28,11 @@ const main = async () => {
 
 const countVotes = async (txHash) => {
   const tx = txHash.substr(0, 66)
-  const upvotes = await BBSExt.methods.upvotes(tx).call()
-  const downvotes = await BBSExt.methods.downvotes(tx).call()
+
+  const [upvotes, downvotes] = await Promise.all([
+    BBSExt.methods.upvotes(tx).call(),
+    BBSExt.methods.downvotes(tx).call(),
+  ])
 
   return upvotes - downvotes
 }
@@ -68,7 +73,7 @@ const directDisplay = (content, txHash, from, timestamp, votes) => {
 
 const activeDexonRender = (_account) => {
   account = _account
-  
+
   if (account){
     // show User
     $("#bbs-login").hide()

@@ -5,7 +5,8 @@
     "scripts": {
         "dev": "npm run clean && parcel src/__dev__.html --out-dir dist/",
         "build": "npm run clean && parcel build --no-source-maps src/*.njk --out-dir build/ --public-url .",
-        "clean": "rm -rf .cache dist build",
+        "clean": "rm -rf dist build",
+        "clean:cache": "rm -rf .cache",
         "gh-help": "gh-pages --help",
         "deploy-prep": "echo dett.cc > build/CNAME && cp -r .circleci build && mkdir -p build/assets && cp src/assets/meta.png build/assets",
         "deploy-test": "npm run deploy-prep && gh-pages -d build -m \"Automated deployment to GitHub Pages: Test\" -t",

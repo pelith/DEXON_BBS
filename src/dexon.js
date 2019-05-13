@@ -4,7 +4,7 @@ const ABIBBSExt = [{"constant":false,"inputs":[{"name":"content","type":"string"
 const BBSContract = '0x663002C4E41E5d04860a76955A7B9B8234475952'
 const BBSExtContract = '0xec368ba43010056abb3e5afd01957ea1fdbd3d8f'
 
-const web3js = new Web3('https://mainnet-rpc.dexon.org')
+const web3js = new Web3('wss://mainnet-rpc.dexon.org/ws')
 
 const BBS = new web3js.eth.Contract(ABIBBS, BBSContract)
 const BBSExt = new web3js.eth.Contract(ABIBBSExt, BBSExtContract)
@@ -27,7 +27,7 @@ const loginDexon = (activeDexonRender) => {
     window.dexon.enable()
     detectDexonNetwrok(activeDexonRender)
   }
-  else 
+  else
     return alert('DEXON Wallet not detected. (請安裝 DEXON 瀏覽器擴充套件)')
 }
 
@@ -74,12 +74,12 @@ const newPost = async (title, content) => {
 }
 
 const newReply = async (tx, replyType, content) => {
-  if (!dexonWeb3) 
+  if (!dexonWeb3)
     return alert('Please connect to your DEXON Wallet first.')
-    
-  if (![0, 1, 2].includes(+replyType)) 
+
+  if (![0, 1, 2].includes(+replyType))
     return alert('Wrong type of replyType.')
-    
+
   if (!content.length)
     return alert('No content.')
 
