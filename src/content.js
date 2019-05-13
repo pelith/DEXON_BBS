@@ -125,7 +125,7 @@ const main = async () => {
   $('#main-content-author').text(getUser(transaction.from))
   // $('#main-content-author').attr('href', 'https://dexonscan.app/address/'+transaction.from)
   $('#main-content-title').text(title.title)
-  $('#main-content-content').text(contentDisplay)
+  $('#main-content-content').text(replaceUrlToLink(contentDisplay))
   web3js.eth.getBlock(transaction.blockNumber).then(block => {
     $('#main-content-date').text((''+new Date(block.timestamp)).substr(0,24))
   })
