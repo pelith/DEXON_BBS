@@ -1,6 +1,14 @@
-import LinkifyIt from 'linkify-it';
+import LinkifyIt from 'linkify-it'
+import UrlParse from 'url-parse'
 
 const linkify = LinkifyIt()
+
+const embedWhiteListAndCode = {
+  'www.youtube.com': {
+    type: 'youtube',
+    code:  '<iframe src="" width="560" height="315" frameborder="0" allow="accelerometer; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>'
+  },
+}
 
 const htmlEntities = (str) => {
   return String(str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;')
@@ -46,6 +54,36 @@ const getUser = (address) => {
   return address.replace(/^(0x.{4}).+(.{4})$/, '$1…$2')
 }
 
+const createEmbedObject = (url) => {
+  const parsedUrl = new UrlParse(url)
+  console.log(parsedUrl)
+  const ret = {
+    allowed: true,
+    element: null
+  }
+
+  // https://www.npmjs.com/package/url-parse
+  // host: Host name with port number.
+  // hostname: Host name without port number.
+  const embedMap = embedWhiteListAndCode[parsedUrl.hostname]
+  if (embedMap === undefined) {
+    // Not in white list
+    ret.allowed = false
+    return ret
+  }
+
+  const el = $(embedMap.code)
+
+  if (embedMap.type === 'youtube') {
+    const processedUrl = `https://www.youtube.com/embed/${parsedUrl.query.replace('?v=', '')}`
+    el.attr('src', processedUrl)
+  }
+
+  ret.element = el[0]
+
+  return ret
+}
+
 const parseContent = content => {
   let matches = linkify.match(content)
   let out = ''
@@ -62,6 +100,14 @@ const parseContent = content => {
       el.attr('href', match.url)
       el.text(match.text)
       result.push(el[0])
+
+      // Handle embedded links
+      let embedObject = createEmbedObject(match.url)
+      if (embedObject.allowed) {
+        result.push("<br/><br/>")
+        result.push(embedObject.element)
+        result.push("<br/><br/>")
+      }
 
       last = match.lastIndex
     });
