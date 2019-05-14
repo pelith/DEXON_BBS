@@ -51,7 +51,7 @@ const directDisplay = (content, txHash, from, timestamp, votes) => {
     </div>
     <div class="meta">
       <div class="author">
-        <a>
+        <a class="--link-to-addr" href="https://dexscan.app/address/${from}" target="_blank" data-address="${from}">
           ${getUser(from)}
         </a>
       </div>

@@ -67,7 +67,9 @@ function main(){
 
   keyboardHook()
 
-  $("#bbs-title").blur = () => { $("#bbs-title").val(getParseText($("#bbs-title").val(), 40)) }
+  $("#bbs-title").blur(() => {
+    $("#bbs-title").val(getParseText($("#bbs-title").val(), 40))
+  })
 
   if ($(window).width() > 992) {
     $("#bbs-content")[0].placeholder="~\r\n".repeat(20)
@@ -85,11 +87,11 @@ function main(){
 
   const cancelFunc = () => {
     if ((!checkContent() && !checkTitle()) || confirm('結束但不儲存?'))
-      window.location = 'index.html'
+      window.location = '/'
   }
   $(".bbs-cancel")[0].onclick = cancelFunc // 電腦版
   $(".bbs-cancel")[1].onclick = cancelFunc // 手機版
- 
+
 }
 
 

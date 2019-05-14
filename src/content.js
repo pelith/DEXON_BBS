@@ -72,7 +72,7 @@ const showReply = (type) => {
   $("#reply-content").focus()
 
   isShowReply = true
-  
+
 }
 
 const hideReply = () => {
@@ -85,6 +85,14 @@ const hideReply = () => {
   $("#reply-content").val('')
 
   isShowReply = false
+}
+
+const getAddressLink = (from, __namePool) => {
+  // TODO: bind the event to get / substitute name
+  return $('<a class="--link-to-addr" target="_blank"></a>')
+    .text(getUser(from))
+    .attr('data-address', from)
+    .attr('href', 'https://dexscan.app/address/' + from)
 }
 
 const main = async () => {
@@ -112,10 +120,14 @@ const main = async () => {
   const transaction = await web3js.eth.getTransaction(tx)
 
   // check transaction to address is bbs contract
-  if ( transaction.to.toLowerCase() !== BBSExtContract.toLowerCase() &&
-       transaction.to.toLowerCase() !== BBSContract.toLowerCase() &&
-       transaction.to.toLowerCase() !== '0x9b985Ef27464CF25561f0046352E03a09d2C2e0C'.toLowerCase()
-  ) return
+  if ([BBSExtContract.toLowerCase(),
+       BBSContract.toLowerCase(),
+       '0x9b985Ef27464CF25561f0046352E03a09d2C2e0C']
+       .map(x => x.toLowerCase())
+       .indexOf(transaction.to.toLowerCase()) < 0) {
+    $('#main-content-content').text('404 - Page not found.')
+    return
+  }
 
   const content = web3js.utils.hexToUtf8('0x' + transaction.input.slice(138))
   const title = getTitle(content.substr(0, 42))
@@ -124,7 +136,12 @@ const main = async () => {
   const contentNodeList = parseContent(contentDisplay.trim(), 'post')
 
   document.title = title.title + ' - Gossiping - DEXON BBS'
-  $('#main-content-author').text(getUser(transaction.from))
+
+  const authorLink = getAddressLink(transaction.from)
+  $('#main-content-author').append(authorLink)
+
+
+
   // $('#main-content-author').attr('href', 'https://dexonscan.app/address/'+transaction.from)
   $('#main-content-title').text(title.title)
 
@@ -185,7 +202,11 @@ const displayReply = (content, from, timestamp, vote) => {
   const date = new Date(timestamp)
   const formatDate = (date.getMonth()+1)+'/'+(''+date.getDate()).padStart(2, '0')+' '+(''+date.getHours()).padStart(2, '0')+':'+(''+date.getMinutes()).padStart(2, '0')
 
-  elem.html(`<span class="${vote != 1 ? 'f1 ' : ''}hl push-tag">${voteName[vote]} </span><span class="f3 hl push-userid">${getUser(from)}</span>`)
+  elem.html(`<span class="${vote != 1 ? 'f1 ' : ''}hl push-tag">${voteName[vote]} </span>`)
+
+  const authorNode = $('<span class="f3 hl push-userid"></span>')
+  authorNode.append(getAddressLink(from))
+  elem.append(authorNode)
 
   const contentNode = $('<span class="f3 push-content">: </span>')
   contentNodeList.forEach(el => contentNode.append(el))

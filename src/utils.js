@@ -43,10 +43,10 @@ const getParseText = (str, len) => {
 
 const getTitle = (content) => {
   content = getParseText(content, 42)
-  const match = content.match(/^(\[).*(\])/)
+  const match = content.match(/^\[(.*)\]/)
   return {
     match: match,
-    title: match ? match[0].substr(1,match[0].length-2) : content
+    title: match ? match[1] : content
   }
 }
 
