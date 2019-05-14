@@ -56,7 +56,7 @@ const getUser = (address) => {
 
 const createEmbedObject = (url) => {
   const parsedUrl = new UrlParse(url)
-  console.log(parsedUrl)
+  // console.log(parsedUrl)
   const ret = {
     allowed: true,
     element: null

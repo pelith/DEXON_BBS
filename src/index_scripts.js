@@ -18,7 +18,9 @@ const main = async () => {
       countVotes(txHash),
     ])
 
-    return [event.returnValues.content, txHash, transaction.from, block.timestamp, votes]
+    const from = transaction===null ? '' : transaction.from
+
+    return [event.returnValues.content, txHash, from, block.timestamp, votes]
   })
   .reduce( async (n,p) => {
     await n
@@ -67,6 +69,9 @@ const directDisplay = (content, txHash, from, timestamp, votes) => {
     let _class = 'hl f2'
     if (votes > 99) _class = 'hl f1'
     else if (votes > 9) _class = 'hl f3'
+    else if (-10 >= votes  && votes >= -99) _class = 'hl f5', votes='X'+Math.floor(votes*-1)
+    else if (votes<=-100)  _class = 'hl f5', votes='XX'
+
     $(elem).find('.nrec').html(`<span class="${_class}"> ${votes} </span>`)
   }
 }
