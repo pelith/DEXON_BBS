@@ -1,0 +1,42 @@
+{% extends '_layout.njk' %}
+
+{% set title = '註冊 - DEXON BBS' %}
+
+{% block content %}
+<div id="navigation-container">
+  <div id="navigation" class="bbs-content">
+    <a class="board" href="/">返回看板</a>
+    <div class="bar"></div>
+  </div>
+</div>
+
+<div id="main-container">
+<div id="main-content" class="bbs-screen bbs-content">
+
+<span class="hl" style="font-size: 2em">使用者資訊</span>
+
+地址：<span id="main-content-address">0xAAAABBBB</span>
+目前暱稱：<span id="main-content-address">0xAAAABBBB</span>
+
+
+
+<span class="hl" style="font-size: 1.33em">註冊新暱稱</span>
+
+新暱稱：<input type="text" class="q0 b7" style="height: 26px; border: none; padding: 0; vertical-align: bottom; font-family: inherit; font-size: inherit">
+
+暱稱需滿足以下規定：
+
+<span class="--rule">  - 由 2 到 12 字元組成</span>
+<span class="--rule">  - 只可以包含小寫英文字母、數字或空白</span>
+<span class="--rule">  - 不可由 0x 開頭</span>
+<span class="--rule">  - 不可全由數字組成</span>
+<span class="--rule">  - 不可由空白開頭或結尾</span>
+<span class="--rule">  - 不可包含連續空白</span>
+</div>
+<span id="main-content-content"></span>
+</div>
+{% endblock %}
+
+{% block scripts_extra %}
+<script language="javascript" type="text/javascript" src="index_scripts.js"></script>
+{% endblock %}
