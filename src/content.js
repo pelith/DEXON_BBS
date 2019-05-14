@@ -89,9 +89,9 @@ const hideReply = () => {
 
 const getAddressLink = (from, __namePool) => {
   // TODO: bind the event to get / substitute name
-  return $('<a class="--link-to-addr" target="_blank"></a>')
-    .text(getUser(from))
-    .attr('data-address', from)
+  return $('<a class="--link-to-addr tooltip" target="_blank"></a>')
+    .html(getUser(from)+'<span>('+from+')</span>')
+    // .attr('data-address', from)
     .attr('href', 'https://dexscan.app/address/' + from)
 }
 
@@ -137,10 +137,11 @@ const main = async () => {
 
   document.title = title.title + ' - Gossiping - DEXON BBS'
 
-  const authorLink = getAddressLink(transaction.from)
+  const authorLink = $('<a class="--link-to-addr hover" target="_blank"></a>')
+                    .text(getUser(transaction.from))
+                    .attr('data-address', transaction.from)
+                    .attr('href', 'https://dexscan.app/address/' + transaction.from)          
   $('#main-content-author').append(authorLink)
-
-
 
   // $('#main-content-author').attr('href', 'https://dexonscan.app/address/'+transaction.from)
   $('#main-content-title').text(title.title)
