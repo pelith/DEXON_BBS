@@ -96,4 +96,23 @@ const newReply = async (tx, replyType, content) => {
   }
 }
 
-export {ABIBBS, ABIBBSExt, BBSContract, BBSExtContract, web3js, BBS, BBSExt, initDexon, loginDexon, newPost, newReply}
+const newRewardTransaction = (to, value) => {
+  if (!dexonWeb3) {
+    alert('Please connect to your DEXON Wallet first.')
+    return Promise.reject()
+  }
+
+  console.log(activeAccount, to, value)
+
+  return dexonWeb3.eth.sendTransaction({
+    from: activeAccount,
+    to,
+    value: Web3.utils.toWei(value),
+  })
+}
+
+const newRegister = () => {
+  // STUB
+}
+
+export {ABIBBS, ABIBBSExt, BBSContract, BBSExtContract, web3js, BBS, BBSExt, initDexon, loginDexon, newPost, newReply, newRewardTransaction, newRegister}

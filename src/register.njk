@@ -15,28 +15,31 @@
 
 <span class="hl" style="font-size: 2em">使用者資訊</span>
 
-地址：<span id="main-content-address">0xAAAABBBB</span>
-目前暱稱：<span id="main-content-address">0xAAAABBBB</span>
+地址：<span id="main-content-address">...</span>
+目前ID：<span id="main-content-nickname"></span>
 
 
+<span class="hl" style="font-size: 1.33em">註冊 ID </span>
 
-<span class="hl" style="font-size: 1.33em">註冊新暱稱</span>
+新ID：<input id="register-nickname" size="14" type="text" class="input q0 b7" maxlength="12">
 
-新暱稱：<input type="text" class="q0 b7" style="height: 26px; border: none; padding: 0; vertical-align: bottom; font-family: inherit; font-size: inherit">
+ID需符合以下規定：
 
-暱稱需滿足以下規定：
-
-<span class="--rule">  - 由 2 到 12 字元組成</span>
-<span class="--rule">  - 只可以包含小寫英文字母、數字或空白</span>
-<span class="--rule">  - 不可由 0x 開頭</span>
+<span class="--rule">  - 由 2 到 12 個小寫英文字母、數字或空白字元組成</span>
+<span class="--rule">  - 不可由 0x 開頭、不可由空白開頭或結尾</span>
 <span class="--rule">  - 不可全由數字組成</span>
-<span class="--rule">  - 不可由空白開頭或結尾</span>
-<span class="--rule">  - 不可包含連續空白</span>
+<span class="--rule">  - 空白不可連續出現</span>
+
+<span class="hl">此ID價值 <span id="register-fee" class="hl f3">0.00 DXN</span>。</span>
+
+每次註冊均需交易，但舊ID無法被重複使用。
+
+<button class="btn" style="font-size: inherit">註冊</button>
 </div>
 <span id="main-content-content"></span>
 </div>
 {% endblock %}
 
 {% block scripts_extra %}
-<script language="javascript" type="text/javascript" src="index_scripts.js"></script>
+<script language="javascript" type="text/javascript" src="scripts/register.js"></script>
 {% endblock %}
