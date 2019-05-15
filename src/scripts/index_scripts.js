@@ -48,7 +48,9 @@ const main = async () => {
   }, Promise.resolve())
 }
 
-const directDisplay = (article, votes) => {
+const directDisplay = (article, votes, banned) => {
+  if (banned) return
+    
   const elem = $('<div class="r-ent"></div>')
   elem.html(
     `<div class="nrec"></div>
