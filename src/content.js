@@ -1,13 +1,16 @@
-import {htmlEntities, getUrlParameter, getTitle, getUser, getParseText, parseContent} from './utils.js'
-import {ABIBBS, ABIBBSExt, BBSContract, BBSExtContract, web3js, BBS, BBSExt, initDexon, loginDexon, newReply} from './dexon.js'
+import Dexon from './dexon.js'
+import Dett from './dett.js'
 
-let tx = ''
-let account = ''
+import {htmlEntities, getUrlParameter, parseUser, parseText, parseContent} from './utils.js'
+
+let dett = null
+let tx = '', account = ''
 
 let isShowReply = false, isShowReplyType = false
 
-const activeDexonRender = (_account) => {
+const render = (_account) => {
   account = _account
+  dett.account = account
 
   if (account){
     // show User
@@ -28,14 +31,14 @@ const activeDexonRender = (_account) => {
     $("#reply-btn").hide()
   }
 
-  $("#bbs-user").text(getUser(account))
-  $("#reply-user").text(getUser(account))
+  $("#bbs-user").text(parseUser(account))
+  $("#reply-user").text(parseUser(account))
 }
 
 const showReplyType = async () => {
   $('#reply-btn').hide()
 
-  const voted = await BBSExt.methods.voted(account, tx).call()
+  const voted = await dett.getVoted(tx)
   if (voted) return showReply(0)
 
   $('#reply-type0').show()
@@ -90,84 +93,69 @@ const hideReply = () => {
 const getAddressLink = (from, __namePool) => {
   // TODO: bind the event to get / substitute name
   return $('<a class="--link-to-addr tooltip" target="_blank"></a>')
-    .html(getUser(from)+'<span>('+from+')</span>')
+    .html(parseUser(from)+'<span>('+from+')</span>')
     // .attr('data-address', from)
     .attr('href', 'https://dexscan.app/address/' + from)
 }
 
+const error = () => { $('#main-content-content').text('404 - Page not found.') }
+
 const main = async () => {
+  // get tx 
   tx = getUrlParameter('tx')
+  if (!tx) return error()
+  if (!tx.match(/^0x[a-fA-F0-9]{64}$/g)) return error()
 
-  if (!tx) return
+  const _dexon = new Dexon(window.dexon)
+  _dexon.event.on('update',(account) => {
+    render(account)
+  })
 
-  if (!tx.match(/^0x[a-fA-F0-9]{64}$/g)) return
+  $('#bbs-login').click(() => { _dexon.login() })
 
-  initDexon(activeDexonRender)
-
-  $('#bbs-login').click(() => { loginDexon(activeDexonRender) })
+  dett = new Dett(_dexon.dexonWeb3)
 
   $('#reply-btn').click(() => { showReplyType() })
   $('#reply-type0').click(() => { showReply(0) })
   $('#reply-type1').click(() => { showReply(1) })
   $('#reply-type2').click(() => { showReply(2) })
   $('#reply-cancel').click(() => { hideReply() })
-  $('#reply-send').click(() => { newReply(tx.substr(0,66), $("#reply-type").val(), $("#reply-content").val()) })
+  $('#reply-send').click(() => { dett.reply(tx, $("#reply-type").val(), $("#reply-content").val()) })
 
-  $("#reply-content").blur(() => { $("#reply-content").val(getParseText($("#reply-content").val(), 56)) })
+  $("#reply-content").blur(() => { $("#reply-content").val(parseText($("#reply-content").val(), dett.commentLength)) })
 
   keyboardHook()
 
-  const transaction = await web3js.eth.getTransaction(tx)
+  const article = await dett.getArticle(tx)
 
   // check transaction to address is bbs contract
-  if ([BBSExtContract.toLowerCase(),
-       BBSContract.toLowerCase(),
-       '0x9b985Ef27464CF25561f0046352E03a09d2C2e0C']
-       .map(x => x.toLowerCase())
-       .indexOf(transaction.to.toLowerCase()) < 0) {
-    $('#main-content-content').text('404 - Page not found.')
-    return
-  }
+  if (!article) return error()
 
-  const content = web3js.utils.hexToUtf8('0x' + transaction.input.slice(138))
-  const title = getTitle(content.substr(0, 42))
-  const contentDisplay = title.match ? content.slice(title.title.length+2) : content
+  const contentNodeList = parseContent(article.content, 'post')
 
-  const contentNodeList = parseContent(contentDisplay.trim(), 'post')
-
-  document.title = title.title + ' - Gossiping - DEXON BBS'
+  document.title = article.title + ' - Gossiping - DEXON BBS'
 
   const authorLink = $('<a class="--link-to-addr hover" target="_blank"></a>')
-                    .text(getUser(transaction.from))
-                    .attr('data-address', transaction.from)
-                    .attr('href', 'https://dexscan.app/address/' + transaction.from)          
+                    .text(parseUser(article.transaction.from))
+                    .attr('data-address', article.transaction.from)
+                    .attr('href', 'https://dexscan.app/address/' + article.transaction.from)          
   $('#main-content-author').append(authorLink)
 
-  // $('#main-content-author').attr('href', 'https://dexonscan.app/address/'+transaction.from)
-  $('#main-content-title').text(title.title)
+  $('#main-content-title').text(article.title)
 
   const elContent = $('#main-content-content')
   contentNodeList.forEach(el => elContent.append(el))
 
-  web3js.eth.getBlock(transaction.blockNumber).then(block => {
-    $('#main-content-date').text((''+new Date(block.timestamp)).substr(0,24))
-  })
+  $('#main-content-date').text((''+new Date(article.block.timestamp)).substr(0,24))
+
   $('#main-content-href').attr('href', window.location.href)
   $('#main-content-href').text(window.location.href)
-  $('#main-content-from').text('@'+transaction.blockNumber)
+  $('#main-content-from').text('@'+article.transaction.blockNumber)
   $('#main-content-from').attr('href', 'https://dexonscan.app/transaction/'+tx)
 
-  const events = await BBSExt.getPastEvents({fromBlock : '990000'})
+  const comments = await dett.getComments(tx)
 
-  events.slice().filter((event) => {return tx == event.returnValues.origin})
-  .map(async (event) => {
-    const [transaction, block] = await Promise.all([
-      web3js.eth.getTransaction(event.transactionHash),
-      web3js.eth.getBlock(event.blockNumber),
-    ])
-    return [event.returnValues.content, transaction.from, block.timestamp, event.returnValues.vote]
-  })
-  .reduce( async (n,p) => {
+  comments.reduce( async (n,p) => {
     await n
     displayReply(...await p)
   }, Promise.resolve())
@@ -189,24 +177,24 @@ const keyboardHook = () => {
     }
     else if ( isShowReply && !isShowReplyType && e.ctrlKey && e.keyCode == returnCode) {
       if ($("#reply-content").val().length > 0)
-        newReply(tx, $("#reply-type").val(), $("#reply-content").val())
+        dett.reply(tx, $("#reply-type").val(), $("#reply-content").val())
       else
         hideReply()
     }
   })
 }
 
-const displayReply = (content, from, timestamp, vote) => {
-  const contentNodeList = parseContent(content)
+const displayReply = (comment) => {
+  const contentNodeList = parseContent(comment.content)
   const voteName = ["→", "推", "噓"]
   const elem = $('<div class="push"></div>')
-  const date = new Date(timestamp)
+  const date = new Date(comment.timestamp)
   const formatDate = (date.getMonth()+1)+'/'+(''+date.getDate()).padStart(2, '0')+' '+(''+date.getHours()).padStart(2, '0')+':'+(''+date.getMinutes()).padStart(2, '0')
 
-  elem.html(`<span class="${vote != 1 ? 'f1 ' : ''}hl push-tag">${voteName[vote]} </span>`)
+  elem.html(`<span class="${comment.vote != 1 ? 'f1 ' : ''}hl push-tag">${voteName[comment.vote]} </span>`)
 
   const authorNode = $('<span class="f3 hl push-userid"></span>')
-  authorNode.append(getAddressLink(from))
+  authorNode.append(getAddressLink(comment.author))
   elem.append(authorNode)
 
   const contentNode = $('<span class="f3 push-content">: </span>')

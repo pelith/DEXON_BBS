@@ -1,5 +1,10 @@
-import {getParseText, getUser} from './utils.js'
-import {initDexon, newPost} from './dexon.js'
+import Dexon from './dexon.js'
+import Dett from './dett.js'
+
+import {parseText, parseUser} from './utils.js'
+
+let dett = null
+let account = ''
 
 const checkContent = () => { return $("#bbs-content").val().length > 0 }
 
@@ -7,31 +12,34 @@ const checkTitle = () => { return $("#bbs-title").val().length > 0 }
 
 const check = () => { return (checkContent() && checkTitle()) }
 
-const activeDexonRender = (account) => {
+const render = (_account) => {
+  account = _account
+  dett.account = account
   $(".bbs-post")[0].disabled = !check()
+
   // Handle mobile version
   if ($(".bbs-post")[1] !== undefined)
     $(".bbs-post")[1].disabled = !check()
-  $("#bbs-user")[0].innerHTML = getUser(account)
+  $("#bbs-user").text(parseUser(account))
 }
 
 const keyboardHook = () => {
-  const ctrlKey = 17, QKey = 81, XKey = 88, YKey = 89
+  const QKey = 81, XKey = 88, YKey = 89
 
   let checkSave = false, checkPost = false
 
   $(document).keydown((e) => {
     if (e.ctrlKey && e.keyCode == QKey) {
-      $("#bbs-footer")[0].style.display = 'none'
-      $("#bbs-checksave")[0].style.display = ''
-      $("#bbs-title")[0].disabled=true
-      $("#bbs-content")[0].disabled=true
+      $("#bbs-footer").hide()
+      $("#bbs-checksave").show()
+      $("#bbs-title")[0].disabled = true
+      $("#bbs-content")[0].disabled = true
       checkSave = true
     }
     else if (e.ctrlKey && e.keyCode == XKey) {
       if (check()) {
-        $("#bbs-footer")[0].style.display = 'none'
-        $("#bbs-checkpost")[0].style.display = ''
+        $("#bbs-footer").hide()
+        $("#bbs-checkpost").show()
         $("#bbs-title")[0].disabled=true
         $("#bbs-content")[0].disabled=true
         checkPost = true
@@ -39,8 +47,8 @@ const keyboardHook = () => {
     }
     else if (!e.ctrlKey && (48 <= e.keyCode && e.keyCode <= 222) || e.keyCode==13) {
       if ( checkSave ) {
-        $("#bbs-footer")[0].style.display = ''
-        $("#bbs-checksave")[0].style.display = 'none'
+        $("#bbs-footer").show()
+        $("#bbs-checksave").hide()
         $("#bbs-title")[0].disabled=false
         $("#bbs-content")[0].disabled=false
         checkSave = false
@@ -49,38 +57,45 @@ const keyboardHook = () => {
           window.location = 'index.html'
       }
       else if ( checkPost ) {
-        $("#bbs-footer")[0].style.display = ''
-        $("#bbs-checkpost")[0].style.display = 'none'
+        $("#bbs-footer").show()
+        $("#bbs-checkpost").hide()
         $("#bbs-title")[0].disabled=false
         $("#bbs-content")[0].disabled=false
         checkPost = false
 
         if (e.keyCode == YKey)
-          if (check()) newPost($("#bbs-title")[0].value, $("#bbs-content")[0].value)
+          if (check()) dett.post($("#bbs-title").val(), $("#bbs-content").val())
       }
     }
   })
 }
 
 function main(){
-  initDexon(activeDexonRender)
+  const _dexon = new Dexon(window.dexon)
+  _dexon.event.on('update',(account) => {
+    render(account)
+  })
+
+  dett = new Dett(_dexon.dexonWeb3)
 
   keyboardHook()
 
+  $("#bbs-title")[0].placeholder = "標題限制40字內"
+
   $("#bbs-title").blur(() => {
-    $("#bbs-title").val(getParseText($("#bbs-title").val(), 40))
+    $("#bbs-title").val(parseText($("#bbs-title").val(), 40))
   })
 
   if ($(window).width() > 992) {
-    $("#bbs-content")[0].placeholder="~\r\n".repeat(20)
+    $("#bbs-content")[0].placeholder = "標題跟內文都有內容才能發文\r\n"+"~\r\n".repeat(19)
   } else {
     // mobile
-    $("#bbs-content")[0].placeholder = "請輸入您欲發布的內容";
+    $("#bbs-content")[0].placeholder = "標題跟內文都有內容才能發文\r\n\r\n請輸入您欲發布的內容";
   }
 
   const postFunc = () => {
     if ((!checkContent() && !checkTitle()) || confirm('確定發文?'))
-      newPost($("#bbs-title")[0].value, $("#bbs-content")[0].value)
+      dett.post($("#bbs-title").val(), $("#bbs-content").val())
   }
   $(".bbs-post")[0].onclick = postFunc // 電腦版
   $(".bbs-post")[1].onclick = postFunc // 手機版

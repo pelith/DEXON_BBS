@@ -1,9 +1,9 @@
 import {getUser} from './utils.js'
-import {initDexon, loginDexon} from './dexon.js'
+import Dexon from './dexon.js'
 
 let account = ''
 
-const activeDexonRender = (_account) => {
+const render = (_account) => {
   account = _account
 
   if (account){
@@ -22,10 +22,13 @@ const activeDexonRender = (_account) => {
   $("#bbs-user").text(getUser(account))
 }
 
-
 const main = async () => {
-  initDexon(activeDexonRender)
-  $('#bbs-login').click(() => { loginDexon(activeDexonRender) })
+  dexon = new Dexon(window.dexon)
+  dexon.event.on('update',(account) => {
+    render(account)
+  })
+
+  $('#bbs-login').click(() => { dexon.login() })
 }
 
 $(main)

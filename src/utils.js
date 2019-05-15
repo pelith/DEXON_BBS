@@ -26,7 +26,7 @@ const getUrlParameter = (sParam) => {
   }
 }
 
-const getParseText = (str, len) => {
+const parseText = (str, len) => {
   let tmp = '', count = 0;
   for(let i=0;i<str.length; i++){
     if (str[i].match(/[\u4e00-\u9fa5]/g)) tmp+=str[i],count+=2
@@ -41,16 +41,7 @@ const getParseText = (str, len) => {
   return tmp
 }
 
-const getTitle = (content) => {
-  content = getParseText(content, 42)
-  const match = content.match(/^\[(.*)\]/)
-  return {
-    match: match,
-    title: match ? match[1] : content
-  }
-}
-
-const getUser = (address) => {
+const parseUser = (address) => {
   return address.replace(/^(0x.{4}).+(.{4})$/, '$1…$2')
 }
 
@@ -120,4 +111,4 @@ const parseContent = (content, loc) => {
   return result
 }
 
-export {htmlEntities, getUrlParameter, getParseText, getTitle, getUser, parseContent}
+export {htmlEntities, getUrlParameter, parseText, parseUser, parseContent}
