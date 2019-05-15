@@ -17,6 +17,7 @@ const render = (_account) => {
     $("#bbs-login").hide()
     $("#bbs-register").hide()
     $("#bbs-user").show()
+    $('#reward-line').show()
 
     // only show reply btn at first time
     if (!$("#reply-user").text()) $("#reply-btn").show()
@@ -26,6 +27,7 @@ const render = (_account) => {
     $("#bbs-login").show()
     $("#bbs-register").show()
     $("#bbs-user").hide()
+    $('#reward-line').hide()
 
     // hide reply btn
     $("#reply-btn").hide()
@@ -90,6 +92,12 @@ const hideReply = () => {
   isShowReply = false
 }
 
+const showHideReward = y => {
+  // y == null is initial state
+  $('#reward-toggle-region-1')[y ? 'hide' : 'show']()
+  $('#reward-toggle-region-2')[y ? 'show' : 'hide']()
+}
+
 const getAddressLink = (from, __namePool) => {
   // TODO: bind the event to get / substitute name
   return $('<a class="--link-to-addr tooltip" target="_blank"></a>')
@@ -124,6 +132,8 @@ const main = async () => {
 
   $("#reply-content").blur(() => { $("#reply-content").val(parseText($("#reply-content").val(), dett.commentLength)) })
 
+  $('#reward-customize').click(() => showHideReward(true))
+
   keyboardHook()
 
   const article = await dett.getArticle(tx)
@@ -142,6 +152,26 @@ const main = async () => {
   $('#main-content-author').append(authorLink)
 
   $('#main-content-title').text(article.title)
+
+  $('.--send-reward').click(evt => {
+    const _ = $(evt.currentTarget)
+    // _.prop('disabled', true)
+    return newRewardTransaction(transaction.from, _.attr('data-value').toString())
+    .on('transactionHash', txhash => {
+      console.log('tx hash', txhash)
+      // _.prop('disabled', false)
+    })
+  })
+  $('#reward-custom-submit').click(evt => {
+    const _ = $('#reward-custom-value')
+    // _.prop('disabled', true)
+    return newRewardTransaction(transaction.from, _.val())
+    .on('transactionHash', txhash => {
+      console.log('tx hash', txhash)
+      // _.prop('disabled', false)
+    })
+    .finally(() => showHideReward(false))
+  })
 
   const elContent = $('#main-content-content')
   contentNodeList.forEach(el => elContent.append(el))

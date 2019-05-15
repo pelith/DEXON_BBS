@@ -3,6 +3,55 @@
   src: url(./termptt/symmingliu.aaa394dd81dbe129da06687a75bfe002.woff);
 }
 
+html, body { box-sizing: border-box; }
+* { box-sizing: inherit; }
+
+/* form elements mimicing PTT style */
+input, input[type='text'] {
+  height: 26px;
+  font-size: 24px;
+  background-color: silver;
+  border: none;
+  padding: 0;
+  vertical-align: bottom;
+}
+
+input.input,
+input.input[type='text'] {
+  font-family: inherit;
+  font-size: inherit;
+}
+
+select {
+  height: 24px;
+  border:0 none;
+  padding: 0px;
+  background-color: #000;
+  font-size: 20px;
+  vertical-align: middle;
+  -webkit-appearance: none;
+  -webkit-border-radius: 0px;
+}
+input.input.main-content-content {
+  width: 55vw;
+}
+input:focus {
+  outline: none !important;
+  border-color: none !important;
+  box-shadow: 0 0 0px none;
+}
+
+button.btn {
+    line-height: 24px;
+    vertical-align: bottom;
+    height: 26px;
+    cursor: pointer;
+    font-family: inherit;
+    padding-left: .5em;
+    padding-right: .5em;
+    font-weight: 500;
+}
+
 .bbs-content {
   font-family: Inconsolata, MingLiU, 'Courier New', SymMingLiU, 'AR PL UMing TW', LiSongPro, monospace;
 }

@@ -60,4 +60,19 @@ class Dexon{
   }
 }
 
+const newRewardTransaction = (to, value) => {
+  if (!dexonWeb3) {
+    alert('Please connect to your DEXON Wallet first.')
+    return Promise.reject()
+  }
+
+  console.log(activeAccount, to, value)
+
+  return dexonWeb3.eth.sendTransaction({
+    from: activeAccount,
+    to,
+    value: Web3.utils.toWei(value),
+  })
+}
+
 export default Dexon
