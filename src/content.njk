@@ -28,6 +28,23 @@
         border-color: none !important;
         box-shadow: 0 0 0px none;
     }
+    .video-container {
+        position: relative;
+        padding-bottom: 56.25%;
+        height: 0;
+        overflow: hidden;
+        max-width: 100%;
+        margin: 0.5em auto;
+    }
+    .video-container iframe,
+    .video-container object,
+    .video-container embed {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+    }
 </style>
 {% endblock %}
 
@@ -61,5 +78,5 @@
 {% endblock %}
 
 {% block scripts_extra %}
-<script language="javascript" type="text/javascript" src="content.js"></script>
+<script language="javascript" type="text/javascript" src="scripts/content.js"></script>
 {% endblock %}
