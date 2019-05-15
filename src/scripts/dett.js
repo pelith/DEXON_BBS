@@ -31,9 +31,9 @@ class Article {
     this.titleMatch = false
     this.title = this.getTitle(this.rawContent)
     this.content = this.titleMatch ? this.rawContent.slice(this.title.length+'[]'.length) : this.content
-    this.author = this.transaction.from 
+    this.author = this.transaction.from
 
-    // constant 
+    // constant
     this.titleLength = titleLength
   }
 
@@ -41,7 +41,7 @@ class Article {
     this.block = await web3.eth.getBlock(this.transaction.blockNumber)
     this.timestamp = this.block.timestamp
   }
-  
+
   getTitle(content){
     // title format : [$title]
     content = parseText(content, this.titleLength+'[]'.length)
@@ -58,13 +58,13 @@ class Comment {
     this.content = this.getContent()
     this.vote = +event.returnValues.vote
 
-    // constant 
+    // constant
     this.commentLength = commentLength
   }
 
   async init() {
     this.transaction = await web3.eth.getTransaction(this.tx)
-    this.author = this.transaction.from 
+    this.author = this.transaction.from
     this.block = await web3.eth.getBlock(this.transaction.blockNumber)
     this.timestamp = this.block.timestamp
   }
@@ -89,7 +89,7 @@ class Dett {
   async getArticles(){
     const events = await BBS.getPastEvents({fromBlock : this.fromBlock })
 
-    return events.reverse().map(async (event) => { 
+    return events.reverse().map(async (event) => {
       const [article, votes] = await Promise.all([
         this.getArticle(event.transactionHash),
         this.getVotes(event.transactionHash),
@@ -110,7 +110,7 @@ class Dett {
 
     return article
   }
- 
+
   async getVotes(tx){
     const [upvotes, downvotes] = await Promise.all([
       BBSExt.methods.upvotes(tx).call(),
@@ -184,12 +184,25 @@ class Dett {
     }
   }
 
+  rewardAuthor(article, value) {
+    if (!this.dexonWeb3) {
+      alert('Please connect to your DEXON Wallet first.')
+      return Promise.reject()
+    }
+
+    return this.dexonWeb3.eth.sendTransaction({
+      from: this.account,
+      to: article.author,
+      value: Web3.utils.toWei(value),
+    })
+  }
+
   isDettTx(tx){
     return [BBSExtContract,
             BBSContract,
             '0x9b985Ef27464CF25561f0046352E03a09d2C2e0C']
             .map(x => x.toLowerCase())
-            .includes(tx.toLowerCase()) 
+            .includes(tx.toLowerCase())
   }
 }
 

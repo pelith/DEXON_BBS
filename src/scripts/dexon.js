@@ -47,32 +47,17 @@ class Dexon{
       if ('networkVersion' in data)
         if (data.networkVersion === '237'){
           this.selectedAddress = 'selectedAddress' in data ? data.selectedAddress : ''
-          this.event.emit('update',this.selectedAddress) 
+          this.event.emit('update',this.selectedAddress)
         }
     })
   }
 
   login(){
     if ( !this.dexon) return alert('DEXON Wallet not detected. (請安裝 DEXON 瀏覽器擴充套件)')
-      
+
     this.dexon.enable()
     init()
   }
-}
-
-const newRewardTransaction = (to, value) => {
-  if (!dexonWeb3) {
-    alert('Please connect to your DEXON Wallet first.')
-    return Promise.reject()
-  }
-
-  console.log(activeAccount, to, value)
-
-  return dexonWeb3.eth.sendTransaction({
-    from: activeAccount,
-    to,
-    value: Web3.utils.toWei(value),
-  })
 }
 
 export default Dexon

@@ -109,7 +109,7 @@ const getAddressLink = (from, __namePool) => {
 const error = () => { $('#main-content-content').text('404 - Page not found.') }
 
 const main = async () => {
-  // get tx 
+  // get tx
   tx = getUrlParameter('tx')
   if (!tx) return error()
   if (!tx.match(/^0x[a-fA-F0-9]{64}$/g)) return error()
@@ -148,7 +148,7 @@ const main = async () => {
   const authorLink = $('<a class="--link-to-addr hover" target="_blank"></a>')
                     .text(parseUser(article.transaction.from))
                     .attr('data-address', article.transaction.from)
-                    .attr('href', 'https://dexscan.app/address/' + article.transaction.from)          
+                    .attr('href', 'https://dexscan.app/address/' + article.transaction.from)
   $('#main-content-author').append(authorLink)
 
   $('#main-content-title').text(article.title)
@@ -156,7 +156,7 @@ const main = async () => {
   $('.--send-reward').click(evt => {
     const _ = $(evt.currentTarget)
     // _.prop('disabled', true)
-    return newRewardTransaction(transaction.from, _.attr('data-value').toString())
+    return dett.rewardAuthor(article, _.attr('data-value').toString())
     .on('transactionHash', txhash => {
       console.log('tx hash', txhash)
       // _.prop('disabled', false)
@@ -165,7 +165,11 @@ const main = async () => {
   $('#reward-custom-submit').click(evt => {
     const _ = $('#reward-custom-value')
     // _.prop('disabled', true)
-    return newRewardTransaction(transaction.from, _.val())
+    if (!_.val().length) {
+      showHideReward(false)
+      return Promise.resolve()
+    }
+    return dett.rewardAuthor(article, _.val())
     .on('transactionHash', txhash => {
       console.log('tx hash', txhash)
       // _.prop('disabled', false)
