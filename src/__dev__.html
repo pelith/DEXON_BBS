@@ -1,5 +1,13 @@
 <!DOCTYPE html>
-<script>location.href = '/index.html'</script>
+<script>
+if (location.pathname == '/') {
+  location.href = '/index.html'
+} else {
+  var doc = document.open()
+  doc.write('404 Not found')
+  document.close()
+}
+</script>
 <!-- a workaround to build all assets but still maintains a single entry -->
 <a href='./index.njk'></a>
 <a href='./content.njk'></a>
