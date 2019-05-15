@@ -1,5 +1,5 @@
 import {htmlEntities, getUrlParameter, getTitle, getUser, getParseText, parseContent} from './utils.js'
-import {ABIBBS, ABIBBSExt, BBSContract, BBSExtContract, web3js, BBS, BBSExt, initDexon, loginDexon, newReply} from './dexon.js'
+import {ABIBBS, ABIBBSExt, BBSContract, BBSExtContract, web3js, BBS, BBSExt, initDexon, loginDexon, newReply, newRewardTransaction} from './dexon.js'
 
 let tx = ''
 let account = ''
@@ -14,6 +14,7 @@ const activeDexonRender = (_account) => {
     $("#bbs-login").hide()
     $("#bbs-register").hide()
     $("#bbs-user").show()
+    $('#reward-line').show()
 
     // only show reply btn at first time
     if (!$("#reply-user").text()) $("#reply-btn").show()
@@ -23,6 +24,7 @@ const activeDexonRender = (_account) => {
     $("#bbs-login").show()
     $("#bbs-register").show()
     $("#bbs-user").hide()
+    $('#reward-line').hide()
 
     // hide reply btn
     $("#reply-btn").hide()
@@ -87,6 +89,12 @@ const hideReply = () => {
   isShowReply = false
 }
 
+const showHideReward = y => {
+  // y == null is initial state
+  $('#reward-toggle-region-1')[y ? 'hide' : 'show']()
+  $('#reward-toggle-region-2')[y ? 'show' : 'hide']()
+}
+
 const getAddressLink = (from, __namePool) => {
   // TODO: bind the event to get / substitute name
   return $('<a class="--link-to-addr tooltip" target="_blank"></a>')
@@ -115,6 +123,8 @@ const main = async () => {
 
   $("#reply-content").blur(() => { $("#reply-content").val(getParseText($("#reply-content").val(), 56)) })
 
+  $('#reward-customize').click(() => showHideReward(true))
+
   keyboardHook()
 
   const transaction = await web3js.eth.getTransaction(tx)
@@ -140,11 +150,31 @@ const main = async () => {
   const authorLink = $('<a class="--link-to-addr hover" target="_blank"></a>')
                     .text(getUser(transaction.from))
                     .attr('data-address', transaction.from)
-                    .attr('href', 'https://dexscan.app/address/' + transaction.from)          
+                    .attr('href', 'https://dexscan.app/address/' + transaction.from)
   $('#main-content-author').append(authorLink)
 
   // $('#main-content-author').attr('href', 'https://dexonscan.app/address/'+transaction.from)
   $('#main-content-title').text(title.title)
+
+  $('.--send-reward').click(evt => {
+    const _ = $(evt.currentTarget)
+    // _.prop('disabled', true)
+    return newRewardTransaction(transaction.from, _.attr('data-value').toString())
+    .on('transactionHash', txhash => {
+      console.log('tx hash', txhash)
+      // _.prop('disabled', false)
+    })
+  })
+  $('#reward-custom-submit').click(evt => {
+    const _ = $('#reward-custom-value')
+    // _.prop('disabled', true)
+    return newRewardTransaction(transaction.from, _.val())
+    .on('transactionHash', txhash => {
+      console.log('tx hash', txhash)
+      // _.prop('disabled', false)
+    })
+    .finally(() => showHideReward(false))
+  })
 
   const elContent = $('#main-content-content')
   contentNodeList.forEach(el => elContent.append(el))
