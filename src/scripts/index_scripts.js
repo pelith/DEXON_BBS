@@ -79,9 +79,9 @@ const directDisplay = (article, votes, banned) => {
   let _class
   if (votes > 99)
     _class = 'hl f1'
-  if (votes > 9)
+  else if (votes > 9)
     _class = 'hl f3'
-  if (votes > 0)
+  else if (votes > 0)
     _class = 'hl f2'
   else if (-10 >= votes  && votes >= -99)
     _class = 'hl f5', votes='X'+Math.floor(votes*-1)
