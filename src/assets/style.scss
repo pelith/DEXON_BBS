@@ -77,6 +77,10 @@ a.--link-to-addr.hover:hover:after {
   content: '(' attr(data-address) ')';
 }
 
+.r-ent.focus {
+  background: rgba(255, 255, 255, 0.2);
+}
+
 #logo {
   padding-left: 5px;
   padding-right: 5px;
@@ -116,6 +120,7 @@ a.--link-to-addr.hover:hover:after {
 
 /* event: hover */
 .tooltip:hover span{ display: block; }
+
 
 @media (max-width: 360px) {
   #logo:before {
@@ -182,3 +187,5 @@ a.--link-to-addr.hover:hover:after {
 .user-menu .item a:hover {
   color: #000;
 }
+
+

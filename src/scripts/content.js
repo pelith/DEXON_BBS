@@ -66,7 +66,6 @@ const showReply = (type) => {
   $("#reply-content").focus()
 
   isShowReply = true
-
 }
 
 const hideReply = () => {
@@ -184,24 +183,33 @@ const main = async () => {
 }
 
 const keyboardHook = () => {
-  const returnCode = 13
-
+  const returnCode = 13, escCode = 27, leftCode = 37
   $(document).keyup((e) => {
-    if (!isShowReply && !isShowReplyType && e.keyCode == 'X'.charCodeAt()) {
+    if (!isShowReply && !isShowReplyType && e.keyCode === 'X'.charCodeAt()) {
       showReplyType()
+      return
+    }
+    else if (!isShowReply && !isShowReplyType && e.keyCode === leftCode) {
+      window.location = '/'
+      return
     }
     else if (!isShowReply && isShowReplyType) {
       switch (e.key) {
-        case '1': return showReply(1)
-        case '2': return showReply(2)
-        case '3': return showReply(0)
+        case '1': showReply(1); break;
+        case '2': showReply(2); break;
+        case '3': showReply(0); break;
       }
+      return
     }
     else if ( isShowReply && !isShowReplyType && e.ctrlKey && e.keyCode == returnCode) {
       if ($("#reply-content").val().length > 0)
         dett.reply(tx, $("#reply-type").val(), $("#reply-content").val())
       else
         hideReply()
+    }
+    else if (isShowReply && !isShowReplyType && e.keyCode === escCode) {
+      hideReply()
+      return
     }
   })
 }
