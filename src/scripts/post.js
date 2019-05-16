@@ -78,7 +78,7 @@ function main(){
 
   dett = new Dett(_dexon.dexonWeb3)
 
-  keyboardHook()
+  if (+window.localStorage.getItem('hotkey-mode')) keyboardHook()
 
   $("#bbs-title")[0].placeholder = "標題限制40字內"
 
@@ -87,10 +87,10 @@ function main(){
   })
 
   if ($(window).width() > 992) {
-    $("#bbs-content")[0].placeholder = "標題跟內文都有內容才能發文\r\n"+"~\r\n".repeat(19)
+    $("#bbs-content")[0].placeholder = "標題跟內文都有內容才能發文!\r\n"+"~\r\n".repeat(19)
   } else {
     // mobile
-    $("#bbs-content")[0].placeholder = "標題跟內文都有內容才能發文\r\n\r\n請輸入您欲發布的內容";
+    $("#bbs-content")[0].placeholder = "標題跟內文都有內容才能發文!\r\n\r\n請輸入您欲發布的內容";
   }
 
   const postFunc = () => {

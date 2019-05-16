@@ -1,40 +1,29 @@
-import Dexon from './dexon.js'
 import Dett from './dett.js'
 
 import {htmlEntities, getUrlParameter, parseUser, parseText, parseContent} from './utils.js'
 
 let dett = null
-let tx = '', account = ''
+let tx = ''
 
 let isShowReply = false, isShowReplyType = false
 
 const render = (_account) => {
-  account = _account
-  dett.account = account
+  dett.account = _account
 
-  if (account){
-    // show User
-    $("#bbs-login").hide()
-    $("#bbs-register").hide()
-    $("#bbs-user-menu").show()
+  if (_account){
     $('#reward-line').show()
 
     // only show reply btn at first time
     if (!$("#reply-user").text()) $("#reply-btn").show()
   }
   else{
-    // show Login/Register
-    $("#bbs-login").show()
-    $("#bbs-register").show()
-    $("#bbs-user-menu").hide()
     $('#reward-line').hide()
 
     // hide reply btn
     $("#reply-btn").hide()
   }
 
-  $("#bbs-user").text(parseUser(account))
-  $("#reply-user").text(parseUser(account))
+  $("#reply-user").text(parseUser(_account))
 }
 
 const showReplyType = async () => {
@@ -77,7 +66,6 @@ const showReply = (type) => {
   $("#reply-content").focus()
 
   isShowReply = true
-
 }
 
 const hideReply = () => {
@@ -114,12 +102,9 @@ const main = async () => {
   if (!tx) return error()
   if (!tx.match(/^0x[a-fA-F0-9]{64}$/g)) return error()
 
-  const _dexon = new Dexon(window.dexon)
   _dexon.on('update',(account) => {
     render(account)
   })
-
-  $('#bbs-login').click(() => { _dexon.login() })
 
   dett = new Dett(_dexon.dexonWeb3)
 
@@ -134,7 +119,7 @@ const main = async () => {
 
   $('#reward-customize').click(() => showHideReward(true))
 
-  keyboardHook()
+  if (+window.localStorage.getItem('hotkey-mode')) keyboardHook()
 
   const article = await dett.getArticle(tx)
 
@@ -196,24 +181,33 @@ const main = async () => {
 }
 
 const keyboardHook = () => {
-  const returnCode = 13
-
+  const returnCode = 13, escCode = 27, leftCode = 37
   $(document).keyup((e) => {
-    if (!isShowReply && !isShowReplyType && e.keyCode == 'X'.charCodeAt()) {
+    if (!isShowReply && !isShowReplyType && e.keyCode === 'X'.charCodeAt()) {
       showReplyType()
+      return
+    }
+    else if (!isShowReply && !isShowReplyType && e.keyCode === leftCode) {
+      window.location = '/'
+      return
     }
     else if (!isShowReply && isShowReplyType) {
       switch (e.key) {
-        case '1': return showReply(1)
-        case '2': return showReply(2)
-        case '3': return showReply(0)
+        case '1': showReply(1); break;
+        case '2': showReply(2); break;
+        case '3': showReply(0); break;
       }
+      return
     }
     else if ( isShowReply && !isShowReplyType && e.ctrlKey && e.keyCode == returnCode) {
       if ($("#reply-content").val().length > 0)
         dett.reply(tx, $("#reply-type").val(), $("#reply-content").val())
       else
         hideReply()
+    }
+    else if (isShowReply && !isShowReplyType && e.keyCode === escCode) {
+      hideReply()
+      return
     }
   })
 }
