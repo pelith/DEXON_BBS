@@ -117,11 +117,25 @@ a.--link-to-addr.hover:hover:after {
 /* event: hover */
 .tooltip:hover span{ display: block; }
 
-@media (min-width: 993px) {
-  #topbar-container {
-    overflow-y: visible!important;
-    overflow-x: visible!important;
+@media (max-width: 360px) {
+  #logo:before {
+    content:"Dexon";
+    font-size: 16px;
   }
+
+  #logo {
+    font-size: 16px;
+  }
+
+  #logo > svg  {
+    display: none;
+  }
+
+}
+
+#topbar-container {
+  overflow-y: visible!important;
+  overflow-x: visible!important;
 }
 
 .user-menu:visited {
