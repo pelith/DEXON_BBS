@@ -3,6 +3,7 @@
     "version": "1.0.0",
     "description": "",
     "scripts": {
+        "dev-vue": "parcel src/index.html",
         "dev": "npm run clean && parcel src/__dev__.html --out-dir dist/",
         "build": "npm run clean && parcel build --no-source-maps src/*.njk --out-dir build/ --public-url .",
         "clean": "rm -rf dist build",
@@ -29,9 +30,11 @@
         "@babel/core": "^7.4.4",
         "@babel/plugin-transform-runtime": "^7.4.4",
         "@babel/preset-env": "^7.4.4",
+        "@vue/component-compiler-utils": "^3.0.0",
         "gh-pages": "^2.0.1",
         "parcel-bundler": "^1.0.0",
-        "sass": "^1.20.1"
+        "sass": "^1.20.1",
+        "vue-template-compiler": "^2.6.10"
     },
     "dependencies": {
         "@babel/runtime": "^7.4.4",
@@ -40,6 +43,10 @@
         "nunjucks": "^3.0.0",
         "parcel-plugin-nunjucks": "^1.1.0",
         "purge-cloudflare-cache": "^1.2.2",
-        "url-parse": "^1.4.7"
+        "url-parse": "^1.4.7",
+        "vue": "^2.6.10",
+        "vue-head": "^2.1.1",
+        "vue-hot-reload-api": "^2.3.3",
+        "vue-router": "^3.0.6"
     }
 }
