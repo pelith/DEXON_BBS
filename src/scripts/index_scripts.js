@@ -9,7 +9,7 @@ const render = (_account) => {
   account = _account
 
   if (account){
-    // show User 
+    // show User
     $("#bbs-login").hide()
     $("#bbs-register").hide()
     $("#bbs-user").show()
@@ -26,13 +26,13 @@ const render = (_account) => {
     // hide post btn
     $("#bbs-post").hide()
   }
-  
+
   $("#bbs-user").text(parseUser(account))
 }
 
 const main = async () => {
   const _dexon = new Dexon(window.dexon)
-  _dexon.event.on('update',(account) => {
+  _dexon.on('update',(account) => {
     render(account)
   })
 
@@ -50,7 +50,7 @@ const main = async () => {
 
 const directDisplay = (article, votes, banned) => {
   if (banned) return
-    
+
   const elem = $('<div class="r-ent"></div>')
   elem.html(
     `<div class="nrec"></div>

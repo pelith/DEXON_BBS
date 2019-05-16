@@ -72,7 +72,7 @@ const keyboardHook = () => {
 
 function main(){
   const _dexon = new Dexon(window.dexon)
-  _dexon.event.on('update',(account) => {
+  _dexon.on('update',(account) => {
     render(account)
   })
 

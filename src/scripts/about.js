@@ -7,7 +7,7 @@ const render = (_account) => {
   account = _account
 
   if (account){
-    // show User 
+    // show User
     $("#bbs-login").hide()
     $("#bbs-register").hide()
     $("#bbs-user").show()
@@ -18,13 +18,13 @@ const render = (_account) => {
     $("#bbs-register").show()
     $("#bbs-user").hide()
   }
-  
+
   $("#bbs-user").text(getUser(account))
 }
 
 const main = async () => {
-  dexon = new Dexon(window.dexon)
-  dexon.event.on('update',(account) => {
+  const dexon = new Dexon(window.dexon)
+  dexon.on('update',(account) => {
     render(account)
   })
 

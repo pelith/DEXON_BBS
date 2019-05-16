@@ -30,12 +30,12 @@ class EventEmitter{
   }
 }
 
-class Dexon{
+class Dexon extends EventEmitter {
   constructor(_dexon) {
+    super()
     this.dexon = _dexon
     this.dexonWeb3 = ''
     this.selectedAddress = ''
-    this.event =  new EventEmitter()
     this.init()
   }
 
@@ -47,7 +47,7 @@ class Dexon{
       if ('networkVersion' in data)
         if (data.networkVersion === '237'){
           this.selectedAddress = 'selectedAddress' in data ? data.selectedAddress : ''
-          this.event.emit('update',this.selectedAddress)
+          this.emit('update',this.selectedAddress)
         }
     })
   }
