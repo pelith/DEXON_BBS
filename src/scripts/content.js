@@ -106,8 +106,6 @@ const main = async () => {
     render(account)
   })
 
-  $('#bbs-login').click(() => { _dexon.login() })
-
   dett = new Dett(_dexon.dexonWeb3)
 
   $('#reply-btn').click(() => { showReplyType() })

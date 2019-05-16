@@ -18,12 +18,12 @@ const attachDropdown = () => {
 
 const hotkey = () => {
   if(!window.localStorage.getItem('hotkey-mode')) window.localStorage.setItem('hotkey-mode', 1)
-  $('#hotkey-mode').text( +window.localStorage.getItem('hotkey-mode') ? " 關" : " 開")
+  $('.hotkey-mode').text( +window.localStorage.getItem('hotkey-mode') ? " 關" : " 開")
 
-  $('#hotkey-mode-btn').click(() => {
+  $('.hotkey-mode-btn').click(() => {
     const hotkeyMode = +window.localStorage.getItem('hotkey-mode')
     window.localStorage.setItem('hotkey-mode', +!hotkeyMode)
-    $('#hotkey-mode').text( +window.localStorage.getItem('hotkey-mode') ? " 關" : " 開")
+    $('.hotkey-mode').text( +window.localStorage.getItem('hotkey-mode') ? " 關" : " 開")
     window.location.reload()
   })
 }
@@ -34,13 +34,13 @@ const render = (_account) => {
   if (account){
     // show User
     $("#bbs-login").hide()
-    $("#bbs-register").hide()
+    $("#bbs-more").hide()
     $("#bbs-user-menu").show()
   }
   else{
     // show Login/Register
     $("#bbs-login").show()
-    $("#bbs-register").show()
+    $("#bbs-more").show()
     $("#bbs-user-menu").hide()
   }
 
@@ -53,6 +53,8 @@ const main = async () => {
   _dexon.on('update',(account) => {
     render(account)
   })
+
+  $('#bbs-login').click(() => { _dexon.login() })
 
   hotkey()
 

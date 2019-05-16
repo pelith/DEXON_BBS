@@ -13,8 +13,6 @@ const main = async () => {
     render(account)
   })
 
-  $('#bbs-login').click(() => { _dexon.login() })
-
   const dett = new Dett(_dexon.dexonWeb3)
 
   if (+window.localStorage.getItem('hotkey-mode')) keyboardHook()
