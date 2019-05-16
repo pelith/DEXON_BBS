@@ -73,7 +73,7 @@ class Dexon extends EventEmitter {
     if ( !this.dexon) return alert('DEXON Wallet not detected. (請安裝 DEXON 瀏覽器擴充套件)')
 
     this.dexon.enable()
-    init()
+    this.init()
   }
 }
 

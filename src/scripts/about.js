@@ -1,4 +1,4 @@
-import {getUser} from './utils.js'
+import {parseUser} from './utils.js'
 import Dexon from './dexon.js'
 
 let account = ''
@@ -19,7 +19,7 @@ const render = (_account) => {
     $("#bbs-user-menu").hide()
   }
 
-  $("#bbs-user").text(getUser(account))
+  $("#bbs-user").text(parseUser(account))
 }
 
 const main = async () => {
