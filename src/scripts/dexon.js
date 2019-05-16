@@ -43,13 +43,30 @@ class Dexon extends EventEmitter {
     if (!this.dexon) return
 
     this.dexonWeb3 = new Web3(this.dexon)
-    this.dexonWeb3.currentProvider.publicConfigStore.on('update', (data) => {
-      if ('networkVersion' in data)
-        if (data.networkVersion === '237'){
-          this.selectedAddress = 'selectedAddress' in data ? data.selectedAddress : ''
-          this.emit('update',this.selectedAddress)
+
+    if (this.dexonWeb3.currentProvider.publicConfigStore) {
+      this.dexonWeb3.currentProvider.publicConfigStore.on('update', (data) => {
+        if ('networkVersion' in data)
+          if (data.networkVersion === '237'){
+            this.selectedAddress = 'selectedAddress' in data ? data.selectedAddress : ''
+            this.emit('update', this.selectedAddress)
+          }
+      })
+    }
+    else {
+      const start = async () => {
+        const networkID = await this.dexonWeb3.eth.net.getId()
+        if (networkID === 237) {
+          const accounts = await this.dexonWeb3.eth.getAccounts()
+          this.selectedAddress = accounts.length > 0 ? accounts[0] : ''
+          this.emit('update', this.selectedAddress)
         }
-    })
+        else return console.log('Wrong network')
+      }
+
+      start()
+      setInterval(start, 1000)
+    }
   }
 
   login(){
