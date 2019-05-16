@@ -16,7 +16,7 @@ const render = (_account) => {
     // show User
     $("#bbs-login").hide()
     $("#bbs-register").hide()
-    $("#bbs-user").show()
+    $("#bbs-user-menu").show()
     $('#reward-line').show()
 
     // only show reply btn at first time
@@ -26,7 +26,7 @@ const render = (_account) => {
     // show Login/Register
     $("#bbs-login").show()
     $("#bbs-register").show()
-    $("#bbs-user").hide()
+    $("#bbs-user-menu").hide()
     $('#reward-line').hide()
 
     // hide reply btn
