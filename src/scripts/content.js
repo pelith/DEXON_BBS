@@ -1,40 +1,29 @@
-import Dexon from './dexon.js'
 import Dett from './dett.js'
 
 import {htmlEntities, getUrlParameter, parseUser, parseText, parseContent} from './utils.js'
 
 let dett = null
-let tx = '', account = ''
+let tx = ''
 
 let isShowReply = false, isShowReplyType = false
 
 const render = (_account) => {
-  account = _account
-  dett.account = account
+  dett.account = _account
 
-  if (account){
-    // show User
-    $("#bbs-login").hide()
-    $("#bbs-register").hide()
-    $("#bbs-user-menu").show()
+  if (_account){
     $('#reward-line').show()
 
     // only show reply btn at first time
     if (!$("#reply-user").text()) $("#reply-btn").show()
   }
   else{
-    // show Login/Register
-    $("#bbs-login").show()
-    $("#bbs-register").show()
-    $("#bbs-user-menu").hide()
     $('#reward-line').hide()
 
     // hide reply btn
     $("#reply-btn").hide()
   }
 
-  $("#bbs-user").text(parseUser(account))
-  $("#reply-user").text(parseUser(account))
+  $("#reply-user").text(parseUser(_account))
 }
 
 const showReplyType = async () => {
@@ -114,7 +103,6 @@ const main = async () => {
   if (!tx) return error()
   if (!tx.match(/^0x[a-fA-F0-9]{64}$/g)) return error()
 
-  const _dexon = new Dexon(window.dexon)
   _dexon.on('update',(account) => {
     render(account)
   })
@@ -134,7 +122,7 @@ const main = async () => {
 
   $('#reward-customize').click(() => showHideReward(true))
 
-  keyboardHook()
+  if (+window.localStorage.getItem('hotkey-mode')) keyboardHook()
 
   const article = await dett.getArticle(tx)
 

@@ -1,37 +1,12 @@
-import Dexon from './dexon.js'
 import Dett from './dett.js'
 
 import {htmlEntities, parseUser} from './utils.js'
 
-let account = ''
-
 const render = (_account) => {
-  account = _account
-
-  if (account){
-    // show User
-    $("#bbs-login").hide()
-    $("#bbs-register").hide()
-    $("#bbs-user-menu").show()
-
-    // show post btn
-    $("#bbs-post").show()
-  }
-  else{
-    // show Login/Register
-    $("#bbs-login").show()
-    $("#bbs-register").show()
-    $("#bbs-user-menu").hide()
-
-    // hide post btn
-    $("#bbs-post").hide()
-  }
-
-  $("#bbs-user").text(parseUser(account))
+  _account ? $("#bbs-post").show() : $("#bbs-post").hide()
 }
 
 const main = async () => {
-  const _dexon = new Dexon(window.dexon)
   _dexon.on('update',(account) => {
     render(account)
   })

@@ -78,7 +78,7 @@ function main(){
 
   dett = new Dett(_dexon.dexonWeb3)
 
-  keyboardHook()
+  if (+window.localStorage.getItem('hotkey-mode')) keyboardHook()
 
   $("#bbs-title")[0].placeholder = "標題限制40字內"
 
