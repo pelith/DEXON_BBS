@@ -12,7 +12,7 @@ const render = (_account) => {
     // show User
     $("#bbs-login").hide()
     $("#bbs-register").hide()
-    $("#bbs-user").show()
+    // $("#bbs-user-menu").show()
 
     // show post btn
     $("#bbs-post").show()
@@ -21,7 +21,7 @@ const render = (_account) => {
     // show Login/Register
     $("#bbs-login").show()
     $("#bbs-register").show()
-    $("#bbs-user").hide()
+    // $("#bbs-user-menu").hide()
 
     // hide post btn
     $("#bbs-post").hide()

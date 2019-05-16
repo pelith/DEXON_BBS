@@ -10,13 +10,13 @@ const render = (_account) => {
     // show User
     $("#bbs-login").hide()
     $("#bbs-register").hide()
-    $("#bbs-user").show()
+    $("#bbs-user-menu").show()
   }
   else{
     // show Login/Register
     $("#bbs-login").show()
     $("#bbs-register").show()
-    $("#bbs-user").hide()
+    $("#bbs-user-menu").hide()
   }
 
   $("#bbs-user").text(getUser(account))

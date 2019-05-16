@@ -34,7 +34,7 @@ class Article {
     this.rawContent = web3.utils.hexToUtf8('0x' + this.transaction.input.slice(138))
     this.titleMatch = false
     this.title = this.getTitle(this.rawContent)
-    this.content = this.titleMatch ? this.rawContent.slice(this.title.length+'[]'.length) : this.content
+    this.content = this.titleMatch ? this.rawContent.slice(this.title.length+'[]'.length) : this.rawContent
     this.author = this.transaction.from
 
     // constant
