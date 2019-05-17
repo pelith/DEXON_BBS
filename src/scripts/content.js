@@ -188,6 +188,7 @@ const keyboardHook = () => {
       return
     }
     else if (!isShowReply && !isShowReplyType && e.keyCode === leftCode) {
+      window.localStorage.setItem('focus-state', 2)
       window.location = '/'
       return
     }

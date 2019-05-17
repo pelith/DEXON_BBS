@@ -19,10 +19,17 @@ const main = async () => {
 
   const articles = await dett.getArticles()
 
-  articles.reduce( async (n,p) => {
+  await articles.reduce( async (n,p) => {
     await n
     directDisplay(...await p)
   }, Promise.resolve())
+
+  if (+window.localStorage.getItem('focus-state')===2){
+    const post =  $('.r-list-container > .r-ent > div > a[href="'+window.localStorage.getItem('focus-href')+'"]')
+    focusOnPost(post.parent().parent()[0], true)
+    window.localStorage.setItem('focus-href', '')
+    window.localStorage.setItem('focus-state', 0)
+  }
 }
 
 const focusOnPost = (post, scroll) => {
@@ -71,7 +78,10 @@ const keyboardHook = () => {
       return
     }
     if (e.keyCode == rightCode && focusPost) {
-      window.location = $('.title > a', focusPost).attr('href')
+      const href = $('.title > a', focusPost).attr('href')
+      window.localStorage.setItem('focus-href', href)
+      window.localStorage.setItem('focus-state', 1)
+      window.location = href
     }
   })
 }
