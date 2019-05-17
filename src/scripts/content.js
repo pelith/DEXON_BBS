@@ -181,7 +181,7 @@ const main = async () => {
 }
 
 const keyboardHook = () => {
-  const returnCode = 13, escCode = 27, leftCode = 37
+  const returnCode = 13, escCode = 27, leftCode = 37, rightCode = 39
   $(document).keyup((e) => {
     if (!isShowReply && !isShowReplyType && e.keyCode === 'X'.charCodeAt()) {
       showReplyType()
@@ -190,6 +190,11 @@ const keyboardHook = () => {
     else if (!isShowReply && !isShowReplyType && e.keyCode === leftCode) {
       window.localStorage.setItem('focus-state', 2)
       window.location = '/'
+      return
+    }
+    else if (!isShowReply && !isShowReplyType && e.keyCode === rightCode) {
+      const height = window.innerHeight - ($('#article-metaline').height() + $('#topbar-container').height())
+      window.scrollBy(0, height)
       return
     }
     else if (!isShowReply && isShowReplyType) {
