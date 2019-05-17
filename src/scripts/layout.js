@@ -29,7 +29,7 @@ const hotkey = () => {
 }
 
 const render = (_account) => {
-  account = _account
+  account = _account ? _account : ''
 
   if (account){
     // show User
