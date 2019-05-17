@@ -44,6 +44,12 @@ export default {
       without_web3: false,
     }
   },
+  mounted () {
+    window.onpopstate = (event) => {
+      if (!event.state)
+        window.location.reload()
+    }
+  },
 }
 </script>
 

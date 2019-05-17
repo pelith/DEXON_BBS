@@ -51,12 +51,6 @@ export default {
 
     }
   },
-  mounted () {
-    window.onpopstate = (event) => {
-      if (!event.state)
-        window.location.reload()
-    }
-  },
   head: {
     title: {
       inner: 'DEXON BBS'
