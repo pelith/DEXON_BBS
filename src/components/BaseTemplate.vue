@@ -46,7 +46,7 @@ export default {
   },
   mounted () {
     window.onpopstate = (event) => {
-      if (!event.state)
+      if (!event.state && location.href.indexOf("#") == -1)
         window.location.reload()
     }
   },
