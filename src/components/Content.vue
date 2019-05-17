@@ -1,0 +1,77 @@
+<template>
+    <base-template>
+        <template slot="content">
+<div id="navigation-container">
+  <div id="navigation" class="bbs-content">
+    <a class="board" href="/">返回看板</a>
+    <div class="bar"></div>
+    <a id="reply-btn" class="board" href="#" style="display: none;">推文(X)</a>
+    <a id="reply-type1" class="board" href="#" style="color:#990; display: none;"> 推(1) </a>
+    <a id="reply-type2" class="board" href="#" style="color:#f66; display: none;"> 噓(2) </a>
+    <a id="reply-type0" class="board" href="#" style="display: none;"> →(3) </a>
+    <a id="reply-send" class="board" href="#" style="display: none;">送出推文(^↵)</a>
+    <a id="reply-cancel" class="board" href="#" style="display: none;">取消推文</a>
+  </div>
+</div>
+
+<div id="main-container">
+<div id="main-content" class="bbs-screen bbs-content"><div class="article-metaline"><span class="article-meta-tag">作者</span><span class="article-meta-value"><span id="main-content-author"></span></span></div><div class="article-metaline-right"><span class="article-meta-tag">看板</span><span class="article-meta-value">Gossiping</span></div><div class="article-metaline"><span class="article-meta-tag">標題</span><span class="article-meta-value" id="main-content-title"></span></div><div class="article-metaline"><span class="article-meta-tag">時間</span><span class="article-meta-value" id="main-content-date"></span></div><br><span id="main-content-content"></span>
+
+--
+<div id="reward-line" style="display:none"><span class="f2">※ 打賞作者: <button class="btn --send-reward" style="width: 6em" data-value="0.01">0.01 DXN</button> <span id="reward-toggle-region-1"><button class="btn" style="width: 4em" id="reward-customize">自訂</button> </span><span id="reward-toggle-region-2" style="display: none"><input id="reward-custom-value" type="number" class="input" step="any" min="0" style="width: 6em"> <span class="f7">DXN</span> <button id="reward-custom-submit" class="btn" style="width: 4em">確定</button></span></span></div><span class="f2">※ 發信站: DEXON BBS(dett.cc), 來自: <a id="main-content-from" target="_blank" href="#">DEXON</a></span><br><span class="f2">※ 文章網址: <a id="main-content-href" href="#" target="_blank" rel="nofollow"></a></span>
+<div id="reply" style="display: none"><select id="reply-type" class="bbs-content select">
+  <option value="0">→</option>
+  <option value="1">推</option>
+  <option value="2">噓</option>
+</select> <span id="reply-user" class="f3 hl push-userid" style="color: white;vertical-align: middle;"></span><span class="f3 push-content" style="vertical-align: middle;color: white">: </span><span class="f3 push-content"></span><input class="main-content-content input" id="reply-content" type="text" maxlength="40" value=""></div></div>
+</div>
+        </template>
+    </base-template>
+</template>
+<script>
+
+import BaseTemplate from './BaseTemplate'
+import '../scripts/content'
+
+export default {
+  name: 'Content',
+  components: {
+    BaseTemplate,
+  },
+  data () {
+    return {
+
+    }
+  },
+  head: {
+    title: {
+      inner: 'DEXON BBS'
+    },
+    meta: [
+      { property: 'og:title', content: 'DEXON BBS' },
+      { property: 'og:description', content: '基於 DEXON 智慧合約的 BBS 系統' },
+      { property: 'og:ur;', content: 'https://dett.cc' },
+    ]
+  },
+}
+</script>
+
+<style scoped>
+.video-container {
+    position: relative;
+    padding-bottom: 56.25%;
+    height: 0;
+    overflow: hidden;
+    max-width: 100%;
+    margin: 0.5em auto;
+}
+.video-container iframe,
+.video-container object,
+.video-container embed {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+}
+</style>

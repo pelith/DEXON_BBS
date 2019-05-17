@@ -3,7 +3,7 @@
     "version": "1.0.0",
     "description": "",
     "scripts": {
-        "dev-vue": "parcel src/index.html",
+        "dev-vue": "npm run clean && parcel src/index.html",
         "dev": "npm run clean && parcel src/__dev__.html --out-dir dist/",
         "build": "npm run clean && parcel build --no-source-maps src/*.njk --out-dir build/ --public-url .",
         "clean": "rm -rf dist build",
