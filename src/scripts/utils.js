@@ -6,7 +6,7 @@ const linkify = LinkifyIt()
 const embedWhiteListAndCode = {
   'www.youtube.com': {
     type: 'youtube',
-    code: '<iframe src="" width="560" height="315" frameborder="0" allow="accelerometer; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>'
+    code: '<iframe class="youtube-player" type="text/html" src="" frameborder="0"  allowfullscreen></iframe>'
   },
 }
 
@@ -63,16 +63,21 @@ const createEmbedObject = (url) => {
     return ret
   }
 
-  const elParent = $('<div class="video-container"></div>')
+  const elParent1 = $('<div class="richcontent"></div>')
+  const elParent2 = $('<div class="resize-container"></div>')
+  const elParent3 = $('<div class="resize-content"></div>')
   const el = $(embedMap.code)
+  console.log(el[0].innerHTML)
 
   if (embedMap.type === 'youtube') {
     const processedUrl = `https://www.youtube.com/embed/${parsedUrl.query.replace('?v=', '')}`
     el.attr('src', processedUrl)
-    elParent.append(el)
+    elParent3.html(el)
+    elParent2.html(elParent3)
+    elParent1.html(elParent2)
   }
 
-  ret.element = elParent[0]
+  ret.element = elParent1[0]
 
   return ret
 }
