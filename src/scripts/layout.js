@@ -18,12 +18,12 @@ const attachDropdown = () => {
 
 const hotkey = () => {
   if(!window.localStorage.getItem('hotkey-mode')) window.localStorage.setItem('hotkey-mode', 1)
-  $('.hotkey-mode').text( +window.localStorage.getItem('hotkey-mode') ? " 關" : " 開")
+  $('.hotkey-mode').text( +window.localStorage.getItem('hotkey-mode') ? "關閉" : "打開")
 
   $('.hotkey-mode-btn').click(() => {
     const hotkeyMode = +window.localStorage.getItem('hotkey-mode')
     window.localStorage.setItem('hotkey-mode', +!hotkeyMode)
-    $('.hotkey-mode').text( +window.localStorage.getItem('hotkey-mode') ? " 關" : " 開")
+    $('.hotkey-mode').text( +window.localStorage.getItem('hotkey-mode') ? "關閉" : "打開")
     window.location.reload()
   })
 }

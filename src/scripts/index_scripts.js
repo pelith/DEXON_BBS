@@ -2,9 +2,11 @@ import Dett from './dett.js'
 
 import {htmlEntities, parseUser} from './utils.js'
 
+let dett = null
 let focusPost
 
 const render = (_account) => {
+  dett.account = _account
   _account ? $("#bbs-post").show() : $("#bbs-post").hide()
 }
 
@@ -13,7 +15,7 @@ const main = async () => {
     render(account)
   })
 
-  const dett = new Dett(_dexon.dexonWeb3)
+  dett = new Dett(_dexon.dexonWeb3)
 
   if (+window.localStorage.getItem('hotkey-mode')) keyboardHook()
 
@@ -30,6 +32,21 @@ const main = async () => {
     window.localStorage.setItem('focus-href', '')
     window.localStorage.setItem('focus-state', 0)
   }
+
+  attachDropdown()
+}
+
+const attachDropdown = () => {
+  $('.article-menu > .trigger').click((e) => {
+      var isShown = e.target.parentElement.classList.contains('shown');
+      $('.article-menu.shown').toggleClass('shown');
+      if (!isShown) {
+          e.target.parentElement.classList.toggle('shown');
+      }
+      e.stopPropagation();
+  })
+
+  $(document).click((e) => { $('.article-menu.shown').toggleClass('shown') })
 }
 
 const focusOnPost = (post, scroll) => {
@@ -88,7 +105,6 @@ const keyboardHook = () => {
 
 const directDisplay = (article, votes, banned) => {
   if (banned) return
-
   const elem = $('<div class="r-ent"></div>')
   elem.html(
     `<div class="nrec"></div>
@@ -103,7 +119,13 @@ const directDisplay = (article, votes, banned) => {
           ${parseUser(article.author)}
         </a>
       </div>
-      <div class="article-menu"></div>
+      <div class="article-menu">
+        <div class="trigger">⋯</div>
+        <div class="dropdown">
+          <div id="article-edit" class="item" style="display: none;"><a href="#">編緝文章</a></div>
+          <div id="article-reply" class="item"><a href="#">回應文章</a></div>
+        </div>
+      </div>
       <div class="date">...</div>
     </div>`)
 
