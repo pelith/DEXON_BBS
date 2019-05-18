@@ -6,7 +6,7 @@ const linkify = LinkifyIt()
 const embedWhiteListAndCode = {
   'www.youtube.com': {
     type: 'youtube',
-    code:  '<iframe src="" width="560" height="315" frameborder="0" allow="accelerometer; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>'
+    code: '<iframe class="youtube-player" type="text/html" src="" frameborder="0"  allowfullscreen></iframe>'
   },
 }
 
@@ -17,7 +17,7 @@ const htmlEntities = (str) => {
 const getUrlParameter = (sParam) => {
   let sPageURL = window.location.search.substring(1),
       sURLVariables = sPageURL.split('&'),
-      sParameterName=[];
+      sParameterName = [];
 
   for (let i = 0; i < sURLVariables.length; i++) {
     sParameterName = sURLVariables[i].split('=');
@@ -26,37 +26,28 @@ const getUrlParameter = (sParam) => {
   }
 }
 
-const getParseText = (str, len) => {
+const parseText = (str, len) => {
   let tmp = '', count = 0;
-  for(let i=0;i<str.length; i++){
-    if (str[i].match(/[\u4e00-\u9fa5]/g)) tmp+=str[i],count+=2
-    else if (str[i].match(/[\u0800-\u4e00]/g)) tmp+=str[i],count+=2
-    else if (str[i].match(/[\uff00-\uffff]/g)) tmp+=str[i],count+=2
-    else tmp+=str[i],count++
+  for (let i = 0; i < str.length; i++) {
+    if (str[i].match(/[\u4e00-\u9fa5]/g)) tmp += str[i], count += 2
+    else if (str[i].match(/[\u0800-\u4e00]/g)) tmp += str[i], count += 2
+    else if (str[i].match(/[\uff00-\uffff]/g)) tmp += str[i], count += 2
+    else tmp += str[i], count++
 
     if (count === len) break
-    else if (count>len)
-      tmp = tmp.substr(0,tmp.length-1)
+    else if (count > len)
+      tmp = tmp.substr(0, tmp.length - 1)
   }
   return tmp
 }
 
-const getTitle = (content) => {
-  content = getParseText(content, 42)
-  const match = content.match(/^\[(.*)\]/)
-  return {
-    match: match,
-    title: match ? match[1] : content
-  }
-}
-
-const getUser = (address) => {
+const parseUser = (address) => {
   return address.replace(/^(0x.{4}).+(.{4})$/, '$1…$2')
 }
 
 const createEmbedObject = (url) => {
   const parsedUrl = new UrlParse(url)
-  console.log(parsedUrl)
+  // console.log(parsedUrl)
   const ret = {
     allowed: true,
     element: null
@@ -72,14 +63,21 @@ const createEmbedObject = (url) => {
     return ret
   }
 
+  const elParent1 = $('<div class="richcontent"></div>')
+  const elParent2 = $('<div class="resize-container"></div>')
+  const elParent3 = $('<div class="resize-content"></div>')
   const el = $(embedMap.code)
+  console.log(el[0].innerHTML)
 
   if (embedMap.type === 'youtube') {
     const processedUrl = `https://www.youtube.com/embed/${parsedUrl.query.replace('?v=', '')}`
     el.attr('src', processedUrl)
+    elParent3.html(el)
+    elParent2.html(elParent3)
+    elParent1.html(elParent2)
   }
 
-  ret.element = el[0]
+  ret.element = elParent1[0]
 
   return ret
 }
@@ -103,9 +101,7 @@ const parseContent = (content, loc) => {
       // Handle embedded links, only in post not reply
       let embedObject = loc === 'post' ? createEmbedObject(match.url) : null
       if (embedObject && embedObject.allowed) {
-        result.push("<br/><br/>")
         result.push(embedObject.element)
-        result.push("<br/><br/>")
       }
 
       last = match.lastIndex
@@ -120,4 +116,4 @@ const parseContent = (content, loc) => {
   return result
 }
 
-export {htmlEntities, getUrlParameter, getParseText, getTitle, getUser, parseContent}
+export { htmlEntities, getUrlParameter, parseText, parseUser, parseContent }

@@ -1,99 +1,156 @@
-import {ABIBBS, ABIBBSExt, BBSContract, BBSExtContract, web3js, BBS, BBSExt, initDexon, loginDexon} from './dexon.js'
-import {htmlEntities, getTitle, getUser} from './utils.js'
+import Dett from './dett.js'
 
-let account = ''
+import {htmlEntities, parseUser} from './utils.js'
+
+let dett = null
+let focusPost
+
+const render = (_account) => {
+  dett.account = _account
+  _account ? $("#bbs-post").show() : $("#bbs-post").hide()
+}
 
 const main = async () => {
-  initDexon(activeDexonRender)
-
-  $('#bbs-login').click(() => { loginDexon(activeDexonRender) })
-
-  const events = await BBS.getPastEvents({fromBlock : '1170000'})
-
-  events.slice().reverse().map(async (event) => {
-    const txHash = event.transactionHash
-    const [transaction, block, votes] = await Promise.all([
-      web3js.eth.getTransaction(txHash),
-      web3js.eth.getBlock(event.blockNumber),
-      countVotes(txHash),
-    ])
-
-    return [event.returnValues.content, txHash, transaction.from, block.timestamp, votes]
+  _dexon.on('update',(account) => {
+    render(account)
   })
-  .reduce( async (n,p) => {
+
+  dett = new Dett(_dexon.dexonWeb3)
+
+  if (+window.localStorage.getItem('hotkey-mode')) keyboardHook()
+
+  const articles = await dett.getArticles()
+
+  await articles.reduce( async (n,p) => {
     await n
     directDisplay(...await p)
   }, Promise.resolve())
+
+  if (+window.localStorage.getItem('focus-state')===2){
+    const post =  $('.r-list-container > .r-ent > div > a[href="'+window.localStorage.getItem('focus-href')+'"]')
+    focusOnPost(post.parent().parent()[0], true)
+    window.localStorage.setItem('focus-href', '')
+    window.localStorage.setItem('focus-state', 0)
+  }
+
+  attachDropdown()
 }
 
-const countVotes = async (txHash) => {
-  const tx = txHash.substr(0, 66)
+const attachDropdown = () => {
+  $('.article-menu > .trigger').click((e) => {
+      var isShown = e.target.parentElement.classList.contains('shown');
+      $('.article-menu.shown').toggleClass('shown');
+      if (!isShown) {
+          e.target.parentElement.classList.toggle('shown');
+      }
+      e.stopPropagation();
+  })
 
-  const [upvotes, downvotes] = await Promise.all([
-    BBSExt.methods.upvotes(tx).call(),
-    BBSExt.methods.downvotes(tx).call(),
-  ])
-
-  return upvotes - downvotes
+  $(document).click((e) => { $('.article-menu.shown').toggleClass('shown') })
 }
 
-const directDisplay = (content, txHash, from, timestamp, votes) => {
-  content = htmlEntities(getTitle(content.substr(0, 42)).title)
+const focusOnPost = (post, scroll) => {
+  if (focusPost) {
+    $(focusPost).removeClass('focus')
+  }
+  focusPost = post
+  $(focusPost).addClass('focus')
+  if (scroll) {
+    focusPost.scrollIntoView(false)
+  }
+  // TODO: write cookie?
+}
+
+const keyboardHook = () => {
+  const upCode = 38, rightCode = 39, downCode = 40
+  $(document).keydown((e) => {
+    if (e.keyCode === upCode) {
+      let posts = $('.r-list-container > .r-ent')
+      if (posts.length === 0) {
+        return
+      }
+      e.preventDefault()
+      for (let i = 1; i < posts.length; ++i) {
+        if (posts[i] === focusPost) {
+          focusOnPost(posts[i - 1], true)
+          return
+        }
+      }
+      focusOnPost(posts[posts.length - 1], true)
+      return
+    }
+    if (e.keyCode === downCode) {
+      let posts = $('.r-list-container > .r-ent')
+      if (posts.length === 0) {
+        return
+      }
+      e.preventDefault()
+      for (let i = 0; i < posts.length - 1; ++i) {
+        if (posts[i] === focusPost) {
+          focusOnPost(posts[i + 1], true)
+          return
+        }
+      }
+      focusOnPost(posts[0], true)
+      return
+    }
+    if (e.keyCode == rightCode && focusPost) {
+      const href = $('.title > a', focusPost).attr('href')
+      window.localStorage.setItem('focus-href', href)
+      window.localStorage.setItem('focus-state', 1)
+      window.location = href
+    }
+  })
+}
+
+const directDisplay = (article, votes, banned) => {
+  if (banned) return
   const elem = $('<div class="r-ent"></div>')
   elem.html(
     `<div class="nrec"></div>
     <div class="title">
-    <a href="content.html?tx=${txHash}">
-      ${content}
+    <a href="content.html?tx=${article.transaction.hash}">
+      ${htmlEntities(article.title)}
     </a>
     </div>
     <div class="meta">
       <div class="author">
-        <a class="--link-to-addr" href="https://dexscan.app/address/${from}" target="_blank" data-address="${from}">
-          ${getUser(from)}
+        <a class="--link-to-addr hover" href="https://dexscan.app/address/${article.author}" target="_blank" data-address="${article.author}">
+          ${parseUser(article.author)}
         </a>
       </div>
-      <div class="article-menu"></div>
+      <div class="article-menu">
+        <div class="trigger">⋯</div>
+        <div class="dropdown">
+          <div id="article-edit" class="item" style="display: none;"><a href="#">編緝文章</a></div>
+          <div id="article-reply" class="item"><a href="#">回應文章</a></div>
+        </div>
+      </div>
       <div class="date">...</div>
     </div>`)
 
   $('.r-list-container.action-bar-margin.bbs-screen').append(elem)
 
-  const date = new Date(timestamp)
+  const date = new Date(article.timestamp)
   $(elem).find('.date').text((date.getMonth()+1)+'/'+(''+date.getDate()).padStart(2, '0'))
                        .attr('title', date.toLocaleString())
 
-  if (votes > 0){
-    let _class = 'hl f2'
-    if (votes > 99) _class = 'hl f1'
-    else if (votes > 9) _class = 'hl f3'
+  // render votes num
+  let _class
+  if (votes > 99)
+    _class = 'hl f1'
+  else if (votes > 9)
+    _class = 'hl f3'
+  else if (votes > 0)
+    _class = 'hl f2'
+  else if (-10 >= votes  && votes >= -99)
+    _class = 'hl f5', votes='X'+Math.floor(votes*-1)
+  else if (votes<=-100)
+    _class = 'hl f5', votes='XX'
+
+  if (_class) {
     $(elem).find('.nrec').html(`<span class="${_class}"> ${votes} </span>`)
   }
-}
-
-const activeDexonRender = (_account) => {
-  account = _account
-
-  if (account){
-    // show User
-    $("#bbs-login").hide()
-    $("#bbs-register").hide()
-    $("#bbs-user").show()
-
-    // show post btn
-    $("#bbs-post").show()
-  }
-  else{
-    // show Login/Register
-    $("#bbs-login").show()
-    $("#bbs-register").show()
-    $("#bbs-user").hide()
-
-    // hide post btn
-    $("#bbs-post").show()
-  }
-
-  $("#bbs-user").text(getUser(account))
 }
 
 $(main)

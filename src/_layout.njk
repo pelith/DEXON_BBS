@@ -22,7 +22,7 @@
     <link rel="stylesheet" type="text/css" href="https://images.ptt.cc/bbs/v2.25/bbs-custom.css">
     <link rel="stylesheet" type="text/css" href="https://images.ptt.cc/bbs/v2.25/pushstream.css" media="screen">
     <link rel="stylesheet" type="text/css" href="https://images.ptt.cc/bbs/v2.25/bbs-print.css" media="print">
-    <link rel="stylesheet" type="text/css" href="assets/style.css">
+    <link rel="stylesheet" type="text/css" href="assets/style.scss">
     {%- endblock %}
   </head>
 
@@ -34,9 +34,22 @@
         <a id="logo" href="/">{%- include '_logo.njk' -%} BBS</a>
         <span>›</span>
         <a class="board" href="/"><span class="board-label">看板 </span>Gossiping</a>
-        <a id="bbs-user" class="right small" href="#" style="display: none">User</a>
+        <div id="bbs-user-menu" class="user-menu right" href="#" style="display: none;">
+            <div id="bbs-user" class="trigger right small">User</div>
+            <div class="dropdown" style="width: 100%">
+                <div class="item small"><a href="/about.njk">幫助</a></div>
+                <div class="hotkey-mode-btn item small"><a href="#"><span class="hotkey-mode"></span>熱鍵</a></div>
+                <div class="item small"><a href="#">註冊暱稱</a></div>
+            </div>
+        </div>
         <a id="bbs-login" class="right small" href="#">登入</a>
-        <a id="bbs-register" class="right small" href="about.njk">幫助</a>
+        <div id="bbs-more" class="user-menu right" href="#">
+            <div class="trigger right small">⋯</div>
+            <div class="dropdown" >
+                <div class="item small"><a href="/about.njk">幫助</a></div>
+                <div class="hotkey-mode-btn item small"><a href="#"><span class="hotkey-mode"></span>熱鍵</a></div>
+            </div>
+        </div>
       </div>
     </div>
     {%- endblock %}
@@ -46,8 +59,11 @@
 
     <script language="javascript" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
     <script language="javascript" type="text/javascript" src="https://cdn.jsdelivr.net/gh/ethereum/web3.js@1.0.0-beta.37/dist/web3.min.js"></script>
+    <script language="javascript" type="text/javascript" src="scripts/layout.js"></script>
+
     {% block scripts_extra -%}
     {%- endblock %}
+
     {% if not without_web3 -%}
     <script language="javascript" type="text/javascript" src="scripts/dexon.js"></script>
     {%- endif %}

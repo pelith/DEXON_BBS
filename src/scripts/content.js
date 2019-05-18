@@ -1,41 +1,35 @@
-import {htmlEntities, getUrlParameter, getTitle, getUser, getParseText, parseContent} from './utils.js'
-import {ABIBBS, ABIBBSExt, BBSContract, BBSExtContract, web3js, BBS, BBSExt, initDexon, loginDexon, newReply} from './dexon.js'
+import Dett from './dett.js'
 
+import {htmlEntities, getUrlParameter, parseUser, parseText, parseContent} from './utils.js'
+
+let dett = null
 let tx = ''
-let account = ''
 
 let isShowReply = false, isShowReplyType = false
 
-const activeDexonRender = (_account) => {
-  account = _account
+const render = (_account) => {
+  dett.account = _account
 
-  if (account){
-    // show User
-    $("#bbs-login").hide()
-    $("#bbs-register").hide()
-    $("#bbs-user").show()
+  if (_account){
+    $('#reward-line').show()
 
     // only show reply btn at first time
     if (!$("#reply-user").text()) $("#reply-btn").show()
   }
   else{
-    // show Login/Register
-    $("#bbs-login").show()
-    $("#bbs-register").show()
-    $("#bbs-user").hide()
+    $('#reward-line').hide()
 
     // hide reply btn
     $("#reply-btn").hide()
   }
 
-  $("#bbs-user").text(getUser(account))
-  $("#reply-user").text(getUser(account))
+  $("#reply-user").text(parseUser(_account))
 }
 
 const showReplyType = async () => {
   $('#reply-btn').hide()
 
-  const voted = await BBSExt.methods.voted(account, tx).call()
+  const voted = await dett.getVoted(tx)
   if (voted) return showReply(0)
 
   $('#reply-type0').show()
@@ -72,7 +66,6 @@ const showReply = (type) => {
   $("#reply-content").focus()
 
   isShowReply = true
-
 }
 
 const hideReply = () => {
@@ -87,125 +80,155 @@ const hideReply = () => {
   isShowReply = false
 }
 
+const showHideReward = y => {
+  // y == null is initial state
+  $('#reward-toggle-region-1')[y ? 'hide' : 'show']()
+  $('#reward-toggle-region-2')[y ? 'show' : 'hide']()
+}
+
 const getAddressLink = (from, __namePool) => {
   // TODO: bind the event to get / substitute name
-  return $('<a class="--link-to-addr" target="_blank"></a>')
-    .text(getUser(from))
-    .attr('data-address', from)
+  return $('<a class="--link-to-addr tooltip" target="_blank"></a>')
+    .html(parseUser(from)+'<span>('+from+')</span>')
+    // .attr('data-address', from)
     .attr('href', 'https://dexscan.app/address/' + from)
 }
 
+const error = () => { $('#main-content-content').text('404 - Page not found.') }
+
 const main = async () => {
+  // get tx
   tx = getUrlParameter('tx')
+  if (!tx) return error()
+  if (!tx.match(/^0x[a-fA-F0-9]{64}$/g)) return error()
 
-  if (!tx) return
+  _dexon.on('update',(account) => {
+    render(account)
+  })
 
-  if (!tx.match(/^0x[a-fA-F0-9]{64}$/g)) return
-
-  initDexon(activeDexonRender)
-
-  $('#bbs-login').click(() => { loginDexon(activeDexonRender) })
+  dett = new Dett(_dexon.dexonWeb3)
 
   $('#reply-btn').click(() => { showReplyType() })
   $('#reply-type0').click(() => { showReply(0) })
   $('#reply-type1').click(() => { showReply(1) })
   $('#reply-type2').click(() => { showReply(2) })
   $('#reply-cancel').click(() => { hideReply() })
-  $('#reply-send').click(() => { newReply(tx.substr(0,66), $("#reply-type").val(), $("#reply-content").val()) })
+  $('#reply-send').click(() => { dett.reply(tx, $("#reply-type").val(), $("#reply-content").val()) })
 
-  $("#reply-content").blur(() => { $("#reply-content").val(getParseText($("#reply-content").val(), 56)) })
+  $("#reply-content").blur(() => { $("#reply-content").val(parseText($("#reply-content").val(), dett.commentLength)) })
 
-  keyboardHook()
+  $('#reward-customize').click(() => showHideReward(true))
 
-  const transaction = await web3js.eth.getTransaction(tx)
+  if (+window.localStorage.getItem('hotkey-mode')) keyboardHook()
+
+  const article = await dett.getArticle(tx)
 
   // check transaction to address is bbs contract
-  if ([BBSExtContract.toLowerCase(),
-       BBSContract.toLowerCase(),
-       '0x9b985Ef27464CF25561f0046352E03a09d2C2e0C']
-       .map(x => x.toLowerCase())
-       .indexOf(transaction.to.toLowerCase()) < 0) {
-    $('#main-content-content').text('404 - Page not found.')
-    return
-  }
+  if (!article) return error()
 
-  const content = web3js.utils.hexToUtf8('0x' + transaction.input.slice(138))
-  const title = getTitle(content.substr(0, 42))
-  const contentDisplay = title.match ? content.slice(title.title.length+2) : content
+  const contentNodeList = parseContent(article.content, 'post')
 
-  const contentNodeList = parseContent(contentDisplay.trim(), 'post')
+  document.title = article.title + ' - Gossiping - DEXON BBS'
 
-  document.title = title.title + ' - Gossiping - DEXON BBS'
-
-  const authorLink = getAddressLink(transaction.from)
+  const authorLink = $('<a class="--link-to-addr hover" target="_blank"></a>')
+                    .text(parseUser(article.transaction.from))
+                    .attr('data-address', article.transaction.from)
+                    .attr('href', 'https://dexscan.app/address/' + article.transaction.from)
   $('#main-content-author').append(authorLink)
 
+  $('#main-content-title').text(article.title)
 
-
-  // $('#main-content-author').attr('href', 'https://dexonscan.app/address/'+transaction.from)
-  $('#main-content-title').text(title.title)
+  $('.--send-reward').click(evt => {
+    const _ = $(evt.currentTarget)
+    // _.prop('disabled', true)
+    return dett.rewardAuthor(article, _.attr('data-value').toString())
+    .on('transactionHash', txhash => {
+      console.log('tx hash', txhash)
+      // _.prop('disabled', false)
+    })
+  })
+  $('#reward-custom-submit').click(evt => {
+    const _ = $('#reward-custom-value')
+    // _.prop('disabled', true)
+    if (!_.val().length) {
+      showHideReward(false)
+      return Promise.resolve()
+    }
+    return dett.rewardAuthor(article, _.val())
+    .on('transactionHash', txhash => {
+      console.log('tx hash', txhash)
+      // _.prop('disabled', false)
+    })
+    .finally(() => showHideReward(false))
+  })
 
   const elContent = $('#main-content-content')
   contentNodeList.forEach(el => elContent.append(el))
 
-  web3js.eth.getBlock(transaction.blockNumber).then(block => {
-    $('#main-content-date').text((''+new Date(block.timestamp)).substr(0,24))
-  })
+  $('#main-content-date').text((''+new Date(article.block.timestamp)).substr(0,24))
+
   $('#main-content-href').attr('href', window.location.href)
   $('#main-content-href').text(window.location.href)
-  $('#main-content-from').text('@'+transaction.blockNumber)
+  $('#main-content-from').text('@'+article.transaction.blockNumber)
   $('#main-content-from').attr('href', 'https://dexonscan.app/transaction/'+tx)
 
-  const events = await BBSExt.getPastEvents({fromBlock : '990000'})
+  const comments = await dett.getComments(tx)
 
-  events.slice().filter((event) => {return tx == event.returnValues.origin})
-  .map(async (event) => {
-    const [transaction, block] = await Promise.all([
-      web3js.eth.getTransaction(event.transactionHash),
-      web3js.eth.getBlock(event.blockNumber),
-    ])
-    return [event.returnValues.content, transaction.from, block.timestamp, event.returnValues.vote]
-  })
-  .reduce( async (n,p) => {
+  comments.reduce( async (n,p) => {
     await n
     displayReply(...await p)
   }, Promise.resolve())
 }
 
 const keyboardHook = () => {
-  const returnCode = 13
-
+  const returnCode = 13, escCode = 27, leftCode = 37, rightCode = 39
   $(document).keyup((e) => {
-    if (!isShowReply && !isShowReplyType && e.keyCode == 'X'.charCodeAt()) {
+    if (!isShowReply && !isShowReplyType && e.keyCode === 'X'.charCodeAt()) {
       showReplyType()
+      return
+    }
+    else if (!isShowReply && !isShowReplyType && e.keyCode === leftCode) {
+      window.localStorage.setItem('focus-state', 2)
+      window.location = '/'
+      return
+    }
+    else if (!isShowReply && !isShowReplyType && e.keyCode === rightCode) {
+      const height = window.innerHeight - ($('#article-metaline').height() + $('#topbar-container').height())
+      window.scrollBy(0, height)
+      return
     }
     else if (!isShowReply && isShowReplyType) {
       switch (e.key) {
-        case '1': return showReply(1)
-        case '2': return showReply(2)
-        case '3': return showReply(0)
+        case '1': showReply(1); break;
+        case '2': showReply(2); break;
+        case '3': showReply(0); break;
       }
+      return
     }
     else if ( isShowReply && !isShowReplyType && e.ctrlKey && e.keyCode == returnCode) {
       if ($("#reply-content").val().length > 0)
-        newReply(tx, $("#reply-type").val(), $("#reply-content").val())
+        dett.reply(tx, $("#reply-type").val(), $("#reply-content").val())
       else
         hideReply()
+    }
+    else if (isShowReply && !isShowReplyType && e.keyCode === escCode) {
+      hideReply()
+      return
     }
   })
 }
 
-const displayReply = (content, from, timestamp, vote) => {
-  const contentNodeList = parseContent(content)
+const displayReply = (comment) => {
+  const contentNodeList = parseContent(comment.content)
   const voteName = ["→", "推", "噓"]
   const elem = $('<div class="push"></div>')
-  const date = new Date(timestamp)
+  const date = new Date(comment.timestamp)
   const formatDate = (date.getMonth()+1)+'/'+(''+date.getDate()).padStart(2, '0')+' '+(''+date.getHours()).padStart(2, '0')+':'+(''+date.getMinutes()).padStart(2, '0')
 
-  elem.html(`<span class="${vote != 1 ? 'f1 ' : ''}hl push-tag">${voteName[vote]} </span>`)
+  elem.html(`<span class="${comment.vote != 1 ? 'f1 ' : ''}hl push-tag">${voteName[comment.vote]} </span>`)
 
   const authorNode = $('<span class="f3 hl push-userid"></span>')
-  authorNode.append(getAddressLink(from))
+  authorNode.append(getAddressLink(comment.author))
   elem.append(authorNode)
 
   const contentNode = $('<span class="f3 push-content">: </span>')
