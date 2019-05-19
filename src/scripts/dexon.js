@@ -59,6 +59,7 @@ class Dexon extends EventEmitter {
         if (networkID === 237) {
           const accounts = await this.dexonWeb3.eth.getAccounts()
           this.selectedAddress = accounts.length > 0 ? accounts[0] : ''
+          // XXX: only emit update when the address do change
           this.emit('update', this.selectedAddress)
         }
         else return console.log('Wrong network')

@@ -33,11 +33,11 @@ const parseText = (str, len) => {
 }
 
 class PostBase {
-  static async getAuthorMeta(address) {
+  static getAuthorMeta(address) {
     const addr = address.toLowerCase()
     const cache = PostBase._metaCache
     if (cache.has(addr)) {
-      return await cache.get(addr)
+      return cache.get(addr)
     }
     const promise = BBSPB.methods.getPlayer(address).call()
     .then(data => ({
@@ -50,7 +50,7 @@ class PostBase {
       meta: data[5],
     }))
     cache.set(addr, promise)
-    return await promise
+    return promise
   }
 }
 // static property that is shared between articles/comments
@@ -188,6 +188,10 @@ class Dett {
     await comment.init()
 
     return comment
+  }
+
+  getMetaByAddress(address) {
+    return PostBase.getAuthorMeta(address)
   }
 
   async reply(tx, replyType, content) {
