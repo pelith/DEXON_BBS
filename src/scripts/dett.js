@@ -33,9 +33,14 @@ const parseText = (str, len) => {
 }
 
 class PostBase {
-  async getAuthorMeta(address) {
-    const data = await BBSPB.methods.getPlayer(address).call()
-    const ret = {
+  static async getAuthorMeta(address) {
+    const addr = address.toLowerCase()
+    const cache = PostBase._metaCache
+    if (cache.has(addr)) {
+      return await cache.get(addr)
+    }
+    const promise = BBSPB.methods.getPlayer(address).call()
+    .then(data => ({
       name: 'popo' + Math.floor(Math.random() * 1e8),
       // name: Web3.utils.hexToUtf8(data[0]),
       names: +data[1],
@@ -43,10 +48,13 @@ class PostBase {
       referrer: data[3],
       link: data[4],
       meta: data[5],
-    }
-    return ret
+    }))
+    cache.set(addr, promise)
+    return await promise
   }
 }
+// static property that is shared between articles/comments
+PostBase._metaCache = new Map()
 
 class Article extends PostBase {
   constructor(_transaction) {
@@ -64,7 +72,7 @@ class Article extends PostBase {
 
   async init() {
     this.block = await web3.eth.getBlock(this.transaction.blockNumber)
-    this.authorMeta = await this.getAuthorMeta(this.transaction.from)
+    this.authorMeta = await Article.getAuthorMeta(this.transaction.from)
     this.timestamp = this.block.timestamp
   }
 
@@ -95,7 +103,7 @@ class Comment extends PostBase {
 
     const [block, authorMeta] = await Promise.all([
       web3.eth.getBlock(this.transaction.blockNumber),
-      this.getAuthorMeta(this.transaction.from),
+      Comment.getAuthorMeta(this.transaction.from),
     ])
 
     this.block = block

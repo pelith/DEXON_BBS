@@ -87,8 +87,8 @@ const showHideReward = y => {
 }
 
 const getCommentLink = comment => {
-  // FIXME: name pool approach
-  const {from, authorMeta} = comment
+  const {authorMeta} = comment
+  const {from} = comment.transaction
   // TODO: bind the event to get / substitute name
   return $('<a class="--link-to-addr tooltip" target="_blank"></a>')
     .html(parseUser(from, authorMeta)+'<span>('+from+')</span>')
