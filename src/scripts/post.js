@@ -88,18 +88,19 @@ const main = async () => {
   })
 
   dett = new Dett(_dexon.dexonWeb3)
+  await dett.init()
 
   // get reply tx
   const rtx = getUrlParameter('rtx')
   if (rtx.match(/^0x[a-fA-F0-9]{64}$/g)) {
-    const article = await dett.getArticle(rtx)
+    const article = await dett.getArticle(rtx, false)
     $("#bbs-title").val(('Re: '+article.title).substr(0, dett.titleLength))
   }
 
   // get edit tx
   etx = getUrlParameter('etx')
   if (etx.match(/^0x[a-fA-F0-9]{64}$/g)) {
-    const article = await dett.getArticle(etx)
+    const article = await dett.getArticle(etx, true)
     $("#bbs-title").val(article.title)
     $("#bbs-content").val(article.content)
     edit = true
