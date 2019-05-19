@@ -17,10 +17,14 @@ const render = (_account) => {
     if (!$("#reply-user").text()) $("#reply-btn").show()
   }
   else{
+    hideReplyTypeBtn()
+    hideReply()
+
     $('#reward-line').hide()
 
     // hide reply btn
     $("#reply-btn").hide()
+
   }
 
   $("#reply-user").text(parseUser(_account))
@@ -107,6 +111,7 @@ const main = async () => {
   })
 
   dett = new Dett(_dexon.dexonWeb3)
+  await dett.init()
 
   $('#reply-btn').click(() => { showReplyType() })
   $('#reply-type0').click(() => { showReply(0) })
@@ -121,59 +126,14 @@ const main = async () => {
 
   if (+window.localStorage.getItem('hotkey-mode')) keyboardHook()
 
-  const article = await dett.getArticle(tx)
+  const article = await dett.getArticle(tx, true)
 
   // check transaction to address is bbs contract
   if (!article) return error()
 
-  const contentNodeList = parseContent(article.content, 'post')
-
-  document.title = article.title + ' - Gossiping - DEXON BBS'
-
-  const authorLink = $('<a class="--link-to-addr hover" target="_blank"></a>')
-                    .text(parseUser(article.transaction.from))
-                    .attr('data-address', article.transaction.from)
-                    .attr('href', 'https://dexscan.app/address/' + article.transaction.from)
-  $('#main-content-author').append(authorLink)
-
-  $('#main-content-title').text(article.title)
-
-  $('.--send-reward').click(evt => {
-    const _ = $(evt.currentTarget)
-    // _.prop('disabled', true)
-    return dett.rewardAuthor(article, _.attr('data-value').toString())
-    .on('transactionHash', txhash => {
-      console.log('tx hash', txhash)
-      // _.prop('disabled', false)
-    })
-  })
-  $('#reward-custom-submit').click(evt => {
-    const _ = $('#reward-custom-value')
-    // _.prop('disabled', true)
-    if (!_.val().length) {
-      showHideReward(false)
-      return Promise.resolve()
-    }
-    return dett.rewardAuthor(article, _.val())
-    .on('transactionHash', txhash => {
-      console.log('tx hash', txhash)
-      // _.prop('disabled', false)
-    })
-    .finally(() => showHideReward(false))
-  })
-
-  const elContent = $('#main-content-content')
-  contentNodeList.forEach(el => elContent.append(el))
-
-  $('#main-content-date').text((''+new Date(article.block.timestamp)).substr(0,24))
-
-  $('#main-content-href').attr('href', window.location.href)
-  $('#main-content-href').text(window.location.href)
-  $('#main-content-from').text('@'+article.transaction.blockNumber)
-  $('#main-content-from').attr('href', 'https://dexonscan.app/transaction/'+tx)
+  renderArticle(article)
 
   const comments = await dett.getComments(tx)
-
   comments.reduce( async (n,p) => {
     await n
     displayReply(...await p)
@@ -183,12 +143,13 @@ const main = async () => {
 const keyboardHook = () => {
   const returnCode = 13, escCode = 27, leftCode = 37, rightCode = 39
   $(document).keyup((e) => {
-    if (!isShowReply && !isShowReplyType && e.keyCode === 'X'.charCodeAt()) {
+    if (!isShowReply && !isShowReplyType && dett.account && e.keyCode === 'X'.charCodeAt()) {
       showReplyType()
       return
     }
     else if (!isShowReply && !isShowReplyType && e.keyCode === leftCode) {
-      window.localStorage.setItem('focus-state', 2)
+      if (window.localStorage.getItem('focus-href'))
+        window.localStorage.setItem('focus-state', 2)
       window.location = '/'
       return
     }
@@ -218,6 +179,64 @@ const keyboardHook = () => {
   })
 }
 
+const renderArticle = (article) => {
+  const contentNodeList = parseContent(article.content, 'post')
+
+  document.title = article.title + ' - Gossiping - DEXON BBS'
+
+  const authorLink = $('<a class="--link-to-addr hover" target="_blank"></a>')
+                    .text(parseUser(article.transaction.from))
+                    .attr('data-address', article.transaction.from)
+                    .attr('href', 'https://dexscan.app/address/' + article.transaction.from)
+  $('#main-content-author').append(authorLink)
+
+  $('#main-content-title').text(article.title)
+
+  const elContent = $('#main-content-content')
+  contentNodeList.forEach(el => elContent.append(el))
+
+  $('#main-content-date').text((''+new Date(article.block.timestamp)).substr(0,24))
+
+  $('#main-content-href').attr('href', window.location.href)
+  $('#main-content-href').text(window.location.href)
+  $('#main-content-from').text('@'+article.transaction.blockNumber)
+  $('#main-content-from').attr('href', 'https://dexonscan.app/transaction/'+tx)
+
+
+  for (let timestamp of article.editTimestamps){
+    const date = new Date(timestamp)
+    const formatDate = (date.getMonth()+1)+'/'+(''+date.getDate()).padStart(2, '0')+'/'+date.getFullYear()+' '+(''+date.getHours()).padStart(2, '0')+':'+(''+date.getMinutes()).padStart(2, '0')+':'+(''+date.getSeconds()).padStart(2, '0')
+
+    const elem = $(`<span class="f2">※ 編輯: ${parseUser(article.transaction.from)}, ${formatDate}</span>`)
+    $('.edit').append(elem)
+  }
+
+  // Render Reward
+  $('.--send-reward').click(evt => {
+    const _ = $(evt.currentTarget)
+    // _.prop('disabled', true)
+    return dett.rewardAuthor(article, _.attr('data-value').toString())
+    .on('transactionHash', txhash => {
+      console.log('tx hash', txhash)
+      // _.prop('disabled', false)
+    })
+  })
+  $('#reward-custom-submit').click(evt => {
+    const _ = $('#reward-custom-value')
+    // _.prop('disabled', true)
+    if (!_.val().length) {
+      showHideReward(false)
+      return Promise.resolve()
+    }
+    return dett.rewardAuthor(article, _.val())
+    .on('transactionHash', txhash => {
+      console.log('tx hash', txhash)
+      // _.prop('disabled', false)
+    })
+    .finally(() => showHideReward(false))
+  })
+}
+
 const displayReply = (comment) => {
   const contentNodeList = parseContent(comment.content)
   const voteName = ["→", "推", "噓"]
@@ -236,7 +255,7 @@ const displayReply = (comment) => {
   elem.append(contentNode)
 
   elem.append(`<span class="push-ipdatetime">${formatDate}</span>`)
-  $('#main-content.bbs-screen.bbs-content').append(elem)
+  $('.comment').append(elem)
 }
 
 $(main)

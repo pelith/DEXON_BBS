@@ -1,14 +1,16 @@
-const web3 = new Web3('wss://mainnet-rpc.dexon.org/ws')
+const web3 = new Web3(new Web3.providers.WebsocketProvider('wss://mainnet-rpc.dexon.org/ws'))
 const ABIBBS = [{"constant":!1,"inputs":[{"name":"content","type":"string"}],"name":"Post","outputs":[],"payable":!1,"stateMutability":"nonpayable","type":"function"},{"anonymous":!1,"inputs":[{"indexed":!1,"name":"content","type":"string"}],"name":"Posted","type":"event"}]
 const ABIBBSExt = [{"constant":false,"inputs":[{"name":"content","type":"string"}],"name":"Post","outputs":[],"payable":false,"stateMutability":"nonpayable","type":"function"},{"constant":false,"inputs":[{"name":"origin","type":"bytes32"},{"name":"vote","type":"uint256"},{"name":"content","type":"string"}],"name":"Reply","outputs":[],"payable":false,"stateMutability":"nonpayable","type":"function"},{"anonymous":false,"inputs":[{"indexed":false,"name":"origin","type":"bytes32"},{"indexed":false,"name":"vote","type":"uint256"},{"indexed":false,"name":"content","type":"string"}],"name":"Replied","type":"event"},{"constant":true,"inputs":[{"name":"","type":"bytes32"}],"name":"downvotes","outputs":[{"name":"","type":"uint256"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":true,"inputs":[{"name":"","type":"bytes32"}],"name":"upvotes","outputs":[{"name":"","type":"uint256"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":true,"inputs":[{"name":"","type":"address"},{"name":"","type":"bytes32"}],"name":"voted","outputs":[{"name":"","type":"bool"}],"payable":false,"stateMutability":"view","type":"function"}]
-const ABIBBSExtAdminEdit = [{"constant":true,"inputs":[{"name":"","type":"address"}],"name":"isAdmin","outputs":[{"name":"","type":"bool"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":false,"inputs":[{"name":"who","type":"address"},{"name":"_isAdmin","type":"bool"}],"name":"setAdmin","outputs":[],"payable":false,"stateMutability":"nonpayable","type":"function"},{"constant":true,"inputs":[],"name":"owner","outputs":[{"name":"","type":"address"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":false,"inputs":[{"name":"origin","type":"bytes32"},{"name":"_banned","type":"bool"}],"name":"ban","outputs":[],"payable":false,"stateMutability":"nonpayable","type":"function"},{"constant":true,"inputs":[{"name":"","type":"bytes32"}],"name":"banned","outputs":[{"name":"","type":"bool"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":true,"inputs":[],"name":"category","outputs":[{"name":"","type":"address"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":false,"inputs":[{"name":"newOwner","type":"address"}],"name":"transferOwnership","outputs":[],"payable":false,"stateMutability":"nonpayable","type":"function"},{"inputs":[{"name":"_category","type":"address"}],"payable":false,"stateMutability":"nonpayable","type":"constructor"},{"anonymous":false,"inputs":[{"indexed":true,"name":"origin","type":"bytes32"},{"indexed":false,"name":"banned","type":"bool"},{"indexed":false,"name":"admin","type":"address"}],"name":"Ban","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"name":"previousOwner","type":"address"},{"indexed":true,"name":"newOwner","type":"address"}],"name":"OwnershipTransferred","type":"event"}]
+const ABIBBSAdmin = [{"constant":true,"inputs":[{"name":"","type":"address"}],"name":"isAdmin","outputs":[{"name":"","type":"bool"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":false,"inputs":[{"name":"who","type":"address"},{"name":"_isAdmin","type":"bool"}],"name":"setAdmin","outputs":[],"payable":false,"stateMutability":"nonpayable","type":"function"},{"constant":true,"inputs":[],"name":"owner","outputs":[{"name":"","type":"address"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":false,"inputs":[{"name":"origin","type":"bytes32"},{"name":"_banned","type":"bool"}],"name":"ban","outputs":[],"payable":false,"stateMutability":"nonpayable","type":"function"},{"constant":true,"inputs":[{"name":"","type":"bytes32"}],"name":"banned","outputs":[{"name":"","type":"bool"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":true,"inputs":[],"name":"category","outputs":[{"name":"","type":"address"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":false,"inputs":[{"name":"newOwner","type":"address"}],"name":"transferOwnership","outputs":[],"payable":false,"stateMutability":"nonpayable","type":"function"},{"inputs":[{"name":"_category","type":"address"}],"payable":false,"stateMutability":"nonpayable","type":"constructor"},{"anonymous":false,"inputs":[{"indexed":true,"name":"origin","type":"bytes32"},{"indexed":false,"name":"banned","type":"bool"},{"indexed":false,"name":"admin","type":"address"}],"name":"Ban","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"name":"previousOwner","type":"address"},{"indexed":true,"name":"newOwner","type":"address"}],"name":"OwnershipTransferred","type":"event"}]
+const ABIBBSEdit = [{"constant":false,"inputs":[{"name":"origin","type":"bytes32"},{"name":"content","type":"string"}],"name":"edit","outputs":[],"payable":false,"stateMutability":"nonpayable","type":"function"},{"anonymous":false,"inputs":[{"indexed":false,"name":"origin","type":"bytes32"},{"indexed":false,"name":"content","type":"string"}],"name":"Edited","type":"event"}]
 const BBSContract = '0x663002C4E41E5d04860a76955A7B9B8234475952'
 const BBSExtContract = '0xec368ba43010056abb3e5afd01957ea1fdbd3d8f'
 const BBSAdminContract = '0x88eb672e01c1a2a6f398b9d52c7dab5f87ca8c2c'
 const BBSEditContract = '0x826cb3e5aa484869d9511aad3ead74d382608147'
 const BBS = new web3.eth.Contract(ABIBBS, BBSContract)
 const BBSExt = new web3.eth.Contract(ABIBBSExt, BBSExtContract)
-const BBSAdmin = new web3.eth.Contract(ABIBBSExtAdminEdit, BBSAdminContract)
+const BBSAdmin = new web3.eth.Contract(ABIBBSAdmin, BBSAdminContract)
+const BBSEdit = new web3.eth.Contract(ABIBBSEdit, BBSEditContract)
 
 const titleLength = 40
 const commentLength = 56
@@ -30,15 +32,16 @@ const parseText = (str, len) => {
 
 class Article {
   constructor(_transaction) {
+    // constant
+    this.titleLength = titleLength
+
     this.transaction = _transaction
     this.rawContent = web3.utils.hexToUtf8('0x' + this.transaction.input.slice(138))
     this.titleMatch = false
-    this.title = this.getTitle(this.rawContent)
-    this.content = this.titleMatch ? this.rawContent.slice(this.title.length+'[]'.length) : this.rawContent
+    this.title = this.getTitle()
+    this.content = this.getContent()
     this.author = this.transaction.from
-
-    // constant
-    this.titleLength = titleLength
+    this.editTimestamps = []
   }
 
   async init() {
@@ -46,24 +49,42 @@ class Article {
     this.timestamp = this.block.timestamp
   }
 
-  getTitle(content){
+  async initEdits(edits) {
+    for ( let edit of edits ){
+      const _transaction = await web3.eth.getTransaction(edit.transactionHash)
+      if (_transaction.from === this.author) {
+        this.rawContent = edit.returnValues.content
+        this.title = this.getTitle()
+        this.content = this.getContent()
+        let block = await web3.eth.getBlock(edit.blockNumber)
+        this.editTimestamps.push(block.timestamp)
+      }
+    }
+  }
+
+  getTitle(){
     // title format : [$title]
+    let content = this.rawContent
     content = parseText(content, this.titleLength+'[]'.length)
     const match = content.match(/^\[(.*)\]/)
-    this.titleMatch = match
+    this.titleMatch = !!match
     return match ? match[1] : content
+  }
+
+  getContent(){
+    return this.titleMatch ? this.rawContent.slice(this.title.length+'[]'.length) : this.rawContent
   }
 }
 
 class Comment {
   constructor(event) {
+    // constant
+    this.commentLength = commentLength
+
     this.tx = event.transactionHash
     this.rawContent = event.returnValues.content
     this.content = this.getContent()
     this.vote = +event.returnValues.vote
-
-    // constant
-    this.commentLength = commentLength
   }
 
   async init() {
@@ -88,14 +109,18 @@ class Dett {
     this.commentLength = commentLength
     this.titleLength = titleLength
     this.dexonBBSExt = this.dexonWeb3 ? new this.dexonWeb3.eth.Contract(ABIBBSExt, BBSExtContract) : null
+    this.dexonBBSEdit = this.dexonWeb3 ? new this.dexonWeb3.eth.Contract(ABIBBSEdit, BBSEditContract) : null
+  }
+
+  async init() {
+    this.BBSevents = await BBS.getPastEvents({fromBlock : this.fromBlock })
+    this.BBSEditEvents = await BBSEdit.getPastEvents({fromBlock : this.fromBlock })
   }
 
   async getArticles(){
-    const events = await BBS.getPastEvents({fromBlock : this.fromBlock })
-
-    return events.reverse().map(async (event) => {
+    return this.BBSevents.reverse().map(async (event) => {
       const [article, votes, banned] = await Promise.all([
-        this.getArticle(event.transactionHash),
+        this.getArticle(event.transactionHash, false),
         this.getVotes(event.transactionHash),
         this.getBanned(event.transactionHash),
       ])
@@ -104,7 +129,8 @@ class Dett {
     })
   }
 
-  async getArticle(tx){
+  async getArticle(tx, checkEdited){
+
     const transaction = await web3.eth.getTransaction(tx)
 
     // check transaction to address is bbs contract
@@ -112,6 +138,11 @@ class Dett {
 
     const article = new Article(transaction)
     await article.init()
+
+    if (checkEdited) {
+      const edits = this.BBSEditEvents.filter(event => event.returnValues.origin === tx )
+      if (edits.length >0) await article.initEdits(edits)
+    }
 
     return article
   }
@@ -186,7 +217,30 @@ class Dett {
     const gas = await this.dexonBBSExt.methods.Post(post).estimateGas()
     try {
       const receipt = await this.dexonBBSExt.methods.Post(post).send({ from: this.account, gas: gas })
-      window.location = 'index.html'
+      window.location = '/'
+    }
+    catch(err){
+      alert(err)
+    }
+  }
+
+  async edit(tx, title, content){
+    if (!this.dexonWeb3)
+      return alert('Please connect to your DEXON Wallet.')
+
+    if (title.length > this.titleLength)
+      return alert('Title\'s length is over 40 characters.')
+
+    const transaction = await web3.eth.getTransaction(tx)
+    if (this.account.toLowerCase() !== transaction.from.toLowerCase())
+      return alert('You can not edit this article.')
+
+    const post = '[' + title + ']' + content
+
+    const gas = await this.dexonBBSEdit.methods.edit(tx, post).estimateGas()
+    try {
+      const receipt = await this.dexonBBSEdit.methods.edit(tx, post).send({ from: this.account, gas: gas })
+      window.location = '/'
     }
     catch(err){
       alert(err)
