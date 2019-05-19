@@ -116,7 +116,7 @@ const directDisplay = (article, votes, banned) => {
     <div class="meta">
       <div class="author">
         <a class="--link-to-addr hover" href="https://dexscan.app/address/${article.author}" target="_blank" data-address="${article.author}">
-          ${parseUser(article.author)}
+          ${parseUser(article.author, article.authorMeta)}
         </a>
       </div>
       <div class="article-menu">

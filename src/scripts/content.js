@@ -86,10 +86,12 @@ const showHideReward = y => {
   $('#reward-toggle-region-2')[y ? 'show' : 'hide']()
 }
 
-const getAddressLink = (from, __namePool) => {
+const getCommentLink = comment => {
+  // FIXME: name pool approach
+  const {from, authorMeta} = comment
   // TODO: bind the event to get / substitute name
   return $('<a class="--link-to-addr tooltip" target="_blank"></a>')
-    .html(parseUser(from)+'<span>('+from+')</span>')
+    .html(parseUser(from, authorMeta)+'<span>('+from+')</span>')
     // .attr('data-address', from)
     .attr('href', 'https://dexscan.app/address/' + from)
 }
@@ -131,7 +133,7 @@ const main = async () => {
   document.title = article.title + ' - Gossiping - DEXON BBS'
 
   const authorLink = $('<a class="--link-to-addr hover" target="_blank"></a>')
-                    .text(parseUser(article.transaction.from))
+                    .text(parseUser(article.transaction.from, article.authorMeta))
                     .attr('data-address', article.transaction.from)
                     .attr('href', 'https://dexscan.app/address/' + article.transaction.from)
   $('#main-content-author').append(authorLink)
@@ -228,7 +230,7 @@ const displayReply = (comment) => {
   elem.html(`<span class="${comment.vote != 1 ? 'f1 ' : ''}hl push-tag">${voteName[comment.vote]} </span>`)
 
   const authorNode = $('<span class="f3 hl push-userid"></span>')
-  authorNode.append(getAddressLink(comment.author))
+  authorNode.append(getCommentLink(comment))
   elem.append(authorNode)
 
   const contentNode = $('<span class="f3 push-content">: </span>')
