@@ -105,7 +105,7 @@ class Dett {
     this.account = ''
 
     // constant
-    this.fromBlock = '900000' // 1170000
+    this.fromBlock = '1170000'
     this.commentLength = commentLength
     this.titleLength = titleLength
     this.dexonBBSExt = this.dexonWeb3 ? new this.dexonWeb3.eth.Contract(ABIBBSExt, BBSExtContract) : null
