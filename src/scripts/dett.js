@@ -1,3 +1,4 @@
+
 const web3 = new Web3(new Web3.providers.WebsocketProvider('wss://mainnet-rpc.dexon.org/ws'))
 const ABIBBS = [{"constant":!1,"inputs":[{"name":"content","type":"string"}],"name":"Post","outputs":[],"payable":!1,"stateMutability":"nonpayable","type":"function"},{"anonymous":!1,"inputs":[{"indexed":!1,"name":"content","type":"string"}],"name":"Posted","type":"event"}]
 const ABIBBSExt = [{"constant":false,"inputs":[{"name":"content","type":"string"}],"name":"Post","outputs":[],"payable":false,"stateMutability":"nonpayable","type":"function"},{"constant":false,"inputs":[{"name":"origin","type":"bytes32"},{"name":"vote","type":"uint256"},{"name":"content","type":"string"}],"name":"Reply","outputs":[],"payable":false,"stateMutability":"nonpayable","type":"function"},{"anonymous":false,"inputs":[{"indexed":false,"name":"origin","type":"bytes32"},{"indexed":false,"name":"vote","type":"uint256"},{"indexed":false,"name":"content","type":"string"}],"name":"Replied","type":"event"},{"constant":true,"inputs":[{"name":"","type":"bytes32"}],"name":"downvotes","outputs":[{"name":"","type":"uint256"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":true,"inputs":[{"name":"","type":"bytes32"}],"name":"upvotes","outputs":[{"name":"","type":"uint256"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":true,"inputs":[{"name":"","type":"address"},{"name":"","type":"bytes32"}],"name":"voted","outputs":[{"name":"","type":"bool"}],"payable":false,"stateMutability":"view","type":"function"}]
@@ -113,8 +114,8 @@ class Dett {
   }
 
   async init() {
-    this.BBSevents = await BBS.getPastEvents({fromBlock : this.fromBlock })
-    this.BBSEditEvents = await BBSEdit.getPastEvents({fromBlock : this.fromBlock })
+    this.BBSevents = await BBS.getPastEvents('Posted', {fromBlock : this.fromBlock })
+    this.BBSEditEvents = await BBSEdit.getPastEvents('Edited', {fromBlock : this.fromBlock })
   }
 
   async getArticles(){
@@ -165,7 +166,7 @@ class Dett {
   }
 
   async getComments(tx){
-    const events = await BBSExt.getPastEvents({fromBlock : this.fromBlock})
+    const events = await BBSExt.getPastEvents('Replied', {fromBlock : this.fromBlock})
 
     return events.filter((event) => {return tx == event.returnValues.origin}).map(async (event) => {
       const [comment] = await Promise.all([
@@ -196,8 +197,10 @@ class Dett {
     if (tx) {
       const gas = await this.dexonBBSExt.methods.Reply(tx, +replyType, content).estimateGas()
       try {
-        const receipt = await this.dexonBBSExt.methods.Reply(tx, +replyType, content).send({ from: this.account, gas: gas })
-        window.location.reload()
+        await this.dexonBBSExt.methods.Reply(tx, +replyType, content).send({ from: this.account, gas: gas })
+        .on('confirmation', (confirmationNumber, receipt) => {
+          window.location.reload()
+        })
       }
       catch(err){
         alert(err)
@@ -216,8 +219,10 @@ class Dett {
 
     const gas = await this.dexonBBSExt.methods.Post(post).estimateGas()
     try {
-      const receipt = await this.dexonBBSExt.methods.Post(post).send({ from: this.account, gas: gas })
-      window.location = '/'
+      await this.dexonBBSExt.methods.Post(post).send({ from: this.account, gas: gas })
+      .on('confirmation', (confirmationNumber, receipt) => {
+        window.location = '/'
+      })
     }
     catch(err){
       alert(err)
@@ -239,8 +244,10 @@ class Dett {
 
     const gas = await this.dexonBBSEdit.methods.edit(tx, post).estimateGas()
     try {
-      const receipt = await this.dexonBBSEdit.methods.edit(tx, post).send({ from: this.account, gas: gas })
-      window.location = '/'
+      await this.dexonBBSEdit.methods.edit(tx, post).send({ from: this.account, gas: gas })
+      .on('confirmation', (confirmationNumber, receipt) => {
+        window.location = '/'
+      })
     }
     catch(err){
       alert(err)

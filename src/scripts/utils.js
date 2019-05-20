@@ -68,7 +68,6 @@ const createEmbedObject = (url) => {
   const elParent2 = $('<div class="resize-container"></div>')
   const elParent3 = $('<div class="resize-content"></div>')
   const el = $(embedMap.code)
-  console.log(el[0].innerHTML)
 
   if (embedMap.type === 'youtube') {
     const processedUrl = `https://www.youtube.com/embed/${parsedUrl.query.replace('?v=', '')}`
