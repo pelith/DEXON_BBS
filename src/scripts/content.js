@@ -207,7 +207,7 @@ const renderArticle = (article) => {
     const date = new Date(timestamp)
     const formatDate = (date.getMonth()+1)+'/'+(''+date.getDate()).padStart(2, '0')+'/'+date.getFullYear()+' '+(''+date.getHours()).padStart(2, '0')+':'+(''+date.getMinutes()).padStart(2, '0')+':'+(''+date.getSeconds()).padStart(2, '0')
 
-    const elem = $(`<span class="f2">※ 編輯: ${parseUser(article.transaction.from)}, ${formatDate}</span>`)
+    const elem = $(`<span class="f2">※ 編輯: ${parseUser(article.transaction.from)}, ${formatDate}</span><br>`)
     $('.edit').append(elem)
   }
 
