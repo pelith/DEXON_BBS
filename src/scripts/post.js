@@ -142,6 +142,4 @@ const main = async () => {
 
 }
 
-
-$(main)
-
+_layoutInit().then(main)

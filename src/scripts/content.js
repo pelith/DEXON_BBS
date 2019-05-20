@@ -258,6 +258,4 @@ const displayReply = (comment) => {
   $('.comment').append(elem)
 }
 
-$(main)
-
-
+_layoutInit().then(main)

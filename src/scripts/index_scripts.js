@@ -162,4 +162,4 @@ const directDisplay = (article, votes, banned) => {
   }
 }
 
-$(main)
+_layoutInit().then(main)
