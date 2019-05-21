@@ -5,6 +5,7 @@ import {parseText, parseUser} from './utils.js'
 
 let dett = null
 let account = ''
+let registerFee = '0'
 
 const render = (_account) => {
   account = _account
@@ -27,10 +28,10 @@ const checkRules = val => {
   ruleCtrls.removeClass('f1 f2 hl')
 
   const isValid = [
-    v => v.match(/^[A-Za-z0-9 ]{2,12}$/),
+    v => v.match(/^[A-Za-z0-9 ]{3,12}$/),
     v => !v.match(/(?:^0[Xx]|^ | $)/),
     v => !v.match(/^\d+$/),
-    v => !v.match(/ {2,}/),
+    v => !v.match(/  +/),
   ].every((test, idx) => {
     if (test(val)) {
       ruleCtrls.eq(idx).addClass('hl f2')
@@ -41,20 +42,30 @@ const checkRules = val => {
   })
 
   if (isValid) {
+    $('#register-ok').show()
+    $('#register-no').hide()
     // update UI for esti. cost
+    // XXX: strange bug. fee returns a bn object instead of a string
+    $('#register-fee').text(`${Web3.utils.fromWei(registerFee.toString())} DXN`)
+  } else {
+    $('#register-ok').hide()
+    $('#register-no').show()
   }
 
   return isValid
 }
 
-const doNewRegister = nick => {
+const doNewRegister = async nick => {
   if (!checkRules(nick)) {
     // failed pre-check
     return
   }
   // TODO: dry run to check if it is used
-
-  newRegister()
+  if (!await dett.checkIdAvailable(nick)) {
+    alert('抱歉，此暱稱可能已被使用！')
+    return
+  }
+  await dett.registerName(nick, registerFee)
 }
 
 const main = async () => {
@@ -67,9 +78,13 @@ const main = async () => {
 
   const elNickname = $('#register-nickname')
   elNickname.on('input', evt => checkRules($(evt.currentTarget).val()))
+  $('#register-submit').click(() => doNewRegister(elNickname.val()))
+
+  registerFee = await dett.getRegisterFee()
   checkRules(elNickname.val())
 
-  $('#register-submit').click(() => doNewRegister(elNickname.val()))
+  const history = await dett.getRegisterHistory()
+  console.log(history)
 }
 
-$(main)
+_layoutInit().then(main)

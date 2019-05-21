@@ -25,16 +25,16 @@
 
 ID需符合以下規定：
 
-<span class="--rule">  - 由 2 到 12 個英文字母、數字或空白字元組成</span>
+<span class="--rule">  - 由 3 到 12 個英文字母、數字或空白字元組成</span>
 <span class="--rule">  - 不可由 0x 開頭、不可由空白開頭或結尾</span>
 <span class="--rule">  - 不可全由數字組成</span>
 <span class="--rule">  - 空白不可連續出現</span>
 
-<span class="hl">此ID價值 <span id="register-fee" class="hl f3">0.00 DXN</span>。</span>
+<span id="register-ok" style="display: none" class="hl">此ID價值 <span id="register-fee" class="hl f3">0.00 DXN</span>。</span><span id="register-no" style="display: none" class="hl f1">無法使用此ID :(</span>
 
-每次註冊均需交易，但舊ID無法被重複使用。
+可以註冊多次，但ID不能與任何註冊過的ID重複。
 
-<button class="btn" style="font-size: inherit">註冊</button>
+<button id="register-submit" class="btn" style="font-size: inherit">註冊</button>
 </div>
 <span id="main-content-content"></span>
 </div>
