@@ -1,7 +1,9 @@
-const web3 = new Web3('wss://mainnet-rpc.dexon.org/ws')
+// Web3 is from layout
+const web3 = new Web3(new Web3.providers.WebsocketProvider('wss://mainnet-rpc.dexon.org/ws'))
 const ABIBBS = [{"constant":!1,"inputs":[{"name":"content","type":"string"}],"name":"Post","outputs":[],"payable":!1,"stateMutability":"nonpayable","type":"function"},{"anonymous":!1,"inputs":[{"indexed":!1,"name":"content","type":"string"}],"name":"Posted","type":"event"}]
 const ABIBBSExt = [{"constant":false,"inputs":[{"name":"content","type":"string"}],"name":"Post","outputs":[],"payable":false,"stateMutability":"nonpayable","type":"function"},{"constant":false,"inputs":[{"name":"origin","type":"bytes32"},{"name":"vote","type":"uint256"},{"name":"content","type":"string"}],"name":"Reply","outputs":[],"payable":false,"stateMutability":"nonpayable","type":"function"},{"anonymous":false,"inputs":[{"indexed":false,"name":"origin","type":"bytes32"},{"indexed":false,"name":"vote","type":"uint256"},{"indexed":false,"name":"content","type":"string"}],"name":"Replied","type":"event"},{"constant":true,"inputs":[{"name":"","type":"bytes32"}],"name":"downvotes","outputs":[{"name":"","type":"uint256"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":true,"inputs":[{"name":"","type":"bytes32"}],"name":"upvotes","outputs":[{"name":"","type":"uint256"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":true,"inputs":[{"name":"","type":"address"},{"name":"","type":"bytes32"}],"name":"voted","outputs":[{"name":"","type":"bool"}],"payable":false,"stateMutability":"view","type":"function"}]
-const ABIBBSExtAdminEdit = [{"constant":true,"inputs":[{"name":"","type":"address"}],"name":"isAdmin","outputs":[{"name":"","type":"bool"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":false,"inputs":[{"name":"who","type":"address"},{"name":"_isAdmin","type":"bool"}],"name":"setAdmin","outputs":[],"payable":false,"stateMutability":"nonpayable","type":"function"},{"constant":true,"inputs":[],"name":"owner","outputs":[{"name":"","type":"address"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":false,"inputs":[{"name":"origin","type":"bytes32"},{"name":"_banned","type":"bool"}],"name":"ban","outputs":[],"payable":false,"stateMutability":"nonpayable","type":"function"},{"constant":true,"inputs":[{"name":"","type":"bytes32"}],"name":"banned","outputs":[{"name":"","type":"bool"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":true,"inputs":[],"name":"category","outputs":[{"name":"","type":"address"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":false,"inputs":[{"name":"newOwner","type":"address"}],"name":"transferOwnership","outputs":[],"payable":false,"stateMutability":"nonpayable","type":"function"},{"inputs":[{"name":"_category","type":"address"}],"payable":false,"stateMutability":"nonpayable","type":"constructor"},{"anonymous":false,"inputs":[{"indexed":true,"name":"origin","type":"bytes32"},{"indexed":false,"name":"banned","type":"bool"},{"indexed":false,"name":"admin","type":"address"}],"name":"Ban","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"name":"previousOwner","type":"address"},{"indexed":true,"name":"newOwner","type":"address"}],"name":"OwnershipTransferred","type":"event"}]
+const ABIBBSAdmin = [{"constant":true,"inputs":[{"name":"","type":"address"}],"name":"isAdmin","outputs":[{"name":"","type":"bool"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":false,"inputs":[{"name":"who","type":"address"},{"name":"_isAdmin","type":"bool"}],"name":"setAdmin","outputs":[],"payable":false,"stateMutability":"nonpayable","type":"function"},{"constant":true,"inputs":[],"name":"owner","outputs":[{"name":"","type":"address"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":false,"inputs":[{"name":"origin","type":"bytes32"},{"name":"_banned","type":"bool"}],"name":"ban","outputs":[],"payable":false,"stateMutability":"nonpayable","type":"function"},{"constant":true,"inputs":[{"name":"","type":"bytes32"}],"name":"banned","outputs":[{"name":"","type":"bool"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":true,"inputs":[],"name":"category","outputs":[{"name":"","type":"address"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":false,"inputs":[{"name":"newOwner","type":"address"}],"name":"transferOwnership","outputs":[],"payable":false,"stateMutability":"nonpayable","type":"function"},{"inputs":[{"name":"_category","type":"address"}],"payable":false,"stateMutability":"nonpayable","type":"constructor"},{"anonymous":false,"inputs":[{"indexed":true,"name":"origin","type":"bytes32"},{"indexed":false,"name":"banned","type":"bool"},{"indexed":false,"name":"admin","type":"address"}],"name":"Ban","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"name":"previousOwner","type":"address"},{"indexed":true,"name":"newOwner","type":"address"}],"name":"OwnershipTransferred","type":"event"}]
+const ABIBBSEdit = [{"constant":false,"inputs":[{"name":"origin","type":"bytes32"},{"name":"content","type":"string"}],"name":"edit","outputs":[],"payable":false,"stateMutability":"nonpayable","type":"function"},{"anonymous":false,"inputs":[{"indexed":false,"name":"origin","type":"bytes32"},{"indexed":false,"name":"content","type":"string"}],"name":"Edited","type":"event"}]
 const ABIBBSPB = [{"constant":!1,"inputs":[{"name":"_lobby","type":"address"},{"name":"_isLobby","type":"bool"}],"name":"setLobby","outputs":[],"payable":!1,"stateMutability":"nonpayable","type":"function"},{"constant":!0,"inputs":[{"name":"","type":"address"}],"name":"migrated","outputs":[{"name":"","type":"bool"}],"payable":!1,"stateMutability":"view","type":"function"},{"constant":!1,"inputs":[{"name":"meta","type":"string"}],"name":"setMeta","outputs":[],"payable":!1,"stateMutability":"nonpayable","type":"function"},{"constant":!1,"inputs":[{"name":"who","type":"address"},{"name":"ref","type":"address"}],"name":"setReferrerByAddress","outputs":[],"payable":!1,"stateMutability":"nonpayable","type":"function"},{"constant":!0,"inputs":[{"name":"who","type":"address"}],"name":"getPlayer","outputs":[{"name":"","type":"bytes32"},{"name":"","type":"uint256"},{"name":"","type":"uint256"},{"name":"","type":"address"},{"name":"","type":"address"},{"name":"","type":"string"}],"payable":!1,"stateMutability":"view","type":"function"},{"constant":!1,"inputs":[{"name":"who","type":"address"},{"name":"amount","type":"uint256"}],"name":"addExp","outputs":[],"payable":!1,"stateMutability":"nonpayable","type":"function"},{"constant":!0,"inputs":[{"name":"who","type":"address"}],"name":"getLV","outputs":[{"name":"","type":"uint256"}],"payable":!1,"stateMutability":"view","type":"function"},{"constant":!0,"inputs":[{"name":"name","type":"string"}],"name":"checkIfNameValid","outputs":[{"name":"","type":"bool"}],"payable":!1,"stateMutability":"view","type":"function"},{"constant":!1,"inputs":[{"name":"name","type":"string"}],"name":"useAnotherName","outputs":[],"payable":!1,"stateMutability":"nonpayable","type":"function"},{"constant":!0,"inputs":[{"name":"","type":"bytes32"}],"name":"name2addr","outputs":[{"name":"","type":"address"}],"payable":!1,"stateMutability":"view","type":"function"},{"constant":!0,"inputs":[],"name":"owner","outputs":[{"name":"","type":"address"}],"payable":!1,"stateMutability":"view","type":"function"},{"constant":!1,"inputs":[{"name":"link","type":"address"}],"name":"setLink","outputs":[],"payable":!1,"stateMutability":"nonpayable","type":"function"},{"constant":!1,"inputs":[{"name":"newPlayerBook","type":"address"}],"name":"migrate","outputs":[],"payable":!1,"stateMutability":"nonpayable","type":"function"},{"constant":!1,"inputs":[{"name":"who","type":"address"},{"name":"ref","type":"bytes32"}],"name":"setReferrerByName","outputs":[],"payable":!1,"stateMutability":"nonpayable","type":"function"},{"constant":!0,"inputs":[{"name":"","type":"address"},{"name":"","type":"bytes32"}],"name":"isMyName","outputs":[{"name":"","type":"bool"}],"payable":!1,"stateMutability":"view","type":"function"},{"constant":!0,"inputs":[{"name":"","type":"address"}],"name":"players","outputs":[{"name":"name","type":"bytes32"},{"name":"names","type":"uint256"},{"name":"exp","type":"uint256"},{"name":"referrer","type":"address"},{"name":"link","type":"address"},{"name":"meta","type":"string"}],"payable":!1,"stateMutability":"view","type":"function"},{"constant":!0,"inputs":[{"name":"","type":"address"}],"name":"isLobby","outputs":[{"name":"","type":"bool"}],"payable":!1,"stateMutability":"view","type":"function"},{"constant":!1,"inputs":[{"name":"name","type":"string"}],"name":"register","outputs":[],"payable":!1,"stateMutability":"nonpayable","type":"function"},{"constant":!1,"inputs":[{"name":"newOwner","type":"address"}],"name":"transferOwnership","outputs":[],"payable":!1,"stateMutability":"nonpayable","type":"function"},{"anonymous":!1,"inputs":[{"indexed":!0,"name":"playerAddress","type":"address"},{"indexed":!0,"name":"playerName","type":"bytes32"}],"name":"SetNewName","type":"event"},{"anonymous":!1,"inputs":[{"indexed":!0,"name":"previousOwner","type":"address"},{"indexed":!0,"name":"newOwner","type":"address"}],"name":"OwnershipTransferred","type":"event"}]
 const BBSContract = '0x663002C4E41E5d04860a76955A7B9B8234475952'
 const BBSExtContract = '0xec368ba43010056abb3e5afd01957ea1fdbd3d8f'
@@ -11,7 +13,8 @@ const BBSPBContract = '0xA4e4aa17246D18aFdCD7D222158ab679E7A7Ce15'
 
 const BBS = new web3.eth.Contract(ABIBBS, BBSContract)
 const BBSExt = new web3.eth.Contract(ABIBBSExt, BBSExtContract)
-const BBSAdmin = new web3.eth.Contract(ABIBBSExtAdminEdit, BBSAdminContract)
+const BBSAdmin = new web3.eth.Contract(ABIBBSAdmin, BBSAdminContract)
+const BBSEdit = new web3.eth.Contract(ABIBBSEdit, BBSEditContract)
 const BBSPB = new web3.eth.Contract(ABIBBSPB, BBSPBContract)
 
 const titleLength = 40
@@ -62,12 +65,10 @@ class Article extends PostBase {
     this.transaction = _transaction
     this.rawContent = web3.utils.hexToUtf8('0x' + this.transaction.input.slice(138))
     this.titleMatch = false
-    this.title = this.getTitle(this.rawContent)
-    this.content = this.titleMatch ? this.rawContent.slice(this.title.length+'[]'.length) : this.rawContent
+    this.title = this.getTitle()
+    this.content = this.getContent()
     this.author = this.transaction.from
-
-    // constant
-    this.titleLength = titleLength
+    this.editTimestamps = []
   }
 
   async init() {
@@ -76,12 +77,30 @@ class Article extends PostBase {
     this.timestamp = this.block.timestamp
   }
 
-  getTitle(content){
+  async initEdits(edits) {
+    for ( let edit of edits ){
+      const _transaction = await web3.eth.getTransaction(edit.transactionHash)
+      if (_transaction.from === this.author) {
+        this.rawContent = edit.returnValues.content
+        this.title = this.getTitle()
+        this.content = this.getContent()
+        let block = await web3.eth.getBlock(edit.blockNumber)
+        this.editTimestamps.push(block.timestamp)
+      }
+    }
+  }
+
+  getTitle(){
     // title format : [$title]
+    let content = this.rawContent
     content = parseText(content, this.titleLength+'[]'.length)
     const match = content.match(/^\[(.*)\]/)
-    this.titleMatch = match
+    this.titleMatch = !!match
     return match ? match[1] : content
+  }
+
+  getContent(){
+    return this.titleMatch ? this.rawContent.slice(this.title.length+'[]'.length) : this.rawContent
   }
 }
 
@@ -92,9 +111,6 @@ class Comment extends PostBase {
     this.rawContent = event.returnValues.content
     this.content = this.getContent()
     this.vote = +event.returnValues.vote
-
-    // constant
-    this.commentLength = commentLength
   }
 
   async init() {
@@ -126,14 +142,18 @@ class Dett {
     this.commentLength = commentLength
     this.titleLength = titleLength
     this.dexonBBSExt = this.dexonWeb3 ? new this.dexonWeb3.eth.Contract(ABIBBSExt, BBSExtContract) : null
+    this.dexonBBSEdit = this.dexonWeb3 ? new this.dexonWeb3.eth.Contract(ABIBBSEdit, BBSEditContract) : null
+  }
+
+  async init() {
+    this.BBSevents = await BBS.getPastEvents('Posted', {fromBlock : this.fromBlock })
+    this.BBSEditEvents = await BBSEdit.getPastEvents('Edited', {fromBlock : this.fromBlock })
   }
 
   async getArticles(){
-    const events = await BBS.getPastEvents({fromBlock : this.fromBlock })
-
-    return events.reverse().map(async (event) => {
+    return this.BBSevents.reverse().map(async (event) => {
       const [article, votes, banned] = await Promise.all([
-        this.getArticle(event.transactionHash),
+        this.getArticle(event.transactionHash, false),
         this.getVotes(event.transactionHash),
         this.getBanned(event.transactionHash),
       ])
@@ -142,7 +162,8 @@ class Dett {
     })
   }
 
-  async getArticle(tx){
+  async getArticle(tx, checkEdited){
+
     const transaction = await web3.eth.getTransaction(tx)
 
     // check transaction to address is bbs contract
@@ -150,6 +171,11 @@ class Dett {
 
     const article = new Article(transaction)
     await article.init()
+
+    if (checkEdited) {
+      const edits = this.BBSEditEvents.filter(event => event.returnValues.origin === tx )
+      if (edits.length >0) await article.initEdits(edits)
+    }
 
     return article
   }
@@ -172,7 +198,7 @@ class Dett {
   }
 
   async getComments(tx){
-    const events = await BBSExt.getPastEvents({fromBlock : this.fromBlock})
+    const events = await BBSExt.getPastEvents('Replied', {fromBlock : this.fromBlock})
 
     return events.filter((event) => {return tx == event.returnValues.origin}).map(async (event) => {
       const [comment] = await Promise.all([
@@ -207,8 +233,10 @@ class Dett {
     if (tx) {
       const gas = await this.dexonBBSExt.methods.Reply(tx, +replyType, content).estimateGas()
       try {
-        const receipt = await this.dexonBBSExt.methods.Reply(tx, +replyType, content).send({ from: this.account, gas: gas })
-        window.location.reload()
+        await this.dexonBBSExt.methods.Reply(tx, +replyType, content).send({ from: this.account, gas: gas })
+        .on('confirmation', (confirmationNumber, receipt) => {
+          window.location.reload()
+        })
       }
       catch(err){
         alert(err)
@@ -227,8 +255,35 @@ class Dett {
 
     const gas = await this.dexonBBSExt.methods.Post(post).estimateGas()
     try {
-      const receipt = await this.dexonBBSExt.methods.Post(post).send({ from: this.account, gas: gas })
-      window.location = 'index.html'
+      await this.dexonBBSExt.methods.Post(post).send({ from: this.account, gas: gas })
+      .on('confirmation', (confirmationNumber, receipt) => {
+        window.location = '/'
+      })
+    }
+    catch(err){
+      alert(err)
+    }
+  }
+
+  async edit(tx, title, content){
+    if (!this.dexonWeb3)
+      return alert('Please connect to your DEXON Wallet.')
+
+    if (title.length > this.titleLength)
+      return alert('Title\'s length is over 40 characters.')
+
+    const transaction = await web3.eth.getTransaction(tx)
+    if (this.account.toLowerCase() !== transaction.from.toLowerCase())
+      return alert('You can not edit this article.')
+
+    const post = '[' + title + ']' + content
+
+    const gas = await this.dexonBBSEdit.methods.edit(tx, post).estimateGas()
+    try {
+      await this.dexonBBSEdit.methods.edit(tx, post).send({ from: this.account, gas: gas })
+      .on('confirmation', (confirmationNumber, receipt) => {
+        window.location = '/'
+      })
     }
     catch(err){
       alert(err)

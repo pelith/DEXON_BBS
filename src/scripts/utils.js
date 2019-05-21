@@ -10,11 +10,11 @@ const embedWhiteListAndCode = {
   },
 }
 
-const htmlEntities = (str) => {
+export const htmlEntities = (str) => {
   return String(str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;')
 }
 
-const getUrlParameter = (sParam) => {
+export const getUrlParameter = (sParam) => {
   let sPageURL = window.location.search.substring(1),
       sURLVariables = sPageURL.split('&'),
       sParameterName = [];
@@ -22,11 +22,12 @@ const getUrlParameter = (sParam) => {
   for (let i = 0; i < sURLVariables.length; i++) {
     sParameterName = sURLVariables[i].split('=');
     if (sParameterName[0] === sParam)
-      return sParameterName[1] === undefined ? true : decodeURIComponent(sParameterName[1]);
+      return sParameterName[1] === undefined ? '' : decodeURIComponent(sParameterName[1]);
   }
+  return ''
 }
 
-const parseText = (str, len) => {
+export const parseText = (str, len) => {
   let tmp = '', count = 0;
   for (let i = 0; i < str.length; i++) {
     if (str[i].match(/[\u4e00-\u9fa5]/g)) tmp += str[i], count += 2
@@ -41,7 +42,7 @@ const parseText = (str, len) => {
   return tmp
 }
 
-const parseUser = (address, meta) => {
+export const parseUser = (address, meta) => {
   if (meta && meta.name) {
     return meta.name
   }
@@ -70,7 +71,6 @@ const createEmbedObject = (url) => {
   const elParent2 = $('<div class="resize-container"></div>')
   const elParent3 = $('<div class="resize-content"></div>')
   const el = $(embedMap.code)
-  console.log(el[0].innerHTML)
 
   if (embedMap.type === 'youtube') {
     const processedUrl = `https://www.youtube.com/embed/${parsedUrl.query.replace('?v=', '')}`
@@ -85,7 +85,7 @@ const createEmbedObject = (url) => {
   return ret
 }
 
-const parseContent = (content, loc) => {
+export const parseContent = (content, loc) => {
   let matches = linkify.match(content)
   let result = []
 
@@ -118,5 +118,3 @@ const parseContent = (content, loc) => {
 
   return result
 }
-
-export { htmlEntities, getUrlParameter, parseText, parseUser, parseContent }

@@ -58,24 +58,30 @@
     {%- endblock %}
 
     <script language="javascript" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
-    <script language="javascript" type="text/javascript" src="https://cdn.jsdelivr.net/gh/ethereum/web3.js@1.0.0-beta.37/dist/web3.min.js"></script>
     <script language="javascript" type="text/javascript" src="scripts/layout.js"></script>
 
     {% block scripts_extra -%}
     {%- endblock %}
 
-    {% if not without_web3 -%}
-    <script language="javascript" type="text/javascript" src="scripts/dexon.js"></script>
-    {%- endif %}
-
     <!-- Global site tag (gtag.js) - Google Analytics -->
-    <script async src="https://www.googletagmanager.com/gtag/js?id=UA-140044770-1"></script>
-    <script>
-      window.dataLayer = window.dataLayer || [];
-      function gtag(){dataLayer.push(arguments);}
-      gtag('js', new Date());
+    <div id="wrapfabtest">
+        <div class="adBanner" style="background-color: transparent; height: 1px; width: 1px;">
+        </div>
+    </div>
+    <script async type="text/javascript">
+        $(document).ready(function(){
+            let domain = $("#wrapfabtest").height() > 0 ? '//www.googletagmanager.com' : domain = '//dett.cc/assets'
 
-      gtag('config', 'UA-140044770-1');
+            var script = document.createElement('script');
+            script.src=domain+"/gtag/js?id=UA-140044770-1";
+            document.body.appendChild(script);
+            script.onload = function () {
+                window.dataLayer = window.dataLayer || [];
+                function gtag(){dataLayer.push(arguments);}
+                gtag('js', new Date());
+                gtag('config', 'UA-140044770-1');
+            }
+        })
     </script>
   </body>
 </html>

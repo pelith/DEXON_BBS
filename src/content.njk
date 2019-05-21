@@ -1,28 +1,5 @@
 {% extends '_layout.njk' %}
 
-{% block head_extra %}
-{{ super() }}
-<style type="text/css">
-/*    .video-container {
-        position: relative;
-        padding-bottom: 56.25%;
-        height: 0;
-        overflow: hidden;
-        max-width: 100%;
-        margin: 0.5em auto;
-    }
-    .video-container iframe,
-    .video-container object,
-    .video-container embed {
-        position: absolute;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-    }*/
-</style>
-{% endblock %}
-
 {% block content %}
 <div id="navigation-container">
   <div id="navigation" class="bbs-content">
@@ -48,7 +25,7 @@
   <option value="0">→</option>
   <option value="1">推</option>
   <option value="2">噓</option>
-</select> <span id="reply-user" class="f3 hl push-userid" style="color: white;vertical-align: middle;"></span><span class="f3 push-content" style="vertical-align: middle;color: white">: </span><span class="f3 push-content"></span><input class="main-content-content input" id="reply-content" type="text" maxlength="40" value=""></div></div>
+</select> <span id="reply-user" class="f3 hl push-userid" style="color: white;vertical-align: middle;"></span><span class="f3 push-content" style="vertical-align: middle;color: white">: </span><span class="f3 push-content"></span><input class="main-content-content input" id="reply-content" type="text" maxlength="40" value=""></div><div class="comment"></div><div class="edit"></div></div>
 </div>
 {% endblock %}
 

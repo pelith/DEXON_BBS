@@ -1,10 +1,12 @@
 import Dexon from './dexon.js'
 import Dett from './dett.js'
 
-import {parseText, parseUser} from './utils.js'
+import {parseText, parseUser, getUrlParameter} from './utils.js'
 
 let dett = null
 let account = ''
+let etx = ''
+let edit = false
 
 const checkContent = () => { return $("#bbs-content").val().length > 0 }
 
@@ -15,12 +17,16 @@ const check = () => { return (checkContent() && checkTitle()) }
 const render = (_account) => {
   account = _account
   dett.account = account
-  $(".bbs-post")[0].disabled = !check()
+  if (_account){
+    $(".bbs-post")[0].disabled = !check()
 
-  // Handle mobile version
-  if ($(".bbs-post")[1] !== undefined)
-    $(".bbs-post")[1].disabled = !check()
-  $("#bbs-user").text(parseUser(account))
+    // Handle mobile version
+    if ($(".bbs-post")[1] !== undefined)
+      $(".bbs-post")[1].disabled = !check()
+    $("#bbs-user").text(parseUser(account))
+  }
+  else
+    window.location = '/'
 }
 
 const keyboardHook = () => {
@@ -29,7 +35,13 @@ const keyboardHook = () => {
   let checkSave = false, checkPost = false
 
   $(document).keydown((e) => {
+    const focused = document.activeElement instanceof HTMLInputElement ||
+                    document.activeElement instanceof HTMLTextAreaElement ?
+                    document.activeElement : null
+    const hasSelection = focused ? focused.selectionStart != focused.selectionEnd : false
+
     if (e.ctrlKey && e.keyCode == QKey) {
+      e.preventDefault()
       $("#bbs-footer").hide()
       $("#bbs-checksave").show()
       $("#bbs-title")[0].disabled = true
@@ -37,7 +49,11 @@ const keyboardHook = () => {
       checkSave = true
     }
     else if (e.ctrlKey && e.keyCode == XKey) {
-      if (check()) {
+      if (check() && !hasSelection) {
+        e.preventDefault()
+        if (focused) {
+          focused.blur()
+        }
         $("#bbs-footer").hide()
         $("#bbs-checkpost").show()
         $("#bbs-title")[0].disabled=true
@@ -54,7 +70,7 @@ const keyboardHook = () => {
         checkSave = false
 
         if (e.keyCode == YKey)
-          window.location = 'index.html'
+          window.location = '/'
       }
       else if ( checkPost ) {
         $("#bbs-footer").show()
@@ -64,26 +80,47 @@ const keyboardHook = () => {
         checkPost = false
 
         if (e.keyCode == YKey)
-          if (check()) dett.post($("#bbs-title").val(), $("#bbs-content").val())
+          if (check()) {
+            if (edit) {
+              dett.edit(etx, $("#bbs-title").val(), $("#bbs-content").val())
+            }
+            else dett.post($("#bbs-title").val(), $("#bbs-content").val())
+          }
       }
     }
   })
 }
 
-function main(){
-  const _dexon = new Dexon(window.dexon)
+const main = async ({ _dexon }) => {
   _dexon.on('update',(account) => {
     render(account)
   })
 
   dett = new Dett(_dexon.dexonWeb3)
+  await dett.init()
+
+  // get reply tx
+  const rtx = getUrlParameter('rtx')
+  if (rtx.match(/^0x[a-fA-F0-9]{64}$/g)) {
+    const article = await dett.getArticle(rtx, false)
+    $("#bbs-title").val(('Re: '+article.title).substr(0, dett.titleLength))
+  }
+
+  // get edit tx
+  etx = getUrlParameter('etx')
+  if (etx.match(/^0x[a-fA-F0-9]{64}$/g)) {
+    const article = await dett.getArticle(etx, true)
+    $("#bbs-title").val(article.title)
+    $("#bbs-content").val(article.content)
+    edit = true
+  }
 
   if (+window.localStorage.getItem('hotkey-mode')) keyboardHook()
 
   $("#bbs-title")[0].placeholder = "標題限制40字內"
 
   $("#bbs-title").blur(() => {
-    $("#bbs-title").val(parseText($("#bbs-title").val(), 40))
+    $("#bbs-title").val(parseText($("#bbs-title").val(), dett.titleLength))
   })
 
   if ($(window).width() > 992) {
@@ -94,9 +131,14 @@ function main(){
   }
 
   const postFunc = () => {
-    if ((!checkContent() && !checkTitle()) || confirm('確定發文?'))
-      dett.post($("#bbs-title").val(), $("#bbs-content").val())
+    if ((!checkContent() && !checkTitle()) || confirm('確定發文?')) {
+      if (edit) {
+        dett.edit(etx, $("#bbs-title").val(), $("#bbs-content").val())
+      }
+      else dett.post($("#bbs-title").val(), $("#bbs-content").val())
+    }
   }
+
   $(".bbs-post")[0].onclick = postFunc // 電腦版
   $(".bbs-post")[1].onclick = postFunc // 手機版
 
@@ -109,6 +151,4 @@ function main(){
 
 }
 
-
-$(main())
-
+_layoutInit().then(main)

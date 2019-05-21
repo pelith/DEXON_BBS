@@ -7,15 +7,23 @@ let focusPost
 
 const render = (_account) => {
   dett.account = _account
-  _account ? $("#bbs-post").show() : $("#bbs-post").hide()
+  if (_account) {
+    $("#bbs-post").show()
+    $(".article-menu > .trigger").show()
+  }
+  else {
+    $("#bbs-post").hide()
+    $(".article-menu > .trigger").hide()
+  }
 }
 
-const main = async () => {
+const main = async ({ _dexon }) => {
   _dexon.on('update',(account) => {
     render(account)
   })
 
   dett = new Dett(_dexon.dexonWeb3)
+  await dett.init()
 
   if (+window.localStorage.getItem('hotkey-mode')) keyboardHook()
 
@@ -120,10 +128,11 @@ const directDisplay = (article, votes, banned) => {
         </a>
       </div>
       <div class="article-menu">
-        <div class="trigger">⋯</div>
+        <div class="trigger" style="display: none;">⋯</div>
         <div class="dropdown">
-          <div id="article-edit" class="item" style="display: none;"><a href="#">編緝文章</a></div>
-          <div id="article-reply" class="item"><a href="#">回應文章</a></div>
+          ${article.author.toLowerCase() === dett.account.toLowerCase() ?
+            `<div class="article-edit item"><a href="post.html?etx=${article.transaction.hash}">編緝文章</a></div>` : ''}
+          <div id="article-reply" class="item"><a href="post.html?rtx=${article.transaction.hash}">回應文章</a></div>
         </div>
       </div>
       <div class="date">...</div>
@@ -153,4 +162,4 @@ const directDisplay = (article, votes, banned) => {
   }
 }
 
-$(main)
+_layoutInit().then(main)
