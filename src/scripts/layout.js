@@ -61,8 +61,5 @@ window._layoutInit = async () => {
 
   attachDropdown()
 
-  const ret = { _dexon }
-  // FIXME
-  Object.assign(window, ret)
-  return ret
+  return { _dexon }
 }

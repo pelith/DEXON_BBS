@@ -100,7 +100,7 @@ const getAddressLink = (from, __namePool) => {
 
 const error = () => { $('#main-content-content').text('404 - Page not found.') }
 
-const main = async () => {
+const main = async ({ _dexon }) => {
   // get tx
   tx = getUrlParameter('tx')
   if (!tx) return error()

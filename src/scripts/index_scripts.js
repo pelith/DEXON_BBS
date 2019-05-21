@@ -17,7 +17,7 @@ const render = (_account) => {
   }
 }
 
-const main = async () => {
+const main = async ({ _dexon }) => {
   _dexon.on('update',(account) => {
     render(account)
   })
