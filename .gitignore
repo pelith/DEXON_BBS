@@ -4,3 +4,5 @@
 .cache
 .DS_Store
 sftp-config.json
+keystore.json
+.env
