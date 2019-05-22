@@ -26,7 +26,7 @@ cacheNet.eth.accounts.wallet.add(accountObj)
 const shortURLandMilestone = new cacheNet.eth.Contract(ABICache, BBSCacheContract)
 const rpcRateLimiter = pRateLimit({
   // TODO: configurable limit arguments for different network
-  interval: 15000,
+  interval: 2000,
   rate: 1,
   concurrency: 1,
 })
@@ -47,8 +47,7 @@ async function shortArticleHash(tx) {
   await Promise.resolve([
     shortURLandMilestone.methods.link(tx, hex, transaction.blockNumber).send({
       from: contractOwner,
-      gasPrice: 6000000000,
-      gas: 120000,
+      gas: 210000,
     }).on('confirmation', (confirmationNumber, receipt) => {
       if (confirmationNumber == 1)
         console.log(receipt)
@@ -73,8 +72,7 @@ async function addMilestone(block, time) {
   await Promise.resolve([
     shortURLandMilestone.methods.addMilestone(block, time).send({
       from: contractOwner,
-      gasPrice: 6000000000,
-      gas: 120000,
+      gas: 210000,
     }).on('confirmation', (confirmationNumber, receipt) => {
       if (confirmationNumber == 1)
         console.log(receipt)

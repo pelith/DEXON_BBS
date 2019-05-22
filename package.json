@@ -45,6 +45,6 @@
         "purge-cloudflare-cache": "^1.2.2",
         "shortid": "^2.2.14",
         "url-parse": "^1.4.7",
-        "web3": "^1.0.0-beta.55"
+        "web3": "^1.0.0-beta.37"
     }
 }
