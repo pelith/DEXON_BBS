@@ -41,6 +41,11 @@ const main = async ({ _dexon }) => {
     window.localStorage.setItem('focus-state', 0)
   }
 
+  if (dett.account) {
+    const meta = await dett.getMetaByAddress(dett.account)
+    _dexon.emit('_setMeta', meta)
+  }
+
   attachDropdown()
 }
 

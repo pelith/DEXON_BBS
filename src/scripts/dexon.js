@@ -1,7 +1,3 @@
-// import Web3 from 'web3'
-// // inject Web3 to Global
-// window.Web3 = Web3
-
 class EventEmitter{
   constructor(){
     this._events={}
@@ -21,7 +17,9 @@ class EventEmitter{
     const event = args[0]
     const params = [].slice.call(args,1)
     const callbacks = this._events[event]
-    callbacks.forEach(fn => fn.apply(this, params))
+    if (callbacks) {
+      callbacks.forEach(fn => fn.apply(this, params))
+    }
     return this
   }
   once(event,callback){
@@ -62,8 +60,14 @@ class Dexon extends EventEmitter {
         if (networkID === 237) {
           const accounts = await this.dexonWeb3.eth.getAccounts()
           this.selectedAddress = accounts.length > 0 ? accounts[0] : ''
+          // XXX: only emit update when the address do change
+          this.emit('update', this.selectedAddress)
+        } else {
+          const error = new Error('Wrong network')
+          error.code = 'wrong-network'
+          this.emit('error', error)
+          return
         }
-        else return console.log('Wrong network')
       }
 
       start()
