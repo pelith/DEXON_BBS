@@ -15,9 +15,10 @@ const render = (_account) => {
     dett.getMetaByAddress(account).then(meta => {
       const {name} = meta
       $('#main-content-nickname').text(name.length ? name : '(未註冊)')
+      $('.member-zone').show()
     })
-  }
-  else{
+  } else {
+    $('.member-zone').hide()
   }
 
   $('#main-content-address').text(account)

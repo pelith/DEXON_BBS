@@ -115,6 +115,11 @@ const main = async ({ _dexon }) => {
   dett = new Dett(_dexon.dexonWeb3)
   await dett.init()
 
+  if (dett.account) {
+    const meta = await dett.getMetaByAddress(dett.account)
+    _dexon.emit('_setMeta', meta)
+  }
+
   $('#reply-btn').click(() => { showReplyType() })
   $('#reply-type0').click(() => { showReply(0) })
   $('#reply-type1').click(() => { showReply(1) })

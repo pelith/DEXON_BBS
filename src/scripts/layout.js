@@ -2,6 +2,8 @@ import Dexon from './dexon.js'
 import {parseUser} from './utils.js'
 
 let account = ''
+let lastError
+let metaCache
 
 const attachDropdown = () => {
   $('.user-menu > .trigger').click((e) => {
@@ -44,7 +46,13 @@ const render = (_account) => {
     $("#bbs-user-menu").hide()
   }
 
-  $("#bbs-user").text(parseUser(account))
+  const addrDisp = parseUser(account)
+  const nickname = metaCache ? metaCache.name : null
+  if (nickname) {
+    $('#bbs-user').text(`${nickname} (${addrDisp})`)
+  } else {
+    $('#bbs-user').text(addrDisp)
+  }
 }
 
 window._layoutInit = async () => {
@@ -52,10 +60,28 @@ window._layoutInit = async () => {
   const _dexon = new Dexon(window.dexon)
 
   _dexon.on('update',(account) => {
+    lastError = null
     render(account)
   })
 
-  $('#bbs-login').click(() => { _dexon.login() })
+  _dexon.on('error', (err) => {
+    $('#bbs-login').text('登入 ⚠')
+    lastError = err
+  })
+
+  _dexon.on('_setMeta', meta => {
+    metaCache = meta
+    render(account)
+  })
+
+  $('#bbs-login').click(() => {
+    if (lastError) {
+      // account
+      alert('在錯誤的網路上。\n請打開錢包並將網路切到 "DEXON Mainnet"。')
+    } else {
+      _dexon.login()
+    }
+  })
 
   hotkey()
 
