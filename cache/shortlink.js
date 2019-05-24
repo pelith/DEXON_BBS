@@ -1,6 +1,6 @@
 import dotenv from 'dotenv/config'
 import keythereum from 'keythereum'
-import shortid from 'shortid'
+import Hashids from 'hashids'
 import Web3 from 'web3'
 import { pRateLimit } from 'p-ratelimit'
 import Dett from '../src/scripts/dett.js'
@@ -37,7 +37,8 @@ async function shortArticleHash(tx) {
   // check transaction to address is bbs contract
   if (!dett.isDettTx(transaction.to)) return null
 
-  const oriId = shortid.generate()
+  const hashids = new Hashids('DEXON_BBS', 6, 'abcdefghijklmnopqrstuvwxyz1234567890')
+  const oriId = hashids.encode(cacheNet.utils.hexToNumberString(tx))
   const hex = cacheNet.utils.padLeft(cacheNet.utils.toHex(oriId), 64)
   // const mapId = cacheNet.utils.hexToUtf8(hex)
   // console.log([transaction.blockNumber, tx, oriId, mapId, hex])
@@ -61,7 +62,7 @@ async function getArticles(block) {
   const events = await BBS.getPastEvents('Posted', {fromBlock : block})
 
   events.forEach(async (event) => {
-    console.log(await shortURLandMilestone.methods.links(event.transactionHash).call())
+    // console.log(await shortURLandMilestone.methods.links(event.transactionHash).call())
     if (await shortURLandMilestone.methods.links(event.transactionHash).call() == '0x0000000000000000000000000000000000000000000000000000000000000000') {
       await rpcRateLimiter(() => shortArticleHash(event.transactionHash))
     }
@@ -85,13 +86,13 @@ async function addMilestone(block, time) {
 async function checkMilestones() {
   const time = await shortURLandMilestone.methods.time().call()
   const eventFrom = time.toString() ? time.toString() : '0'
-  console.log(eventFrom.toString())
+  // console.log(eventFrom.toString())
   const events = await shortURLandMilestone.getPastEvents('Link', { fromBlock : eventFrom })
   // console.log(events)
   let eventBlocks = events.map((event) => {
       return event.returnValues['time'].toString()
   })
-  console.log(eventBlocks)
+  // console.log(eventBlocks)
 
   let countPost = {}
   eventBlocks.forEach((x) => { countPost[x] = (countPost[x] || 0) + 1 })
@@ -100,7 +101,7 @@ async function checkMilestones() {
   let pageSize = 0
   Object.keys(countPost).forEach(async (block) => {
     pageSize += countPost[block]
-    console.log(pageSize)
+    // console.log(pageSize)
     if (pageSize >= minPostsPerPage) {
       pageSize = 0
 
@@ -109,10 +110,10 @@ async function checkMilestones() {
       }).slice().reverse().find(function(element) {
         return element != null
       })
-      console.log(time)
+      // console.log(time)
 
       await rpcRateLimiter(() => addMilestone(block, time))
-      console.log(block)
+      // console.log(block)
     }
   })
 
@@ -136,12 +137,11 @@ async function checkMilestones() {
 }
 
 
-
-setTimeout(async () => {
+async function main() {
   const milestones = await shortURLandMilestone.methods.getMilestones().call()
-  console.log(milestones)
+  // console.log(milestones)
   const postFrom = milestones.length ? milestones[milestones.length-1] * 1 + 1 : '1170000'
-  await getArticles(postFrom).catch(console.log)
+  await getArticles(postFrom)
   await checkMilestones()
   
   /*
@@ -151,4 +151,7 @@ setTimeout(async () => {
     gas: 120000,
   })
   */
-}, 1000)
+}
+
+main()
+
