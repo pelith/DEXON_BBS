@@ -37,13 +37,13 @@
         "@babel/runtime": "^7.4.4",
         "core-js": "^2.6.5",
         "esm": "^3.2.25",
+        "hashids": "^1.2.2",
         "keythereum": "^1.0.4",
         "linkify-it": "^2.1.0",
         "nunjucks": "^3.0.0",
         "p-ratelimit": "^0.10.0",
         "parcel-plugin-nunjucks": "^1.1.0",
         "purge-cloudflare-cache": "^1.2.2",
-        "shortid": "^2.2.14",
         "url-parse": "^1.4.7",
         "web3": "^1.0.0-beta.37"
     }
