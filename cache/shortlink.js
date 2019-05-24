@@ -4,6 +4,8 @@ import Hashids from 'hashids'
 import Web3 from 'web3'
 import { pRateLimit } from 'p-ratelimit'
 import Dett from '../src/scripts/dett.js'
+import writeFile from 'write'
+import { parseText } from '../src/scripts/utils.js'
 
 import keystore from './keystore.json'
 const keypassword = process.env.KEY_PASSWORD
@@ -137,13 +139,27 @@ async function checkMilestones() {
 }
 
 
+async function cache(block) {
+  const events = await BBS.getPastEvents('Posted', {fromBlock : block})
+  let shortLink = ''
+  events.forEach(async (event) => {
+    // console.log(await shortURLandMilestone.methods.links(event.transactionHash).call())
+    shortLink = await shortURLandMilestone.methods.links(event.transactionHash).call()
+    // console.log(shortLink)
+    if (shortLink != '0x0000000000000000000000000000000000000000000000000000000000000000') {
+      await writeFile('cache/src/' + cacheNet.utils.hexToUtf8(shortLink) + '.njk', `{% extends 'content.njk' %}\n{% set title = 'Cache - ' + title %}\n{% set canonicalUrl = 'https://dett.cc/${cacheNet.utils.hexToUtf8(shortLink)}.html' %}\n{% set description = '${parseText(event.returnValues.content, 160).replace(/\n|\r/g, ' ')}' %}`)
+    }
+  })
+}
+
+
 async function main() {
   const milestones = await shortURLandMilestone.methods.getMilestones().call()
   // console.log(milestones)
   const postFrom = milestones.length ? milestones[milestones.length-1] * 1 + 1 : '1170000'
   await getArticles(postFrom)
   await checkMilestones()
-  
+  await cache('1170000')
   /*
   await shortURLandMilestone.methods.clearMilestone().send({
     from: contractOwner,
@@ -152,6 +168,7 @@ async function main() {
   })
   */
 }
+
 
 main()
 
