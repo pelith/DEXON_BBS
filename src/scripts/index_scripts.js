@@ -61,19 +61,21 @@ const focusOnPost = (post, scroll, up) => {
   if (focusPost) {
     $(focusPost).removeClass('focus')
   }
+
   focusPost = post
   $(focusPost).addClass('focus')
   if (scroll) {
     const rect = focusPost.getClientRects()[0]
     if ( up ){
-      if ( rect.y < 58.765625 ) {
-        focusPost.scrollIntoView(false)
+      if ( rect.y < rect.height ) {
+        const fixTop = parseFloat($(focusPost).css("marginTop")) + rect.height
+        window.scrollBy({ top: -fixTop});
       }
       else
         focusPost.scrollIntoView({block: "nearest"})
     }
     else {
-      if ( rect.y < 705.109375 ) {
+      if ( 0 < rect.y && rect.y < window.innerHeight+rect.height ) {
         focusPost.scrollIntoView({block: "nearest"})
       }
       else
