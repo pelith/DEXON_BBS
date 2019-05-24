@@ -7,3 +7,4 @@ sftp-config.json
 keystore.json
 .env
 cache/src
+s/
