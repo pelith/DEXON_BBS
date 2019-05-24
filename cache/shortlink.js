@@ -147,7 +147,7 @@ async function cache(block) {
     shortLink = await shortURLandMilestone.methods.links(event.transactionHash).call()
     // console.log(shortLink)
     if (shortLink != '0x0000000000000000000000000000000000000000000000000000000000000000') {
-      await writeFile('cache/src/' + cacheNet.utils.hexToUtf8(shortLink) + '.njk', `{% extends 'content.njk' %}\n{% set title = 'Cache - ' + title %}\n{% set canonicalUrl = 'https://dett.cc/${cacheNet.utils.hexToUtf8(shortLink)}.html' %}\n{% set description = '${parseText(event.returnValues.content, 160).replace(/\n|\r/g, ' ')}' %}`)
+      await writeFile('s/' + cacheNet.utils.hexToUtf8(shortLink) + '.njk', `{% extends 'content.njk' %}\n{% set title = 'Cache - ' + title %}\n{% set canonicalUrl = 'https://dett.cc/${cacheNet.utils.hexToUtf8(shortLink)}.html' %}\n{% set description = '${parseText(event.returnValues.content, 160).replace(/\n|\r/g, ' ')}' %}`)
     }
   })
 }
