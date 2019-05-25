@@ -4,7 +4,7 @@ import Hashids from 'hashids'
 import Web3 from 'web3'
 import { pRateLimit } from 'p-ratelimit'
 import Dett from '../src/scripts/dett.js'
-import writeFile from 'write'
+import fs from 'fs'
 import { parseText } from '../src/scripts/utils.js'
 
 import keystore from './keystore.json'
@@ -141,25 +141,39 @@ async function checkMilestones() {
 
 async function cache(block) {
   const events = await BBS.getPastEvents('Posted', {fromBlock : block})
-  let shortLink = ''
   events.forEach(async (event) => {
     // console.log(await shortURLandMilestone.methods.links(event.transactionHash).call())
-    shortLink = await shortURLandMilestone.methods.links(event.transactionHash).call()
-    // console.log(shortLink)
-    if (shortLink != '0x0000000000000000000000000000000000000000000000000000000000000000') {
-      await writeFile('s/' + cacheNet.utils.hexToUtf8(shortLink) + '.njk', `{% extends 'content.njk' %}\n{% set title = 'Cache - ' + title %}\n{% set canonicalUrl = 'https://dett.cc/${cacheNet.utils.hexToUtf8(shortLink)}.html' %}\n{% set description = '${parseText(event.returnValues.content, 160).replace(/\n|\r/g, ' ')}' %}`)
+    let shortLinkHex = await shortURLandMilestone.methods.links(event.transactionHash).call()
+    // console.log(shortLinkHex)
+    if (shortLinkHex != '0x0000000000000000000000000000000000000000000000000000000000000000') {
+      shortLink = cacheNet.utils.hexToUtf8(shortLinkHex)
+      let title = parseText(event.returnValues.content, 20).replace(/\n|\r/g, ' ')
+      let url = 'https://dett.cc/' + shortLink + '.html'
+      let description = parseText(event.returnValues.content, 160).replace(/\n|\r/g, ' ')
+      let cacheMeta = { 'Cache - DEXON BBS': title, 'https://dett.cc/cache.html': url, 'Cache Cache Cache Cache Cache': description }
+      let reg = new RegExp(Object.keys(cacheMeta).join("|"),"gi")
+      let template = fs.readFileSync('build/cache.html', 'utf-8')
+      let cacheFile = template.replace(reg, (matched) => {
+        return cacheMeta[matched]
+      });
+      let fileName = 'build/' + shortLink + '.html'
+
+      fs.writeFileSync(fileName, cacheFile, 'utf8')
     }
   })
 }
 
 
 async function main() {
+  
   const milestones = await shortURLandMilestone.methods.getMilestones().call()
   // console.log(milestones)
   const postFrom = milestones.length ? milestones[milestones.length-1] * 1 + 1 : '1170000'
   await getArticles(postFrom)
   await checkMilestones()
   await cache('1170000')
+  
+
   /*
   await shortURLandMilestone.methods.clearMilestone().send({
     from: contractOwner,
@@ -170,5 +184,5 @@ async function main() {
 }
 
 
-main()
+main().then(() => { process.exit() })
 

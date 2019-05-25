@@ -7,7 +7,7 @@
         "build": "npm run clean && parcel build --no-source-maps src/*.njk --out-dir build/ --public-url .",
         "cache": "node -r esm cache/shortlink.js",
         "build-cache": "parcel build --no-source-maps src/s/*.njk --out-dir build/s/",
-        "build-with-cache": "npm run clean && cp -r src/ s/ && npm run cache && parcel build --no-source-maps s/*.njk --out-dir build/ --public-url .",
+        "build-with-cache": "npm run build && npm run cache",
         "clean": "rm -rf dist build",
         "clean:cache": "rm -rf .cache",
         "gh-help": "gh-pages --help",
