@@ -7,7 +7,7 @@
         "build": "npm run clean && parcel build --no-source-maps src/*.njk --out-dir build/ --public-url .",
         "cache": "node -r esm cache/shortlink.js",
         "build-cache": "parcel build --no-source-maps src/s/*.njk --out-dir build/s/",
-        "build-with-cache": "npm run build && npm run cache",
+        "build-with-cache": "npm run clean:cache && npm run build && npm run cache",
         "clean": "rm -rf dist build",
         "clean:cache": "rm -rf .cache",
         "gh-help": "gh-pages --help",
@@ -48,7 +48,6 @@
         "parcel-plugin-nunjucks": "^1.1.0",
         "purge-cloudflare-cache": "^1.2.2",
         "url-parse": "^1.4.7",
-        "web3": "^1.0.0-beta.37",
-        "write": "^1.0.3"
+        "web3": "^1.0.0-beta.37"
     }
 }
