@@ -15,7 +15,7 @@ const minPostsPerPage = 10
 const ABIBBS = [{"constant":!1,"inputs":[{"name":"content","type":"string"}],"name":"Post","outputs":[],"payable":!1,"stateMutability":"nonpayable","type":"function"},{"anonymous":!1,"inputs":[{"indexed":!1,"name":"content","type":"string"}],"name":"Posted","type":"event"}]
 const BBSContract = '0x663002C4E41E5d04860a76955A7B9B8234475952'
 const ABICache = [{"constant":false,"inputs":[{"name":"long","type":"bytes32"},{"name":"short","type":"bytes32"},{"name":"cur","type":"uint256"}],"name":"link","outputs":[],"payable":false,"stateMutability":"nonpayable","type":"function"},{"constant":true,"inputs":[],"name":"time","outputs":[{"name":"","type":"uint256"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":false,"inputs":[{"name":"milestone","type":"uint256"},{"name":"cur","type":"uint256"}],"name":"addMilestone","outputs":[],"payable":false,"stateMutability":"nonpayable","type":"function"},{"constant":true,"inputs":[],"name":"getMilestones","outputs":[{"name":"","type":"uint256[]"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":true,"inputs":[],"name":"owner","outputs":[{"name":"","type":"address"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":true,"inputs":[{"name":"","type":"bytes32"}],"name":"links","outputs":[{"name":"","type":"bytes32"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":false,"inputs":[{"name":"newOwner","type":"address"}],"name":"transferOwnership","outputs":[],"payable":false,"stateMutability":"nonpayable","type":"function"},{"constant":false,"inputs":[],"name":"clearMilestone","outputs":[],"payable":false,"stateMutability":"nonpayable","type":"function"},{"anonymous":false,"inputs":[{"indexed":false,"name":"long","type":"bytes32"},{"indexed":false,"name":"short","type":"bytes32"},{"indexed":false,"name":"time","type":"uint256"}],"name":"Link","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"name":"previousOwner","type":"address"},{"indexed":true,"name":"newOwner","type":"address"}],"name":"OwnershipTransferred","type":"event"}]
-const BBSCacheContract = '0xF1005817E4AD7D4f8960b01faeE09347A8360899'
+const BBSCacheContract = '0x5c10A77454cF98B273F54199DE3454ae2586e7A4'
 const mainnet = new Web3('wss://mainnet-rpc.dexon.org/ws')
 const BBS = new mainnet.eth.Contract(ABIBBS, BBSContract)
 const dett = new Dett(mainnet)
@@ -28,7 +28,7 @@ cacheNet.eth.accounts.wallet.add(accountObj)
 const shortURLandMilestone = new cacheNet.eth.Contract(ABICache, BBSCacheContract)
 const rpcRateLimiter = pRateLimit({
   // TODO: configurable limit arguments for different network
-  interval: 2000,
+  interval: 2500,
   rate: 1,
   concurrency: 1,
 })
@@ -146,8 +146,8 @@ async function cache(block) {
     let shortLinkHex = await shortURLandMilestone.methods.links(event.transactionHash).call()
     // console.log(shortLinkHex)
     if (shortLinkHex != '0x0000000000000000000000000000000000000000000000000000000000000000') {
-      shortLink = cacheNet.utils.hexToUtf8(shortLinkHex)
-      let title = parseText(event.returnValues.content, 20).replace(/\n|\r/g, ' ')
+      let shortLink = cacheNet.utils.hexToUtf8(shortLinkHex)
+      let title = parseText(event.returnValues.content, 40).replace(/\n|\r/g, ' ')
       let url = 'https://dett.cc/' + shortLink + '.html'
       let description = parseText(event.returnValues.content, 160).replace(/\n|\r/g, ' ')
       let cacheMeta = { 'Cache - DEXON BBS': title, 'https://dett.cc/cache.html': url, 'Cache Cache Cache Cache Cache': description }
@@ -183,6 +183,4 @@ async function main() {
   */
 }
 
-
-main().then(() => { process.exit() })
-
+main()

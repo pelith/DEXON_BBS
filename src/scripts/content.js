@@ -101,17 +101,16 @@ const getAddressLink = (from, __namePool) => {
 const error = () => { $('#main-content-content').text('404 - Page not found.') }
 
 const main = async () => {
+  dett = new Dett(_dexon.dexonWeb3)
+  await dett.init()
   // get tx
-  tx = getUrlParameter('tx')
+  tx = getUrlParameter('tx') ? getUrlParameter('tx') : await dett.getOriTx(window.location.pathname.split('/')[1].replace('.html', ''))
   if (!tx) return error()
   if (!tx.match(/^0x[a-fA-F0-9]{64}$/g)) return error()
 
   _dexon.on('update',(account) => {
     render(account)
   })
-
-  dett = new Dett(_dexon.dexonWeb3)
-  await dett.init()
 
   $('#reply-btn').click(() => { showReplyType() })
   $('#reply-type0').click(() => { showReply(0) })
