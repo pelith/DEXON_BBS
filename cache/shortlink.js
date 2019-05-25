@@ -9,7 +9,6 @@ import { parseText } from '../src/scripts/utils.js'
 
 import keystore from './keystore.json'
 const keypassword = process.env.KEY_PASSWORD
-const gasMultiply = 1.2
 const minPostsPerPage = 10
 
 const ABIBBS = [{"constant":!1,"inputs":[{"name":"content","type":"string"}],"name":"Post","outputs":[],"payable":!1,"stateMutability":"nonpayable","type":"function"},{"anonymous":!1,"inputs":[{"indexed":!1,"name":"content","type":"string"}],"name":"Posted","type":"event"}]
@@ -27,7 +26,6 @@ const contractOwner = accountObj.address
 cacheNet.eth.accounts.wallet.add(accountObj)
 const shortURLandMilestone = new cacheNet.eth.Contract(ABICache, BBSCacheContract)
 const rpcRateLimiter = pRateLimit({
-  // TODO: configurable limit arguments for different network
   interval: 2500,
   rate: 1,
   concurrency: 1,
@@ -46,7 +44,6 @@ async function shortArticleHash(tx) {
   // console.log([transaction.blockNumber, tx, oriId, mapId, hex])
   console.log(tx)
   // console.log(await shortURLandMilestone.methods.link(tx, hex, transaction.blockNumber))
-  // return
   await Promise.resolve([
     shortURLandMilestone.methods.link(tx, hex, transaction.blockNumber).send({
       from: contractOwner,
@@ -143,20 +140,21 @@ async function cache(block) {
   const events = await BBS.getPastEvents('Posted', {fromBlock : block})
   events.forEach(async (event) => {
     // console.log(await shortURLandMilestone.methods.links(event.transactionHash).call())
-    let shortLinkHex = await shortURLandMilestone.methods.links(event.transactionHash).call()
+    const shortLinkHex = await shortURLandMilestone.methods.links(event.transactionHash).call()
     // console.log(shortLinkHex)
     if (shortLinkHex != '0x0000000000000000000000000000000000000000000000000000000000000000') {
-      let shortLink = cacheNet.utils.hexToUtf8(shortLinkHex)
-      let title = parseText(event.returnValues.content, 40).replace(/\n|\r/g, ' ')
-      let url = 'https://dett.cc/' + shortLink + '.html'
-      let description = parseText(event.returnValues.content, 160).replace(/\n|\r/g, ' ')
-      let cacheMeta = { 'Cache - DEXON BBS': title, 'https://dett.cc/cache.html': url, 'Cache Cache Cache Cache Cache': description }
-      let reg = new RegExp(Object.keys(cacheMeta).join("|"),"gi")
-      let template = fs.readFileSync('build/cache.html', 'utf-8')
-      let cacheFile = template.replace(reg, (matched) => {
+      const article = await dett.getArticle(event.transactionHash, false).catch(console.log)
+      const shortLink = cacheNet.utils.hexToUtf8(shortLinkHex)
+      const title = article.title
+      const url = 'https://dett.cc/' + shortLink + '.html'
+      const description = parseText(article.content, 160).replace(/\n|\r/g, ' ')
+      const cacheMeta = { 'Cache - DEXON BBS': title, 'https://dett.cc/cache.html': url, 'Cache Cache Cache Cache Cache': description }
+      const reg = new RegExp(Object.keys(cacheMeta).join("|"),"gi")
+      const template = fs.readFileSync('build/cache.html', 'utf-8')
+      const cacheFile = template.replace(reg, (matched) => {
         return cacheMeta[matched]
       });
-      let fileName = 'build/' + shortLink + '.html'
+      const fileName = 'build/' + shortLink + '.html'
 
       fs.writeFileSync(fileName, cacheFile, 'utf8')
     }
