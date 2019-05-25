@@ -35,7 +35,13 @@ const keyboardHook = () => {
   let checkSave = false, checkPost = false
 
   $(document).keydown((e) => {
+    const focused = document.activeElement instanceof HTMLInputElement ||
+                    document.activeElement instanceof HTMLTextAreaElement ?
+                    document.activeElement : null
+    const hasSelection = focused ? focused.selectionStart != focused.selectionEnd : false
+
     if (e.ctrlKey && e.keyCode == QKey) {
+      e.preventDefault()
       $("#bbs-footer").hide()
       $("#bbs-checksave").show()
       $("#bbs-title")[0].disabled = true
@@ -43,7 +49,11 @@ const keyboardHook = () => {
       checkSave = true
     }
     else if (e.ctrlKey && e.keyCode == XKey) {
-      if (check()) {
+      if (check() && !hasSelection) {
+        e.preventDefault()
+        if (focused) {
+          focused.blur()
+        }
         $("#bbs-footer").hide()
         $("#bbs-checkpost").show()
         $("#bbs-title")[0].disabled=true
@@ -81,8 +91,7 @@ const keyboardHook = () => {
   })
 }
 
-const main = async () => {
-  const _dexon = new Dexon(window.dexon)
+const main = async ({ _dexon }) => {
   _dexon.on('update',(account) => {
     render(account)
   })
@@ -142,6 +151,4 @@ const main = async () => {
 
 }
 
-
-$(main)
-
+_layoutInit().then(main)

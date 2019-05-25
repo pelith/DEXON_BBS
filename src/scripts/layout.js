@@ -47,9 +47,10 @@ const render = (_account) => {
   $("#bbs-user").text(parseUser(account))
 }
 
-const main = async () => {
+window._layoutInit = async () => {
   // init dexon account first
-  window._dexon = new Dexon(window.dexon)
+  const _dexon = new Dexon(window.dexon)
+
   _dexon.on('update',(account) => {
     render(account)
   })
@@ -59,8 +60,6 @@ const main = async () => {
   hotkey()
 
   attachDropdown()
+
+  return { _dexon }
 }
-
-$(main)
-
-

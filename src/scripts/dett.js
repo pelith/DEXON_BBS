@@ -1,8 +1,6 @@
 let Web3
 if ( process.env.HEADLESS ) {
   Web3 = require('web3')
-} else {
-  Web3 = window.Web3
 }
 const web3 = new Web3(new Web3.providers.WebsocketProvider('wss://mainnet-rpc.dexon.org/ws'))
 const cacheNet = new Web3('https://testnet-rpc.dexon.org')
@@ -123,8 +121,8 @@ class Dett {
   }
 
   async init() {
-    this.BBSevents = await BBS.getPastEvents({fromBlock : this.fromBlock })
-    this.BBSEditEvents = await BBSEdit.getPastEvents({fromBlock : this.fromBlock })
+    this.BBSevents = await BBS.getPastEvents('Posted', {fromBlock : this.fromBlock })
+    this.BBSEditEvents = await BBSEdit.getPastEvents('Edited', {fromBlock : this.fromBlock })
   }
 
   async getArticles(){
@@ -175,7 +173,7 @@ class Dett {
   }
 
   async getComments(tx){
-    const events = await BBSExt.getPastEvents({fromBlock : this.fromBlock})
+    const events = await BBSExt.getPastEvents('Replied', {fromBlock : this.fromBlock})
 
     return events.filter((event) => {return tx == event.returnValues.origin}).map(async (event) => {
       const [comment] = await Promise.all([
@@ -206,8 +204,10 @@ class Dett {
     if (tx) {
       const gas = await this.dexonBBSExt.methods.Reply(tx, +replyType, content).estimateGas()
       try {
-        const receipt = await this.dexonBBSExt.methods.Reply(tx, +replyType, content).send({ from: this.account, gas: gas })
-        window.location.reload()
+        await this.dexonBBSExt.methods.Reply(tx, +replyType, content).send({ from: this.account, gas: gas })
+        .on('confirmation', (confirmationNumber, receipt) => {
+          window.location.reload()
+        })
       }
       catch(err){
         alert(err)
@@ -226,8 +226,10 @@ class Dett {
 
     const gas = await this.dexonBBSExt.methods.Post(post).estimateGas()
     try {
-      const receipt = await this.dexonBBSExt.methods.Post(post).send({ from: this.account, gas: gas })
-      window.location = '/'
+      await this.dexonBBSExt.methods.Post(post).send({ from: this.account, gas: gas })
+      .on('confirmation', (confirmationNumber, receipt) => {
+        window.location = '/'
+      })
     }
     catch(err){
       alert(err)
@@ -249,8 +251,10 @@ class Dett {
 
     const gas = await this.dexonBBSEdit.methods.edit(tx, post).estimateGas()
     try {
-      const receipt = await this.dexonBBSEdit.methods.edit(tx, post).send({ from: this.account, gas: gas })
-      window.location = '/'
+      await this.dexonBBSEdit.methods.edit(tx, post).send({ from: this.account, gas: gas })
+      .on('confirmation', (confirmationNumber, receipt) => {
+        window.location = '/'
+      })
     }
     catch(err){
       alert(err)

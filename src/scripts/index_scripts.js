@@ -17,7 +17,7 @@ const render = (_account) => {
   }
 }
 
-const main = async () => {
+const main = async ({ _dexon }) => {
   _dexon.on('update',(account) => {
     render(account)
   })
@@ -57,16 +57,31 @@ const attachDropdown = () => {
   $(document).click((e) => { $('.article-menu.shown').toggleClass('shown') })
 }
 
-const focusOnPost = (post, scroll) => {
+const focusOnPost = (post, scroll, up) => {
   if (focusPost) {
     $(focusPost).removeClass('focus')
   }
+
   focusPost = post
   $(focusPost).addClass('focus')
   if (scroll) {
-    focusPost.scrollIntoView(false)
+    const rect = focusPost.getClientRects()[0]
+    if ( up ){
+      if ( rect.y < rect.height ) {
+        const fixTop = parseFloat($(focusPost).css("marginTop")) + rect.height
+        window.scrollBy({ top: -fixTop});
+      }
+      else
+        focusPost.scrollIntoView({block: "nearest"})
+    }
+    else {
+      if ( 0 < rect.y && rect.y < window.innerHeight+rect.height ) {
+        focusPost.scrollIntoView({block: "nearest"})
+      }
+      else
+        focusPost.scrollIntoView(false)
+    }
   }
-  // TODO: write cookie?
 }
 
 const keyboardHook = () => {
@@ -80,11 +95,11 @@ const keyboardHook = () => {
       e.preventDefault()
       for (let i = 1; i < posts.length; ++i) {
         if (posts[i] === focusPost) {
-          focusOnPost(posts[i - 1], true)
+          focusOnPost(posts[i - 1], true, true)
           return
         }
       }
-      focusOnPost(posts[posts.length - 1], true)
+      focusOnPost(posts[posts.length - 1], true, true)
       return
     }
     if (e.keyCode === downCode) {
@@ -95,11 +110,11 @@ const keyboardHook = () => {
       e.preventDefault()
       for (let i = 0; i < posts.length - 1; ++i) {
         if (posts[i] === focusPost) {
-          focusOnPost(posts[i + 1], true)
+          focusOnPost(posts[i + 1], true, false)
           return
         }
       }
-      focusOnPost(posts[0], true)
+      focusOnPost(posts[0], true, false)
       return
     }
     if (e.keyCode == rightCode && focusPost) {
@@ -107,6 +122,11 @@ const keyboardHook = () => {
       window.localStorage.setItem('focus-href', href)
       window.localStorage.setItem('focus-state', 1)
       window.location = href
+    }
+
+    if (e.ctrlKey && e.keyCode === 'P'.charCodeAt()) {
+      e.preventDefault()
+      window.location = 'post.html'
     }
   })
 }
@@ -162,4 +182,4 @@ const directDisplay = (article, votes, banned) => {
   }
 }
 
-$(main)
+_layoutInit().then(main)

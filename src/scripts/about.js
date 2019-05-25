@@ -12,4 +12,4 @@ const main = () => {
   if (+window.localStorage.getItem('hotkey-mode')) keyboardHook()
 }
 
-$(main)
+_layoutInit().then(main)

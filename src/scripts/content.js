@@ -100,7 +100,7 @@ const getAddressLink = (from, __namePool) => {
 
 const error = () => { $('#main-content-content').text('404 - Page not found.') }
 
-const main = async () => {
+const main = async ({ _dexon }) => {
   dett = new Dett(_dexon.dexonWeb3)
   await dett.init()
   // get tx
@@ -206,7 +206,7 @@ const renderArticle = (article) => {
     const date = new Date(timestamp)
     const formatDate = (date.getMonth()+1)+'/'+(''+date.getDate()).padStart(2, '0')+'/'+date.getFullYear()+' '+(''+date.getHours()).padStart(2, '0')+':'+(''+date.getMinutes()).padStart(2, '0')+':'+(''+date.getSeconds()).padStart(2, '0')
 
-    const elem = $(`<span class="f2">※ 編輯: ${parseUser(article.transaction.from)}, ${formatDate}</span>`)
+    const elem = $(`<span class="f2">※ 編輯: ${parseUser(article.transaction.from)}, ${formatDate}</span><br>`)
     $('.edit').append(elem)
   }
 
@@ -257,6 +257,4 @@ const displayReply = (comment) => {
   $('.comment').append(elem)
 }
 
-$(main)
-
-
+_layoutInit().then(main)
