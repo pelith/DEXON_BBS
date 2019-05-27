@@ -97,7 +97,7 @@ const main = async ({ _dexon }) => {
   })
 
   dett = new Dett(_dexon.dexonWeb3)
-  await dett.init()
+  await dett.init(Web3)
 
   // get reply tx
   const rtx = getUrlParameter('rtx')

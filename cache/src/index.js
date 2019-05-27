@@ -1,30 +1,29 @@
-import dotenv from 'dotenv/config'
-import keythereum from 'keythereum'
-import Hashids from 'hashids'
 import Web3 from 'web3'
+import dotenv from 'dotenv/config'
+
+import Hashids from 'hashids'
+
 import { pRateLimit } from 'p-ratelimit'
-import Dett from '../src/scripts/dett.js'
+import Dett from './dett.js'
 import fs from 'fs'
-import { parseText } from '../src/scripts/utils.js'
+import { parseText } from './utils.js'
 
-import keystore from './keystore.json'
+import keythereum from 'keythereum'
+import keystore from '../keystore.json'
 const keypassword = process.env.KEY_PASSWORD
-const minPostsPerPage = 10
-
-const ABIBBS = [{"constant":!1,"inputs":[{"name":"content","type":"string"}],"name":"Post","outputs":[],"payable":!1,"stateMutability":"nonpayable","type":"function"},{"anonymous":!1,"inputs":[{"indexed":!1,"name":"content","type":"string"}],"name":"Posted","type":"event"}]
-const BBSContract = '0x663002C4E41E5d04860a76955A7B9B8234475952'
-const ABICache = [{"constant":false,"inputs":[{"name":"long","type":"bytes32"},{"name":"short","type":"bytes32"},{"name":"cur","type":"uint256"}],"name":"link","outputs":[],"payable":false,"stateMutability":"nonpayable","type":"function"},{"constant":true,"inputs":[],"name":"time","outputs":[{"name":"","type":"uint256"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":false,"inputs":[{"name":"milestone","type":"uint256"},{"name":"cur","type":"uint256"}],"name":"addMilestone","outputs":[],"payable":false,"stateMutability":"nonpayable","type":"function"},{"constant":true,"inputs":[],"name":"getMilestones","outputs":[{"name":"","type":"uint256[]"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":true,"inputs":[],"name":"owner","outputs":[{"name":"","type":"address"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":true,"inputs":[{"name":"","type":"bytes32"}],"name":"links","outputs":[{"name":"","type":"bytes32"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":false,"inputs":[{"name":"newOwner","type":"address"}],"name":"transferOwnership","outputs":[],"payable":false,"stateMutability":"nonpayable","type":"function"},{"constant":false,"inputs":[],"name":"clearMilestone","outputs":[],"payable":false,"stateMutability":"nonpayable","type":"function"},{"anonymous":false,"inputs":[{"indexed":false,"name":"long","type":"bytes32"},{"indexed":false,"name":"short","type":"bytes32"},{"indexed":false,"name":"time","type":"uint256"}],"name":"Link","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"name":"previousOwner","type":"address"},{"indexed":true,"name":"newOwner","type":"address"}],"name":"OwnershipTransferred","type":"event"}]
-const BBSCacheContract = '0x5c10A77454cF98B273F54199DE3454ae2586e7A4'
-const mainnet = new Web3('wss://mainnet-rpc.dexon.org/ws')
-const BBS = new mainnet.eth.Contract(ABIBBS, BBSContract)
-const dett = new Dett(mainnet)
-
-const cacheNet = new Web3(process.env.RPC_URL)
 const privateKey = keythereum.recover(keypassword, keystore)
-const accountObj = cacheNet.eth.accounts.privateKeyToAccount(`0x${privateKey.toString('hex')}`)
-const contractOwner = accountObj.address
-cacheNet.eth.accounts.wallet.add(accountObj)
-const shortURLandMilestone = new cacheNet.eth.Contract(ABICache, BBSCacheContract)
+
+// cache init
+const cacheweb3 = new Web3(process.env.RPC_URL)
+const account = cacheweb3.eth.accounts.privateKeyToAccount(`0x${privateKey.toString('hex')}`)
+const contractOwner = account.address
+cacheweb3.eth.accounts.wallet.add(account)
+
+// dett init
+const web3 = new Web3(new Web3.providers.WebsocketProvider('wss://mainnet-rpc.dexon.org/ws'))
+const dett = new Dett(web3)
+dett.init(Web3)
+
 const rpcRateLimiter = pRateLimit({
   interval: 2500,
   rate: 1,
@@ -101,7 +100,7 @@ async function checkMilestones() {
   Object.keys(countPost).forEach(async (block) => {
     pageSize += countPost[block]
     // console.log(pageSize)
-    if (pageSize >= minPostsPerPage) {
+    if (pageSize >= dett.perPageLength) {
       pageSize = 0
 
       const time = events.map((event) => {
@@ -162,15 +161,43 @@ async function cache(block) {
 }
 
 
-async function main() {
-  
-  const milestones = await shortURLandMilestone.methods.getMilestones().call()
+const main = async () => {
+  const milestones = await dett.BBSCache.methods.getMilestones().call()
   // console.log(milestones)
-  const postFrom = milestones.length ? milestones[milestones.length-1] * 1 + 1 : '1170000'
-  await getArticles(postFrom)
-  await checkMilestones()
-  await cache('1170000')
-  
+
+  const fromBlock = dett.fromBlock
+  const events = await dett.BBS.getPastEvents('Posted', {fromBlock : fromBlock})
+  const linkEvents = await dett.BBSCache.getPastEvents('Link', {fromBlock : fromBlock})
+  // console.log(linkEvents)
+
+  // first get milestone
+  // get last milesotne to latest block events
+  // generate new milestone
+
+  events.forEach( async (event, i) => {
+    let a =  await shortURLandMilestone.methods.links(event.transactionHash).call()
+    console.log(a)
+    // if (await shortURLandMilestone.methods.links(event.transactionHash).call() == '0x0000000000000000000000000000000000000000000000000000000000000000') {
+      // await rpcRateLimiter(() => shortArticleHash(event.transactionHash))
+    // }
+
+
+
+  })
+
+
+
+  // generate new short link
+
+
+
+
+  // console.log(events)
+  // const postFrom = milestones.length ? milestones[milestones.length-1] * 1 + 1 : '1170000'
+  // await getArticles(postFrom)
+  // await checkMilestones()
+  // await cache(dett.fromBlock)
+
 
   /*
   await shortURLandMilestone.methods.clearMilestone().send({
@@ -179,6 +206,7 @@ async function main() {
     gas: 120000,
   })
   */
+  return
 }
 
 main()

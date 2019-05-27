@@ -102,7 +102,7 @@ const error = () => { $('#main-content-content').text('404 - Page not found.') }
 
 const main = async ({ _dexon }) => {
   dett = new Dett(_dexon.dexonWeb3)
-  await dett.init()
+  await dett.init(Web3)
 
   // get tx
   tx = getUrlParameter('tx') ? getUrlParameter('tx') : await dett.getOriTx(window.location.pathname.split('/')[1].replace('.html', ''))
