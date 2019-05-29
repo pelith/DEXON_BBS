@@ -260,9 +260,9 @@ class Dett {
     }
   }
 
-  async getOriTx(shortLink){
-    const hex = cacheNet.utils.padLeft(cacheNet.utils.toHex(shortLink), 64)
-    const tx = await shortURLandMilestone.methods.links(hex).call()
+  async getOriginalTx(shortLink){
+    const hex = this.cacheweb3.utils.padLeft(this.cacheweb3.utils.toHex(shortLink), 64)
+    const tx = await this.BBSCache.methods.links(hex).call()
     return tx
   }
 
