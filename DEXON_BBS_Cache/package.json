@@ -3,7 +3,7 @@
     "version": "1.0.0",
     "description": "",
     "scripts": {
-        "preinstall": "ln -s ../../src/scripts/dett.js src/dett.js && ln -s ../../src/scripts/utils.js src/utils.js",
+        "preinstall": "rm -rf src/dett.js src/utils.js && ln -s ../../src/scripts/dett.js src/dett.js && ln -s ../../src/scripts/utils.js src/utils.js",
         "dev": "npm run build && node bin/dev",
         "build": "npx babel src/ -d lib/"
     },
@@ -16,17 +16,16 @@
         "@babel/cli": "^7.4.4",
         "@babel/core": "^7.4.5",
         "@babel/preset-env": "^7.4.5",
-        "@babel/preset-es2015": "^7.0.0-beta.53",
-        "@babel/preset-stage-0": "^7.0.0",
         "gaze": "^1.1.3",
         "nodemon": "^1.19.1",
         "path": "^0.12.7"
     },
     "dependencies": {
-        "hashids": "^1.2.2",
+        "fs": "0.0.1-security",
         "keythereum": "^1.0.4",
         "p-ratelimit": "^0.10.0",
-        "web3": "^1.0.0-beta.37",
-        "fs": "0.0.1-security"
+        "rimraf": "^2.6.3",
+        "simple-git": "^1.113.0",
+        "web3": "1.0.0-beta.37"
     }
 }

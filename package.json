@@ -44,6 +44,6 @@
         "nunjucks": "^3.0.0",
         "parcel-plugin-nunjucks": "^1.1.0",
         "purge-cloudflare-cache": "^1.2.2",
-        "url-parse": "^1.4.7",
+        "url-parse": "^1.4.7"
     }
 }

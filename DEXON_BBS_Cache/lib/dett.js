@@ -4,8 +4,8 @@ Object.defineProperty(exports, "__esModule", {
   value: true
 });
 exports.default = void 0;
-let web3 = new Web3(new Web3.providers.WebsocketProvider('wss://mainnet-rpc.dexon.org/ws'));
-let cacheweb3 = new Web3('https://testnet-rpc.dexon.org');
+let web3 = null;
+let cacheweb3 = null;
 const ABIBBS = [{
   "constant": !1,
   "inputs": [{
@@ -275,29 +275,12 @@ const ABIBBSEdit = [{
   "type": "event"
 }];
 const ABICache = [{
-  "constant": false,
-  "inputs": [{
-    "name": "long",
-    "type": "bytes32"
-  }, {
-    "name": "short",
-    "type": "bytes32"
-  }, {
-    "name": "cur",
-    "type": "uint256"
-  }],
-  "name": "link",
-  "outputs": [],
-  "payable": false,
-  "stateMutability": "nonpayable",
-  "type": "function"
-}, {
   "constant": true,
   "inputs": [],
-  "name": "time",
+  "name": "getIndexes",
   "outputs": [{
     "name": "",
-    "type": "uint256"
+    "type": "uint256[]"
   }],
   "payable": false,
   "stateMutability": "view",
@@ -308,7 +291,7 @@ const ABICache = [{
     "name": "milestone",
     "type": "uint256"
   }, {
-    "name": "cur",
+    "name": "index",
     "type": "uint256"
   }],
   "name": "addMilestone",
@@ -337,6 +320,20 @@ const ABICache = [{
   }],
   "payable": false,
   "stateMutability": "view",
+  "type": "function"
+}, {
+  "constant": false,
+  "inputs": [{
+    "name": "long",
+    "type": "bytes32"
+  }, {
+    "name": "short",
+    "type": "bytes32"
+  }],
+  "name": "link",
+  "outputs": [],
+  "payable": false,
+  "stateMutability": "nonpayable",
   "type": "function"
 }, {
   "constant": true,
@@ -381,10 +378,6 @@ const ABICache = [{
     "indexed": false,
     "name": "short",
     "type": "bytes32"
-  }, {
-    "indexed": false,
-    "name": "time",
-    "type": "uint256"
   }],
   "name": "Link",
   "type": "event"
@@ -406,14 +399,11 @@ const BBSContract = '0x663002C4E41E5d04860a76955A7B9B8234475952';
 const BBSExtContract = '0xec368ba43010056abb3e5afd01957ea1fdbd3d8f';
 const BBSAdminContract = '0x88eb672e01c1a2a6f398b9d52c7dab5f87ca8c2c';
 const BBSEditContract = '0x826cb3e5aa484869d9511aad3ead74d382608147';
-const BBSCacheContract = '0x5c10A77454cF98B273F54199DE3454ae2586e7A4';
-const BBS = new web3.eth.Contract(ABIBBS, BBSContract);
-const BBSExt = new web3.eth.Contract(ABIBBSExt, BBSExtContract);
-const BBSAdmin = new web3.eth.Contract(ABIBBSAdmin, BBSAdminContract);
-const BBSEdit = new web3.eth.Contract(ABIBBSEdit, BBSEditContract);
-const shortURLandMilestone = new cacheNet.eth.Contract(ABICache, BBSCacheContract);
+const BBSCacheContract = '0x355D8417C2f034be725F48d12e29e21d04029Ce6';
+const fromBlock = '1170000';
 const titleLength = 40;
 const commentLength = 56;
+const perPageLength = 20;
 
 const parseText = (str, len) => {
   let tmp = '',
@@ -498,28 +488,38 @@ class Comment {
 }
 
 class Dett {
-  constructor(_dexonWeb3) {
-    this.dexonWeb3 = _dexonWeb3;
+  constructor() {
     this.account = ''; // constant
 
-    this.fromBlock = '1170000';
+    this.fromBlock = fromBlock;
     this.commentLength = commentLength;
     this.titleLength = titleLength;
-    this.dexonBBSExt = this.dexonWeb3 ? new this.dexonWeb3.eth.Contract(ABIBBSExt, BBSExtContract) : null;
-    this.dexonBBSEdit = this.dexonWeb3 ? new this.dexonWeb3.eth.Contract(ABIBBSEdit, BBSEditContract) : null;
+    this.perPageLength = perPageLength;
   }
 
-  async init() {
-    this.BBSevents = await BBS.getPastEvents('Posted', {
+  async init(_dettweb3, _Web3) {
+    if (!_Web3) return console.error("Can't find Web3.");
+    this.dettweb3 = _dettweb3;
+    this.dettBBSExt = this.dettweb3 ? new this.dettweb3.eth.Contract(ABIBBSExt, BBSExtContract) : null;
+    this.dettBBSEdit = this.dettweb3 ? new this.dettweb3.eth.Contract(ABIBBSEdit, BBSEditContract) : null;
+    web3 = new _Web3(new _Web3.providers.WebsocketProvider('wss://mainnet-rpc.dexon.org/ws'));
+    cacheweb3 = new _Web3('https://testnet-rpc.dexon.org');
+    this.cacheweb3 = cacheweb3;
+    this.BBS = new web3.eth.Contract(ABIBBS, BBSContract);
+    this.BBSExt = new web3.eth.Contract(ABIBBSExt, BBSExtContract);
+    this.BBSAdmin = new web3.eth.Contract(ABIBBSAdmin, BBSAdminContract);
+    this.BBSEdit = new web3.eth.Contract(ABIBBSEdit, BBSEditContract);
+    this.BBSCache = new cacheweb3.eth.Contract(ABICache, BBSCacheContract);
+    this.BBSevents = await this.BBS.getPastEvents('Posted', {
       fromBlock: this.fromBlock
     });
-    this.BBSEditEvents = await BBSEdit.getPastEvents('Edited', {
+    this.BBSEditEvents = await this.BBSEdit.getPastEvents('Edited', {
       fromBlock: this.fromBlock
     });
   }
 
   async getArticles() {
-    return this.BBSevents.reverse().map(async event => {
+    return this.BBSEvents.reverse().map(async event => {
       const [article, votes, banned] = await Promise.all([this.getArticle(event.transactionHash, false), this.getVotes(event.transactionHash), this.getBanned(event.transactionHash)]);
       return [article, votes, banned];
     });
@@ -541,20 +541,20 @@ class Dett {
   }
 
   async getVotes(tx) {
-    const [upvotes, downvotes] = await Promise.all([BBSExt.methods.upvotes(tx).call(), BBSExt.methods.downvotes(tx).call()]);
+    const [upvotes, downvotes] = await Promise.all([this.BBSExt.methods.upvotes(tx).call(), this.BBSExt.methods.downvotes(tx).call()]);
     return upvotes - downvotes;
   }
 
   async getVoted(tx) {
-    return await BBSExt.methods.voted(this.account, tx).call();
+    return await this.BBSExt.methods.voted(this.account, tx).call();
   }
 
   async getBanned(tx) {
-    return await BBSAdmin.methods.banned(tx).call();
+    return await this.BBSAdmin.methods.banned(tx).call();
   }
 
   async getComments(tx) {
-    const events = await BBSExt.getPastEvents('Replied', {
+    const events = await this.BBSExt.getPastEvents('Replied', {
       fromBlock: this.fromBlock
     });
     return events.filter(event => {
@@ -576,10 +576,10 @@ class Dett {
     if (!content.length) return alert('No content.');
 
     if (tx) {
-      const gas = await this.dexonBBSExt.methods.Reply(tx, +replyType, content).estimateGas();
+      const gas = await this.dettBBSExt.methods.Reply(tx, +replyType, content).estimateGas();
 
       try {
-        await this.dexonBBSExt.methods.Reply(tx, +replyType, content).send({
+        await this.dettBBSExt.methods.Reply(tx, +replyType, content).send({
           from: this.account,
           gas: gas
         }).on('confirmation', (confirmationNumber, receipt) => {
@@ -594,10 +594,10 @@ class Dett {
   async post(title, content) {
     if (title.length > this.titleLength) return alert('Title\'s length is over 40 characters.');
     const post = '[' + title + ']' + content;
-    const gas = await this.dexonBBSExt.methods.Post(post).estimateGas();
+    const gas = await this.dettBBSExt.methods.Post(post).estimateGas();
 
     try {
-      await this.dexonBBSExt.methods.Post(post).send({
+      await this.dettBBSExt.methods.Post(post).send({
         from: this.account,
         gas: gas
       }).on('confirmation', (confirmationNumber, receipt) => {
@@ -609,7 +609,6 @@ class Dett {
   }
 
   async edit(tx, title, content) {
-    if (!this.dexonWeb3) return alert('Please connect to your DEXON Wallet.');
     if (title.length > this.titleLength) return alert('Title\'s length is over 40 characters.');
     const transaction = await web3.eth.getTransaction(tx);
     if (this.account.toLowerCase() !== transaction.from.toLowerCase()) return alert('You can not edit this article.');
@@ -617,7 +616,7 @@ class Dett {
     const gas = await this.dexonBBSEdit.methods.edit(tx, post).estimateGas();
 
     try {
-      await this.dexonBBSEdit.methods.edit(tx, post).send({
+      await this.dettBBSEdit.methods.edit(tx, post).send({
         from: this.account,
         gas: gas
       }).on('confirmation', (confirmationNumber, receipt) => {

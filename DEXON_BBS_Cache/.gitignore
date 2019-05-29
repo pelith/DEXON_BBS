@@ -1,2 +1,6 @@
-src/dett.js
-src/utils.js
+dett.js
+utils.js
+.env
+keystore.json
+gh-pages/
+dist/

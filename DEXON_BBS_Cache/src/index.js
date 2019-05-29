@@ -1,53 +1,100 @@
-import dotenv from 'dotenv/config'
-import keythereum from 'keythereum'
-import Hashids from 'hashids'
 import Web3 from 'web3'
+import dotenv from 'dotenv/config'
+
+import git from 'simple-git'
+import gitP from 'simple-git/promise'
+import rimraf from 'rimraf'
+
 import { pRateLimit } from 'p-ratelimit'
 import Dett from './dett.js'
 import fs from 'fs'
+import path from 'path'
 import { parseText } from './utils.js'
 
-import keystore from './keystore.json'
+import keythereum from 'keythereum'
+import keystore from '../keystore.json'
 const keypassword = process.env.KEY_PASSWORD
-const minPostsPerPage = 10
-
-const ABIBBS = [{"constant":!1,"inputs":[{"name":"content","type":"string"}],"name":"Post","outputs":[],"payable":!1,"stateMutability":"nonpayable","type":"function"},{"anonymous":!1,"inputs":[{"indexed":!1,"name":"content","type":"string"}],"name":"Posted","type":"event"}]
-const BBSContract = '0x663002C4E41E5d04860a76955A7B9B8234475952'
-const ABICache = [{"constant":false,"inputs":[{"name":"long","type":"bytes32"},{"name":"short","type":"bytes32"},{"name":"cur","type":"uint256"}],"name":"link","outputs":[],"payable":false,"stateMutability":"nonpayable","type":"function"},{"constant":true,"inputs":[],"name":"time","outputs":[{"name":"","type":"uint256"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":false,"inputs":[{"name":"milestone","type":"uint256"},{"name":"cur","type":"uint256"}],"name":"addMilestone","outputs":[],"payable":false,"stateMutability":"nonpayable","type":"function"},{"constant":true,"inputs":[],"name":"getMilestones","outputs":[{"name":"","type":"uint256[]"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":true,"inputs":[],"name":"owner","outputs":[{"name":"","type":"address"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":true,"inputs":[{"name":"","type":"bytes32"}],"name":"links","outputs":[{"name":"","type":"bytes32"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":false,"inputs":[{"name":"newOwner","type":"address"}],"name":"transferOwnership","outputs":[],"payable":false,"stateMutability":"nonpayable","type":"function"},{"constant":false,"inputs":[],"name":"clearMilestone","outputs":[],"payable":false,"stateMutability":"nonpayable","type":"function"},{"anonymous":false,"inputs":[{"indexed":false,"name":"long","type":"bytes32"},{"indexed":false,"name":"short","type":"bytes32"},{"indexed":false,"name":"time","type":"uint256"}],"name":"Link","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"name":"previousOwner","type":"address"},{"indexed":true,"name":"newOwner","type":"address"}],"name":"OwnershipTransferred","type":"event"}]
-const BBSCacheContract = '0x5c10A77454cF98B273F54199DE3454ae2586e7A4'
-const mainnet = new Web3('wss://mainnet-rpc.dexon.org/ws')
-const BBS = new mainnet.eth.Contract(ABIBBS, BBSContract)
-const dett = new Dett(mainnet)
-
-const cacheNet = new Web3(process.env.RPC_URL)
 const privateKey = keythereum.recover(keypassword, keystore)
-const accountObj = cacheNet.eth.accounts.privateKeyToAccount(`0x${privateKey.toString('hex')}`)
-const contractOwner = accountObj.address
-cacheNet.eth.accounts.wallet.add(accountObj)
-const shortURLandMilestone = new cacheNet.eth.Contract(ABICache, BBSCacheContract)
+
+const web3 = new Web3(new Web3.providers.WebsocketProvider('wss://mainnet-rpc.dexon.org/ws'))
+let dett = null
+let contractOwner = ''
+
 const rpcRateLimiter = pRateLimit({
   interval: 2500,
   rate: 1,
   concurrency: 1,
 })
 
-async function shortArticleHash(tx) {
-  const transaction = await mainnet.eth.getTransaction(tx)
+const folderPath = 'dist/'
 
-  // check transaction to address is bbs contract
-  if (!dett.isDettTx(transaction.to)) return null
 
-  const hashids = new Hashids('DEXON_BBS', 6, 'abcdefghijklmnopqrstuvwxyz1234567890')
-  const oriId = hashids.encode(cacheNet.utils.hexToNumberString(tx))
-  const hex = cacheNet.utils.padLeft(cacheNet.utils.toHex(oriId), 64)
-  // const mapId = cacheNet.utils.hexToUtf8(hex)
-  // console.log([transaction.blockNumber, tx, oriId, mapId, hex])
-  console.log(tx)
-  // console.log(await shortURLandMilestone.methods.link(tx, hex, transaction.blockNumber))
+const generateShortLinkCachePage = async (tx, shortLink) => {
+  // TODO update edit
+  const fileName = folderPath + shortLink + '.html'
+
+  if (!fs.existsSync(fileName)) {
+    const article = await dett.getArticle(tx)
+    const title = article.title
+    const url = 'https://dett.cc/' + shortLink + '.html'
+    const description = parseText(article.content, 160).replace(/\n|\r/g, ' ')
+    const cacheMeta = { 'Cache - DEXON BBS': title, 'https://dett.cc/cache.html': url, 'Cache Cache Cache Cache Cache': description }
+    const reg = new RegExp(Object.keys(cacheMeta).join("|"),"gi")
+    const template = fs.readFileSync('gh-pages/cache.html', 'utf-8')
+
+    const cacheFile = template.replace(reg, (matched) => {
+      return cacheMeta[matched]
+    });
+
+    await fs.writeFileSync(fileName, cacheFile, 'utf8')
+  }
+}
+
+
+class ShortURL {
+  static encode(num) {
+    let str = ''
+    while (num > 0) {
+      str = ShortURL.alphabet.charAt(num % ShortURL.base) + str
+      num = Math.floor(num / ShortURL.base)
+    }
+    return str
+  }
+
+  static decode(str) {
+    let num = 0
+    for (let i = 0; i < str.length; i++) {
+      num = num * ShortURL.base + ShortURL.alphabet.indexOf(str.charAt(i))
+    }
+    return num
+  }
+}
+ShortURL.alphabet = '23456789bcdfghjkmnpqrstvwxyzBCDFGHJKLMNPQRSTVWXYZ'
+ShortURL.base = ShortURL.alphabet.length;
+
+
+const generateShortLink = async (tx) => {
+  const originalId = ShortURL.encode(dett.cacheweb3.utils.hexToNumber(tx.substr(0,10))).padStart(6,'0')
+  const hexId = dett.cacheweb3.utils.padLeft(dett.cacheweb3.utils.toHex(originalId), 64)
+
   await Promise.resolve([
-    shortURLandMilestone.methods.link(tx, hex, transaction.blockNumber).send({
+    await dett.BBSCache.methods.link(tx, hexId).send({
       from: contractOwner,
-      gas: 210000,
+      gas: 240000,
+    }).on('confirmation', (confirmationNumber, receipt) => {
+      if (confirmationNumber == 1)
+        ;// console.log(receipt)
+    }).catch(err => {
+      console.log(err)
+    })
+  ])
+}
+
+const addMilestone = async (block, index) => {
+  await Promise.resolve([
+    dett.BBSCache.methods.addMilestone(block, index).send({
+      from: contractOwner,
+      gas: 240000,
     }).on('confirmation', (confirmationNumber, receipt) => {
       if (confirmationNumber == 1)
         console.log(receipt)
@@ -57,128 +104,118 @@ async function shortArticleHash(tx) {
   ])
 }
 
-async function getArticles(block) {
-  const events = await BBS.getPastEvents('Posted', {fromBlock : block})
 
-  events.forEach(async (event) => {
-    // console.log(await shortURLandMilestone.methods.links(event.transactionHash).call())
-    if (await shortURLandMilestone.methods.links(event.transactionHash).call() == '0x0000000000000000000000000000000000000000000000000000000000000000') {
-      await rpcRateLimiter(() => shortArticleHash(event.transactionHash))
-    }
-  })
+const clone = async () => {
+  //dett gh-pages repo clone
+  await rimraf.sync('gh-pages')
+
+  await gitP().silent(true)
+  .clone('https://github.com/pelith/DEXON_BBS', 'gh-pages', ['--single-branch','--branch','gh-pages'])
+  .then(() => console.log('finished'))
+  .catch((err) => console.error('failed: ', err))
 }
 
-async function addMilestone(block, time) {
-  await Promise.resolve([
-    shortURLandMilestone.methods.addMilestone(block, time).send({
-      from: contractOwner,
-      gas: 210000,
-    }).on('confirmation', (confirmationNumber, receipt) => {
-      if (confirmationNumber == 1)
-        console.log(receipt)
-    }).catch(err => {
-      console.log(err)
-    })
-  ])
-}
+const main = async () => {
+  dett = new Dett()
+  await dett.init(web3, Web3)
 
-async function checkMilestones() {
-  const time = await shortURLandMilestone.methods.time().call()
-  const eventFrom = time.toString() ? time.toString() : '0'
-  // console.log(eventFrom.toString())
-  const events = await shortURLandMilestone.getPastEvents('Link', { fromBlock : eventFrom })
-  // console.log(events)
-  let eventBlocks = events.map((event) => {
-      return event.returnValues['time'].toString()
-  })
-  // console.log(eventBlocks)
+  // cache init
+  const account = dett.cacheweb3.eth.accounts.privateKeyToAccount(`0x${privateKey.toString('hex')}`)
+  contractOwner = account.address
+  dett.cacheweb3.eth.accounts.wallet.add(account)
 
-  let countPost = {}
-  eventBlocks.forEach((x) => { countPost[x] = (countPost[x] || 0) + 1 })
-  // console.log(countPost)
-
-  let pageSize = 0
-  Object.keys(countPost).forEach(async (block) => {
-    pageSize += countPost[block]
-    // console.log(pageSize)
-    if (pageSize >= minPostsPerPage) {
-      pageSize = 0
-
-      const time = events.map((event) => {
-          return event.returnValues['time'].toString() == block ? event.blockNumber : null
-      }).slice().reverse().find(function(element) {
-        return element != null
-      })
-      // console.log(time)
-
-      await rpcRateLimiter(() => addMilestone(block, time))
-      // console.log(block)
+  // check gh-pages folder
+  if (fs.existsSync('gh-pages') && fs.lstatSync('gh-pages').isDirectory()){
+    try {
+      await gitP(__dirname + '/../gh-pages').status()
+      // TO-DO : PULL
+    } catch (err) {
+      // .git not init or it's an empty dir
+      await clone()
+      console.error('failed: ', err)
     }
-  })
+  }
+  else await clone()
 
-  /*
-  // way to make 10 posts per page
-  const articlesPerPage = 10
-  for (let i = 0 ; i < events.length ; i++) {
-    if ((i + 1) % articlesPerPage == 0) {
-      await shortURLandMilestone.methods.addMilestone(events[i].returnValues['time']).send({
-        from: contractOwner,
-      }).catch(err => {
-        console.log(err)
-      })
+  if (!fs.existsSync(folderPath)) fs.mkdirSync(folderPath)
+
+  // ##############
+
+  const milestones = await dett.BBSCache.methods.getMilestones().call()
+  console.log(milestones)
+
+  const indexes = await dett.BBSCache.methods.getIndexes().call()
+  console.log(indexes)
+
+  const fromBlock = milestones.length!==0 ? +milestones[milestones.length-1]: dett.fromBlock
+  // const fromBlock = dett.fromBlock
+  let events = await dett.BBS.getPastEvents('Posted', {fromBlock : fromBlock})
+
+  // delete lastest cache page block's part
+  if ((milestones.length !== 0) && (indexes.length !== 0)){
+    events.splice(0, (+indexes[indexes.length-1])+1)
+  }
+
+  // generate cache
+  let last = 0
+  let index = 0
+  for (const [i, event] of events.entries()) {
+    const tx = event.transactionHash
+    const link = await dett.BBSCache.methods.links(tx).call()
+
+    // generate short links
+    if (!+(link)) {
+      await rpcRateLimiter(() => generateShortLink(tx))
+    } else {
+      // generate short links cache page
+      const shortLink = web3.utils.hexToUtf8(link)
+      generateShortLinkCachePage(tx, shortLink)
+    }
+
+    // generate milestone block index
+    if (last === event.blockNumber) {
+      index+=1
+    }
+    else {
+      last = event.blockNumber
+      index = 0
+    }
+
+    if ((i+1) % dett.perPageLength === 0) {
+      console.log(event.blockNumber, index)
+      if ( !milestones.includes(event.blockNumber+'')){
+        if ( !(indexes[milestones.indexOf(event.blockNumber+'')] === index+''))
+          await rpcRateLimiter(() => addMilestone(event.blockNumber, index))
+      }
     }
   }
 
-  events.forEach(event => {
-    console.log('long: ' + event.returnValues['long'] + ', short: ' + dexonTestnet.utils.hexToUtf8(event.returnValues['short']))
-  })
-  */
-}
+
+  console.log('######')
+
+  // ###### ln -s gh-pages to gh-pages folder
+
+  const files = await fs.readdirSync(folderPath)
+  for (const file of files) {
+    const output = path.join('gh-pages/', file)
+    await fs.copyFileSync(path.join(folderPath, file), output)
+  }
+
+  // push gh-pages
+
+  git(__dirname + '/../gh-pages')
+  .add('./*')
+  .commit("Add cache page")
+  .push(['-u', 'origin', 'gh-pages'], () => console.log('Push done'));
 
 
-async function cache(block) {
-  const events = await BBS.getPastEvents('Posted', {fromBlock : block})
-  events.forEach(async (event) => {
-    // console.log(await shortURLandMilestone.methods.links(event.transactionHash).call())
-    const shortLinkHex = await shortURLandMilestone.methods.links(event.transactionHash).call()
-    // console.log(shortLinkHex)
-    if (shortLinkHex != '0x0000000000000000000000000000000000000000000000000000000000000000') {
-      const article = await dett.getArticle(event.transactionHash, false).catch(console.log)
-      const shortLink = cacheNet.utils.hexToUtf8(shortLinkHex)
-      const title = article.title
-      const url = 'https://dett.cc/' + shortLink + '.html'
-      const description = parseText(article.content, 160).replace(/\n|\r/g, ' ')
-      const cacheMeta = { 'Cache - DEXON BBS': title, 'https://dett.cc/cache.html': url, 'Cache Cache Cache Cache Cache': description }
-      const reg = new RegExp(Object.keys(cacheMeta).join("|"),"gi")
-      const template = fs.readFileSync('build/cache.html', 'utf-8')
-      const cacheFile = template.replace(reg, (matched) => {
-        return cacheMeta[matched]
-      });
-      const fileName = 'build/' + shortLink + '.html'
+  // await dett.BBSCache.methods.clearMilestone().send({
+  //   from: contractOwner,
+  //   // gasPrice: 6000000000,
+  //   gas: 210000,
+  // })
 
-      fs.writeFileSync(fileName, cacheFile, 'utf8')
-    }
-  })
-}
-
-
-async function main() {
-  
-  const milestones = await shortURLandMilestone.methods.getMilestones().call()
-  // console.log(milestones)
-  const postFrom = milestones.length ? milestones[milestones.length-1] * 1 + 1 : '1170000'
-  await getArticles(postFrom)
-  await checkMilestones()
-  await cache('1170000')
-  
-
-  /*
-  await shortURLandMilestone.methods.clearMilestone().send({
-    from: contractOwner,
-    gasPrice: 6000000000,
-    gas: 120000,
-  })
-  */
+  return
 }
 
 main()

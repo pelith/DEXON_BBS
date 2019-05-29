@@ -10,14 +10,14 @@ const path = require('path');
 gaze(['src/**/*'], (err, watcher) => {
   if (err) throw err;
   watcher.on('changed', (sourceFile) => {
-    console.log(sourceFile + ' has changed');
+    console.log('\r\n🌟' + sourceFile + ' has changed');
     try {
       let targetFile = path.relative(__dirname, sourceFile);
       if (targetFile.indexOf('src') != -1) {
         targetFile = targetFile.replace(/\/src\//, '/lib/');
       }
       targetFile = path.resolve(__dirname, targetFile);
-      fs.writeFile(targetFile, babel.transformFileSync(sourceFile).code);
+      fs.writeFile(targetFile, babel.transformFileSync(sourceFile).code, ()=>{});
     } catch (e) {
       console.error(e.message, e.stack);
     }
