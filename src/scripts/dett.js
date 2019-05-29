@@ -129,7 +129,7 @@ class Dett {
     this.BBSEdit = new web3.eth.Contract(ABIBBSEdit, BBSEditContract)
     this.BBSCache = new cacheweb3.eth.Contract(ABICache, BBSCacheContract)
 
-    this.BBSevents = await this.BBS.getPastEvents('Posted', {fromBlock : this.fromBlock })
+    this.BBSEvents = await this.BBS.getPastEvents('Posted', {fromBlock : this.fromBlock })
     this.BBSEditEvents = await this.BBSEdit.getPastEvents('Edited', {fromBlock : this.fromBlock })
   }
 
