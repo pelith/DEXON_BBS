@@ -22,8 +22,8 @@ const main = async ({ _dexon }) => {
     render(account)
   })
 
-  dett = new Dett(_dexon.dexonWeb3)
-  await dett.init()
+  dett = new Dett()
+  await dett.init(_dexon.dexonWeb3, Web3)
 
   if (+window.localStorage.getItem('hotkey-mode')) keyboardHook()
 
