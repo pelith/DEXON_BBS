@@ -3,9 +3,9 @@ import keythereum from 'keythereum'
 import Hashids from 'hashids'
 import Web3 from 'web3'
 import { pRateLimit } from 'p-ratelimit'
-import Dett from '../src/scripts/dett.js'
+import Dett from './dett.js'
 import fs from 'fs'
-import { parseText } from '../src/scripts/utils.js'
+import { parseText } from './utils.js'
 
 import keystore from './keystore.json'
 const keypassword = process.env.KEY_PASSWORD
