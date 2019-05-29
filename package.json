@@ -5,7 +5,9 @@
     "scripts": {
         "dev": "npm run clean && parcel src/__dev__.html --out-dir dist/",
         "build": "npm run clean && parcel build --no-source-maps src/*.njk --out-dir build/ --public-url .",
-        "build-cache": "./node_modules/.bin/babel cache/ -d lib/ && node bin/dev",
+        "cache": "node -r esm cache/shortlink.js",
+        "build-cache": "parcel build --no-source-maps src/s/*.njk --out-dir build/s/",
+        "build-with-cache": "npm run clean:cache && npm run build && npm run cache",
         "clean": "rm -rf dist build",
         "clean:cache": "rm -rf .cache",
         "gh-help": "gh-pages --help",
@@ -38,13 +40,10 @@
     "dependencies": {
         "@babel/runtime": "^7.4.4",
         "core-js": "^2.6.5",
-        "hashids": "^1.2.2",
-        "keythereum": "^1.0.4",
         "linkify-it": "^2.1.0",
         "nunjucks": "^3.0.0",
-        "p-ratelimit": "^0.10.0",
         "parcel-plugin-nunjucks": "^1.1.0",
         "purge-cloudflare-cache": "^1.2.2",
-        "url-parse": "^1.4.7"
+        "url-parse": "^1.4.7",
     }
 }
