@@ -21,7 +21,6 @@
         "path": "^0.12.7"
     },
     "dependencies": {
-        "fs": "0.0.1-security",
         "keythereum": "^1.0.4",
         "p-ratelimit": "^0.10.0",
         "rimraf": "^2.6.3",

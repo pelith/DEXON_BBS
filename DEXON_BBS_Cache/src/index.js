@@ -125,17 +125,18 @@ const main = async () => {
   dett.cacheweb3.eth.accounts.wallet.add(account)
 
   // check gh-pages folder
-  if (fs.existsSync('gh-pages') && fs.lstatSync('gh-pages').isDirectory()){
-    try {
-      await gitP(__dirname + '/../gh-pages').status()
-      // TO-DO : PULL
-    } catch (err) {
-      // .git not init or it's an empty dir
-      await clone()
-      console.error('failed: ', err)
-    }
-  }
-  else await clone()
+  // if (fs.existsSync('gh-pages') && fs.lstatSync('gh-pages').isDirectory()){
+  //   try {
+  //     await gitP(__dirname + '/../gh-pages').status()
+  //     gitP
+  //   } catch (err) {
+  //     // .git not init or it's an empty dir
+  //     await clone()
+  //     console.error('failed: ', err)
+  //   }
+  // }
+  // else await clone()
+  await clone()
 
   if (!fs.existsSync(folderPath)) fs.mkdirSync(folderPath)
 
