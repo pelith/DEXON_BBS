@@ -1,8 +1,6 @@
 import Web3 from 'web3'
 import dotenv from 'dotenv/config'
 
-import Hashids from 'hashids'
-
 import { pRateLimit } from 'p-ratelimit'
 import Dett from './dett.js'
 import fs from 'fs'
@@ -13,16 +11,9 @@ import keystore from '../keystore.json'
 const keypassword = process.env.KEY_PASSWORD
 const privateKey = keythereum.recover(keypassword, keystore)
 
-// cache init
-const cacheweb3 = new Web3(process.env.RPC_URL)
-const account = cacheweb3.eth.accounts.privateKeyToAccount(`0x${privateKey.toString('hex')}`)
-const contractOwner = account.address
-cacheweb3.eth.accounts.wallet.add(account)
-
-// dett init
 const web3 = new Web3(new Web3.providers.WebsocketProvider('wss://mainnet-rpc.dexon.org/ws'))
-const dett = new Dett(web3)
-dett.init(Web3)
+let dett = null
+let contractOwner = ''
 
 const rpcRateLimiter = pRateLimit({
   interval: 2500,
@@ -30,109 +21,6 @@ const rpcRateLimiter = pRateLimit({
   concurrency: 1,
 })
 
-async function shortArticleHash(tx) {
-  const transaction = await mainnet.eth.getTransaction(tx)
-
-  // check transaction to address is bbs contract
-  if (!dett.isDettTx(transaction.to)) return null
-
-  const hashids = new Hashids('DEXON_BBS', 6, 'abcdefghijklmnopqrstuvwxyz1234567890')
-  const oriId = hashids.encode(cacheNet.utils.hexToNumberString(tx))
-  const hex = cacheNet.utils.padLeft(cacheNet.utils.toHex(oriId), 64)
-  // const mapId = cacheNet.utils.hexToUtf8(hex)
-  // console.log([transaction.blockNumber, tx, oriId, mapId, hex])
-  console.log(tx)
-  // console.log(await shortURLandMilestone.methods.link(tx, hex, transaction.blockNumber))
-  await Promise.resolve([
-    shortURLandMilestone.methods.link(tx, hex, transaction.blockNumber).send({
-      from: contractOwner,
-      gas: 210000,
-    }).on('confirmation', (confirmationNumber, receipt) => {
-      if (confirmationNumber == 1)
-        console.log(receipt)
-    }).catch(err => {
-      console.log(err)
-    })
-  ])
-}
-
-async function getArticles(block) {
-  const events = await BBS.getPastEvents('Posted', {fromBlock : block})
-
-  events.forEach(async (event) => {
-    // console.log(await shortURLandMilestone.methods.links(event.transactionHash).call())
-    if (await shortURLandMilestone.methods.links(event.transactionHash).call() == '0x0000000000000000000000000000000000000000000000000000000000000000') {
-      await rpcRateLimiter(() => shortArticleHash(event.transactionHash))
-    }
-  })
-}
-
-async function addMilestone(block, time) {
-  await Promise.resolve([
-    shortURLandMilestone.methods.addMilestone(block, time).send({
-      from: contractOwner,
-      gas: 210000,
-    }).on('confirmation', (confirmationNumber, receipt) => {
-      if (confirmationNumber == 1)
-        console.log(receipt)
-    }).catch(err => {
-      console.log(err)
-    })
-  ])
-}
-
-async function checkMilestones() {
-  const time = await shortURLandMilestone.methods.time().call()
-  const eventFrom = time.toString() ? time.toString() : '0'
-  // console.log(eventFrom.toString())
-  const events = await shortURLandMilestone.getPastEvents('Link', { fromBlock : eventFrom })
-  // console.log(events)
-  let eventBlocks = events.map((event) => {
-      return event.returnValues['time'].toString()
-  })
-  // console.log(eventBlocks)
-
-  let countPost = {}
-  eventBlocks.forEach((x) => { countPost[x] = (countPost[x] || 0) + 1 })
-  // console.log(countPost)
-
-  let pageSize = 0
-  Object.keys(countPost).forEach(async (block) => {
-    pageSize += countPost[block]
-    // console.log(pageSize)
-    if (pageSize >= dett.perPageLength) {
-      pageSize = 0
-
-      const time = events.map((event) => {
-          return event.returnValues['time'].toString() == block ? event.blockNumber : null
-      }).slice().reverse().find(function(element) {
-        return element != null
-      })
-      // console.log(time)
-
-      await rpcRateLimiter(() => addMilestone(block, time))
-      // console.log(block)
-    }
-  })
-
-  /*
-  // way to make 10 posts per page
-  const articlesPerPage = 10
-  for (let i = 0 ; i < events.length ; i++) {
-    if ((i + 1) % articlesPerPage == 0) {
-      await shortURLandMilestone.methods.addMilestone(events[i].returnValues['time']).send({
-        from: contractOwner,
-      }).catch(err => {
-        console.log(err)
-      })
-    }
-  }
-
-  events.forEach(event => {
-    console.log('long: ' + event.returnValues['long'] + ', short: ' + dexonTestnet.utils.hexToUtf8(event.returnValues['short']))
-  })
-  */
-}
 
 
 async function cache(block) {
@@ -161,29 +49,117 @@ async function cache(block) {
 }
 
 
+class ShortURL {
+  static encode(num) {
+    let str = ''
+    while (num > 0) {
+      str = ShortURL.alphabet.charAt(num % ShortURL.base) + str
+      num = Math.floor(num / ShortURL.base)
+    }
+    return str
+  }
+
+  static decode(str) {
+    let num = 0
+    for (let i = 0; i < str.length; i++) {
+      num = num * ShortURL.base + ShortURL.alphabet.indexOf(str.charAt(i))
+    }
+    return num
+  }
+}
+ShortURL.alphabet = '23456789bcdfghjkmnpqrstvwxyzBCDFGHJKLMNPQRSTVWXYZ'
+ShortURL.base = ShortURL.alphabet.length;
+
+
+const generateShortLink = async (tx) => {
+  const originalId = ShortURL.encode(dett.cacheweb3.utils.hexToNumber(tx.substr(0,10))).padStart(6,'0')
+  const hexId = dett.cacheweb3.utils.padLeft(dett.cacheweb3.utils.toHex(originalId), 64)
+
+  await Promise.resolve([
+    await dett.BBSCache.methods.link(tx, hexId).send({
+      from: contractOwner,
+      gas: 240000,
+    }).on('confirmation', (confirmationNumber, receipt) => {
+      if (confirmationNumber == 1)
+        ;// console.log(receipt)
+    }).catch(err => {
+      console.log(err)
+    })
+  ])
+}
+
+const addMilestone = async (block, index) => {
+  await Promise.resolve([
+    dett.BBSCache.methods.addMilestone(block, index).send({
+      from: contractOwner,
+      gas: 240000,
+    }).on('confirmation', (confirmationNumber, receipt) => {
+      if (confirmationNumber == 1)
+        console.log(receipt)
+    }).catch(err => {
+      console.log(err)
+    })
+  ])
+}
+
+
+
 const main = async () => {
+  dett = new Dett(web3)
+  await dett.init(Web3)
+
+  // cache init
+  const account = dett.cacheweb3.eth.accounts.privateKeyToAccount(`0x${privateKey.toString('hex')}`)
+  contractOwner = account.address
+  dett.cacheweb3.eth.accounts.wallet.add(account)
+
   const milestones = await dett.BBSCache.methods.getMilestones().call()
-  // console.log(milestones)
+  console.log(milestones)
 
-  const fromBlock = dett.fromBlock
-  const events = await dett.BBS.getPastEvents('Posted', {fromBlock : fromBlock})
-  const linkEvents = await dett.BBSCache.getPastEvents('Link', {fromBlock : fromBlock})
-  // console.log(linkEvents)
+  const indexes = await dett.BBSCache.methods.getIndexes().call()
+  console.log(indexes)
 
-  // first get milestone
-  // get last milesotne to latest block events
-  // generate new milestone
+  const fromBlock = milestones.length!==0 ? +milestones[milestones.length-1]: dett.fromBlock
 
-  events.forEach( async (event, i) => {
-    let a =  await shortURLandMilestone.methods.links(event.transactionHash).call()
-    console.log(a)
-    // if (await shortURLandMilestone.methods.links(event.transactionHash).call() == '0x0000000000000000000000000000000000000000000000000000000000000000') {
-      // await rpcRateLimiter(() => shortArticleHash(event.transactionHash))
-    // }
+  let events = await dett.BBS.getPastEvents('Posted', {fromBlock : fromBlock})
+
+  console.log(events.length)
+
+  if ((milestones.length !== 0) && (indexes.length !== 0)){
+    events.splice(0, (+indexes[indexes.length-1])+1)
+    console.log(events.length)
+  }
 
 
+  // generate cache
+  let last = 0
+  let index = 0
+  for (const [i, event] of events.entries()) {
 
-  })
+    // generate links
+    if (!+(await dett.BBSCache.methods.links(event.transactionHash).call())) {
+      await rpcRateLimiter(() => generateShortLink(event.transactionHash))
+    }
+
+    // generate milestone block index
+    if (last === event.blockNumber) {
+      index+=1
+    }
+    else {
+      last = event.blockNumber
+      index = 0
+    }
+
+    if ((i+1) % dett.perPageLength === 0) {
+      console.log(event.blockNumber, index)
+      if ( !milestones.includes(event.blockNumber+'')){
+        if ( !(indexes[milestones.indexOf(event.blockNumber+'')] === index+''))
+          await rpcRateLimiter(() => addMilestone(event.blockNumber, index))
+      }
+    }
+  }
+
+  console.log('######')
 
 
 
@@ -199,13 +175,13 @@ const main = async () => {
   // await cache(dett.fromBlock)
 
 
-  /*
-  await shortURLandMilestone.methods.clearMilestone().send({
-    from: contractOwner,
-    gasPrice: 6000000000,
-    gas: 120000,
-  })
-  */
+
+  // await dett.BBSCache.methods.clearMilestone().send({
+  //   from: contractOwner,
+  //   // gasPrice: 6000000000,
+  //   gas: 210000,
+  // })
+
   return
 }
 
