@@ -101,7 +101,7 @@ const getAddressLink = (from, __namePool) => {
 const error = () => { $('#main-content-content').text('404 - Page not found.') }
 
 const main = async ({ _dexon }) => {
-  _dtxon.on('update',(account) => {
+  _dexon.on('update',(account) => {
     render(account)
   })
 
