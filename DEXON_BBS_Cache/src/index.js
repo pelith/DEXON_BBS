@@ -33,21 +33,21 @@ const generateShortLinkCachePage = async (tx, shortLink) => {
   // TODO update edit
   const fileName = folderPath + shortLink + '.html'
 
-  if (!fs.existsSync(fileName)) {
-    const article = await dett.getArticle(tx)
-    const title = article.title
-    const url = 'https://dett.cc/' + shortLink + '.html'
-    const description = parseText(article.content, 160).replace(/\n|\r/g, ' ')
-    const cacheMeta = { 'Cache - DEXON BBS': title, 'https://dett.cc/cache.html': url, 'Cache Cache Cache Cache Cache': description }
-    const reg = new RegExp(Object.keys(cacheMeta).join("|"),"gi")
-    const template = fs.readFileSync('gh-pages/cache.html', 'utf-8')
+  // if (!fs.existsSync(fileName)) {
+  const article = await dett.getArticle(tx)
+  const title = article.title
+  const url = 'https://dett.cc/' + shortLink + '.html'
+  const description = parseText(article.content, 160).replace(/\n|\r/g, ' ')
+  const cacheMeta = { 'Cache - DEXON BBS': title, 'https://dett.cc/cache.html': url, 'Cache Cache Cache Cache Cache': description }
+  const reg = new RegExp(Object.keys(cacheMeta).join("|"),"gi")
+  const template = fs.readFileSync('gh-pages/cache.html', 'utf-8')
 
-    const cacheFile = template.replace(reg, (matched) => {
-      return cacheMeta[matched]
-    });
+  const cacheFile = template.replace(reg, (matched) => {
+    return cacheMeta[matched]
+  });
 
-    await fs.writeFileSync(fileName, cacheFile, 'utf8')
-  }
+  await fs.writeFileSync(fileName, cacheFile, 'utf8')
+  // }
 }
 
 
@@ -148,14 +148,14 @@ const main = async () => {
   const indexes = await dett.BBSCache.methods.getIndexes().call()
   console.log(indexes)
 
-  const fromBlock = milestones.length!==0 ? +milestones[milestones.length-1]: dett.fromBlock
-  // const fromBlock = dett.fromBlock
+  // const fromBlock = milestones.length!==0 ? +milestones[milestones.length-1]: dett.fromBlock
+  const fromBlock = dett.fromBlock
   let events = await dett.BBS.getPastEvents('Posted', {fromBlock : fromBlock})
 
   // delete lastest cache page block's part
-  if ((milestones.length !== 0) && (indexes.length !== 0)){
-    events.splice(0, (+indexes[indexes.length-1])+1)
-  }
+  // if ((milestones.length !== 0) && (indexes.length !== 0)){
+  //   events.splice(0, (+indexes[indexes.length-1])+1)
+  // }
 
   // generate cache
   let last = 0

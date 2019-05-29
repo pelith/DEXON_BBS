@@ -42,27 +42,25 @@ const folderPath = 'dist/';
 
 const generateShortLinkCachePage = async (tx, shortLink) => {
   // TODO update edit
-  const fileName = folderPath + shortLink + '.html';
+  const fileName = folderPath + shortLink + '.html'; // if (!fs.existsSync(fileName)) {
 
-  if (!_fs.default.existsSync(fileName)) {
-    const article = await dett.getArticle(tx);
-    const title = article.title;
-    const url = 'https://dett.cc/' + shortLink + '.html';
-    const description = (0, _utils.parseText)(article.content, 160).replace(/\n|\r/g, ' ');
-    const cacheMeta = {
-      'Cache - DEXON BBS': title,
-      'https://dett.cc/cache.html': url,
-      'Cache Cache Cache Cache Cache': description
-    };
-    const reg = new RegExp(Object.keys(cacheMeta).join("|"), "gi");
+  const article = await dett.getArticle(tx);
+  const title = article.title;
+  const url = 'https://dett.cc/' + shortLink + '.html';
+  const description = (0, _utils.parseText)(article.content, 160).replace(/\n|\r/g, ' ');
+  const cacheMeta = {
+    'Cache - DEXON BBS': title,
+    'https://dett.cc/cache.html': url,
+    'Cache Cache Cache Cache Cache': description
+  };
+  const reg = new RegExp(Object.keys(cacheMeta).join("|"), "gi");
 
-    const template = _fs.default.readFileSync('gh-pages/cache.html', 'utf-8');
+  const template = _fs.default.readFileSync('gh-pages/cache.html', 'utf-8');
 
-    const cacheFile = template.replace(reg, matched => {
-      return cacheMeta[matched];
-    });
-    await _fs.default.writeFileSync(fileName, cacheFile, 'utf8');
-  }
+  const cacheFile = template.replace(reg, matched => {
+    return cacheMeta[matched];
+  });
+  await _fs.default.writeFileSync(fileName, cacheFile, 'utf8'); // }
 };
 
 class ShortURL {
@@ -147,17 +145,16 @@ const main = async () => {
   const milestones = await dett.BBSCache.methods.getMilestones().call();
   console.log(milestones);
   const indexes = await dett.BBSCache.methods.getIndexes().call();
-  console.log(indexes);
-  const fromBlock = milestones.length !== 0 ? +milestones[milestones.length - 1] : dett.fromBlock; // const fromBlock = dett.fromBlock
+  console.log(indexes); // const fromBlock = milestones.length!==0 ? +milestones[milestones.length-1]: dett.fromBlock
 
+  const fromBlock = dett.fromBlock;
   let events = await dett.BBS.getPastEvents('Posted', {
     fromBlock: fromBlock
   }); // delete lastest cache page block's part
-
-  if (milestones.length !== 0 && indexes.length !== 0) {
-    events.splice(0, +indexes[indexes.length - 1] + 1);
-  } // generate cache
-
+  // if ((milestones.length !== 0) && (indexes.length !== 0)){
+  //   events.splice(0, (+indexes[indexes.length-1])+1)
+  // }
+  // generate cache
 
   let last = 0;
   let index = 0;
