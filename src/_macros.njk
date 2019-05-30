@@ -1,0 +1,19 @@
+{% macro articleEntry(title, link, author) %}
+<div class="r-ent">
+<div class="nrec"></div>
+<div class="title">
+<a href="{{ link }}">
+  {{ title | safe }}
+</a>
+</div>
+<div class="meta">
+  <div class="author">
+    <a>
+      {{ author | safe }}
+    </a>
+  </div>
+  <div class="article-menu"></div>
+  <div class="date"></div>
+</div>
+</div>
+{% endmacro %}
