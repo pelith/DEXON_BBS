@@ -61,7 +61,8 @@ const generateShortLinkCachePage = async (tx, shortLink) => {
     return cacheMeta[matched];
   });
   await _fs.default.writeFileSync(fileName, cacheFile, 'utf8'); // }
-};
+}; // is hash collison posible(?)
+
 
 class ShortURL {
   static encode(num) {

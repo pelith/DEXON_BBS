@@ -50,7 +50,7 @@ const generateShortLinkCachePage = async (tx, shortLink) => {
   // }
 }
 
-
+// is hash collison posible(?)
 class ShortURL {
   static encode(num) {
     let str = ''

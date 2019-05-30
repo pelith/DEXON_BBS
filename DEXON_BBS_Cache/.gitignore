@@ -4,3 +4,4 @@ utils.js
 keystore.json
 gh-pages/
 dist/
+lib/
