@@ -126,8 +126,8 @@ class Dett {
     this.BBSEdit = new web3.eth.Contract(ABIBBSEdit, BBSEditContract)
     this.BBSCache = new cacheweb3.eth.Contract(ABICache, BBSCacheContract)
 
-    this.BBSevents = await BBS.getPastEvents('Posted', {fromBlock : this.fromBlock })
-    this.BBSEditEvents = await BBSEdit.getPastEvents('Edited', {fromBlock : this.fromBlock })
+    this.BBSevents = await this.BBS.getPastEvents('Posted', {fromBlock : this.fromBlock })
+    this.BBSEditEvents = await this.BBSEdit.getPastEvents('Edited', {fromBlock : this.fromBlock })
   }
 
   async getArticles(){
@@ -162,23 +162,23 @@ class Dett {
 
   async getVotes(tx){
     const [upvotes, downvotes] = await Promise.all([
-      BBSExt.methods.upvotes(tx).call(),
-      BBSExt.methods.downvotes(tx).call(),
+      this.BBSExt.methods.upvotes(tx).call(),
+      this.BBSExt.methods.downvotes(tx).call(),
     ])
 
     return upvotes - downvotes
   }
 
   async getVoted(tx){
-    return await BBSExt.methods.voted(this.account, tx).call()
+    return await this.BBSExt.methods.voted(this.account, tx).call()
   }
 
   async getBanned(tx){
-    return await BBSAdmin.methods.banned(tx).call()
+    return await this.BBSAdmin.methods.banned(tx).call()
   }
 
   async getComments(tx){
-    const events = await BBSExt.getPastEvents('Replied', {fromBlock : this.fromBlock})
+    const events = await this.BBSExt.getPastEvents('Replied', {fromBlock : this.fromBlock})
 
     return events.filter((event) => {return tx == event.returnValues.origin}).map(async (event) => {
       const [comment] = await Promise.all([
@@ -262,7 +262,7 @@ class Dett {
 
   async getOriginalTx(shortLink){
     const hex = cacheweb3.utils.padLeft(cacheweb3.utils.toHex(shortLink), 64)
-    const tx = await BBSCache.methods.links(hex).call()
+    const tx = await this.BBSCache.methods.links(hex).call()
     return tx
   }
 
