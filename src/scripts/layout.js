@@ -5,6 +5,8 @@ patchWeb3()
 import Dexon from './dexon.js'
 import {parseUser} from './utils.js'
 
+const loginForm = $('#loginForm')
+
 let account = ''
 let lastError
 let metaCache
@@ -39,9 +41,18 @@ const render = (_account) => {
 
   if (account){
     // show User
-    $("#bbs-login").hide()
+    // $("#bbs-login").hide()
     $("#bbs-more").hide()
     $("#bbs-user-menu").show()
+
+    if (!loginForm[0].accountSource.value) {
+      loginForm[0].accountSource.value = 'injected'
+    }
+    loginForm.find('.--injectedProviderStatus').text('正常')
+    loginForm.find('.--injectedAccountAddress').text(account)
+    loginForm.find('.wrapper--injected .desc-ok').show()
+    loginForm.find('.wrapper--injected .desc-err').hide()
+
   }
   else{
     // show Login/Register
@@ -63,13 +74,20 @@ window._layoutInit = async () => {
   // init dexon account first
   const _dexon = new Dexon(window.dexon)
 
+  loginForm.find('.--injectedProviderName').text(_dexon.providerName)
+
   _dexon.on('update',(account) => {
     lastError = null
-    render(account)
+    loginForm.find('[name="accountSource"][value="injected"]').prop('disabled', false)
+    render(account, _dexon)
   })
 
   _dexon.on('error', (err) => {
     $('#bbs-login').text('登入 ⚠')
+    loginForm.find('.--injectedProviderStatus').text('無法使用')
+    loginForm.find('[name="accountSource"][value="injected"]').prop('disabled', true)
+    loginForm.find('.wrapper--injected .desc-ok').hide()
+    loginForm.find('.wrapper--injected .desc-err').show()
     lastError = err
   })
 
@@ -78,12 +96,13 @@ window._layoutInit = async () => {
     render(account)
   })
 
-  $('#bbs-login').click(() => {
+  $('#bbs-login').click(evt => {
+    evt.preventDefault()
     if (lastError) {
       // account
       alert('在錯誤的網路上。\n請打開錢包並將網路切到 "DEXON Mainnet"。')
     } else {
-      _dexon.login()
+      // _dexon.login()
     }
   })
 

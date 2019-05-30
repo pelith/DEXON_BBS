@@ -34,16 +34,16 @@ const main = async ({ _dexon }) => {
     directDisplay(...await p)
   }, Promise.resolve())
 
-  if (+window.localStorage.getItem('focus-state')===2){
-    const post =  $('.r-list-container > .r-ent > div > a[href="'+window.localStorage.getItem('focus-href')+'"]')
+  if (+sessionStorage.getItem('focus-state')===2){
+    const post =  $('.r-list-container > .r-ent > div > a[href="'+sessionStorage.getItem('focus-href')+'"]')
     focusOnPost(post.parent().parent()[0], true)
-    window.localStorage.setItem('focus-href', '')
-    window.localStorage.setItem('focus-state', 0)
+    sessionStorage.setItem('focus-href', '')
+    sessionStorage.setItem('focus-state', 0)
   }
 
   if (dett.account) {
-    const meta = await dett.getMetaByAddress(dett.account)
-    _dexon.emit('_setMeta', meta)
+    // const meta = await dett.getMetaByAddress(dett.account)
+    // _dexon.emit('_setMeta', meta)
   }
 
   attachDropdown()
@@ -92,6 +92,10 @@ const focusOnPost = (post, scroll, up) => {
 const keyboardHook = () => {
   const upCode = 38, rightCode = 39, downCode = 40
   $(document).keydown((e) => {
+    if ($(document.body).hasClass('modal-open')) {
+      return
+    }
+
     if (e.keyCode === upCode) {
       let posts = $('.r-list-container > .r-ent')
       if (posts.length === 0) {
@@ -124,8 +128,8 @@ const keyboardHook = () => {
     }
     if (e.keyCode == rightCode && focusPost) {
       const href = $('.title > a', focusPost).attr('href')
-      window.localStorage.setItem('focus-href', href)
-      window.localStorage.setItem('focus-state', 1)
+      sessionStorage.setItem('focus-href', href)
+      sessionStorage.setItem('focus-state', 1)
       window.location = href
     }
 

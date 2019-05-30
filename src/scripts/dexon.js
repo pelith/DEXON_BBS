@@ -35,7 +35,31 @@ class EventEmitter{
 class Dexon extends EventEmitter {
   constructor(_dexon) {
     super()
-    this.dexon = _dexon
+    // this.dexon = _dexon
+    this.providerName = null
+
+    const providerDetectList = [
+      {
+        name: 'DEXON Wallet',
+        factory: () => _dexon,
+      },
+      {
+        name: 'MetaMask',
+        factory: () => window.ethereum,
+      },
+    ]
+    providerDetectList.some(({name, factory}) => {
+      const p = factory()
+      if (p) {
+        this.dexon = p
+        this.providerName = name
+        return true
+      } else {
+        return false
+      }
+    })
+    this.isOfficial = (this.dexon && this.dexon == _dexon)
+
     this.dexonWeb3 = ''
     this.__selectedAddress = ''
     this.init()

@@ -148,13 +148,16 @@ const main = async ({ _dexon }) => {
 const keyboardHook = () => {
   const returnCode = 13, escCode = 27, leftCode = 37, rightCode = 39
   $(document).keyup((e) => {
+    if ($(document.body).hasClass('modal-open')) {
+      return
+    }
     if (!isShowReply && !isShowReplyType && dett.account && e.keyCode === 'X'.charCodeAt()) {
       showReplyType()
       return
     }
     else if (!isShowReply && !isShowReplyType && e.keyCode === leftCode) {
-      if (window.localStorage.getItem('focus-href'))
-        window.localStorage.setItem('focus-state', 2)
+      if (sessionStorage.getItem('focus-href'))
+        sessionStorage.setItem('focus-state', 2)
       window.location = '/'
       return
     }

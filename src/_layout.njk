@@ -27,7 +27,7 @@
   </head>
 
   <body>
-    {% block topbar -%}
+    {% if showTopbar -%}
     <div id="topbar-container">
       <div id="topbar" class="bbs-content">
 
@@ -39,11 +39,11 @@
             <div class="dropdown" style="width: 100%">
                 <div class="item small"><a href="/about.njk">幫助</a></div>
                 <div class="hotkey-mode-btn item small"><a href="#"><span class="hotkey-mode"></span>熱鍵</a></div>
-                <div class="item small"><a href="register.njk">註冊暱稱</a></div>
+                <div class="item small"><a href="#">註冊暱稱</a></div>
             </div>
         </div>
-        <a id="bbs-login" class="user-menu right small" href="#">登入</a>
-        <div id="bbs-more" class="user-menu right" href="#">
+        <a id="bbs-login" class="user-menu right small" href="#" data-toggle="modal" data-target="#loginModal">登入</a>
+        <div id="bbs-more" class="user-menu right">
             <div class="trigger right small">⋯</div>
             <div class="dropdown" >
                 <div class="item small"><a href="/about.njk">幫助</a></div>
@@ -52,12 +52,78 @@
         </div>
       </div>
     </div>
-    {%- endblock %}
+    {%- endif %}
 
     {% block content -%}
     {%- endblock %}
 
+    <div id="loginModal" class="modal fade" tabindex="-1" role="dialog">
+      <div class="modal-dialog" role="document">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h3 class="modal-title">選擇要使用的錢包</h3>
+            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+              <span aria-hidden="true">&times;</span>
+            </button>
+          </div>
+          <div class="modal-body">
+            <form id="loginForm">
+              <div class="wrapper wrapper--injected">
+                <div class="custom-control custom-radio">
+                  <input id="c1" type="radio" name="accountSource" value="injected" class="custom-control-input" autocomplete="off">
+                  <label for="c1" class="custom-control-label">
+                    <span>從瀏覽器偵測錢包登入</span>
+                    <div class="desc">
+                      偵測到 <span class="--injectedProviderName">...</span>，狀態：<span class="--injectedProviderStatus">...</span><br>
+                      <div class="desc-ok">
+                        錢包地址：<span class="--injectedAccountAddress">...</span>
+                      </div>
+                      <div class="desc-err">
+                        未偵測到錢包、無法取得地址、或在錯誤鏈上
+                      </div>
+                    </div>
+                  </label>
+                </div>
+              </div>
+              <div class="wrapper wrapper--seed">
+                <div class="custom-control custom-radio">
+                  <input id="c2" type="radio" name="accountSource" value="seed" class="custom-control-input" autocomplete="off">
+                  <label for="c2" class="custom-control-label">
+                    <span>使用助記詞登入</span>
+                    <div class="desc">
+                      <div class="desc-ok">
+                        錢包地址：...
+                      </div>
+                      <div class="desc-err">
+                        尚未設定助記詞
+                      </div>
+                    </div>
+                  </label>
+                  <div id="seedConfigArea">
+                    <hr>
+                    <strong>設定助記詞</strong>
+                    <input type="text" name="" class="form-control">
+                    <div style="margin-top: .2rem">
+                      <button type="button" class="btn">產生</button>
+                      <button type="button" class="btn btn-success">儲存</button>
+                      <button type="button" class="btn btn-danger">刪除</button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </form>
+          </div>
+          <div class="modal-footer">
+            <button class="btn btn-primary">登入</button>
+            <button class="btn" data-dismiss="modal">取消</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
     <script language="javascript" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+    <script language="javascript" type="text/javascript" src="https://cdn.jsdelivr.net/npm/bootstrap@4.3.1/js/dist/util.js"></script>
+    <script language="javascript" type="text/javascript" src="https://cdn.jsdelivr.net/npm/bootstrap@4.3.1/js/dist/modal.js"></script>
     <script language="javascript" type="text/javascript" src="https://cdn.jsdelivr.net/gh/andy0130tw/web3.js-browser@v0.0.2-beta.55/build/web3.min.js"></script>
     <script language="javascript" type="text/javascript" src="scripts/layout.js"></script>
 

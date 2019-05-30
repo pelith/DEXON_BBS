@@ -35,10 +35,14 @@
     },
     "dependencies": {
         "@babel/runtime": "^7.4.4",
+        "bip39": "^3.0.2",
+        "bootstrap": "^4.3.1",
         "core-js": "^2.6.5",
+        "ethereumjs-wallet": "^0.6.3",
         "linkify-it": "^2.1.0",
         "nunjucks": "^3.0.0",
         "parcel-plugin-nunjucks": "^1.1.0",
+        "popper.js": "^1.15.0",
         "purge-cloudflare-cache": "^1.2.2",
         "url-parse": "^1.4.7"
     }
