@@ -112,7 +112,7 @@ const main = async ({ _dexon }) => {
   if (!tx) return error()
   if (!tx.match(/^0x[a-fA-F0-9]{64}$/g)) return error()
 
-  _dtxon.on('update',(account) => {
+  _dexon.on('update',(account) => {
     render(account)
   })
 
