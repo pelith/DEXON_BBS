@@ -267,12 +267,12 @@ class Dett {
   }
 
   rewardAuthor(article, value) {
-    if (!this.dexonWeb3) {
+    if (!this.dettweb3) {
       alert('Please connect to your DEXON Wallet first.')
       return Promise.reject()
     }
 
-    return this.dexonWeb3.eth.sendTransaction({
+    return this.dettweb3.eth.sendTransaction({
       from: this.account,
       to: article.author,
       value: Web3.utils.toWei(value),

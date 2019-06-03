@@ -238,7 +238,8 @@ const renderArticle = (article) => {
       console.log('tx hash', txhash)
       // _.prop('disabled', false)
     })
-    .finally(() => showHideReward(false))
+    .on('confirmation', () => showHideReward(false))
+    .on('error', () => showHideReward(false))
   })
 }
 
