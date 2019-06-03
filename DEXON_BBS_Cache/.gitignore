@@ -1,7 +1,6 @@
-dett.js
-utils.js
 .env
 keystore.json
 gh-pages/
 dist/
 lib/
+src/

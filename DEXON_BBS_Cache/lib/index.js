@@ -38,7 +38,7 @@ const rpcRateLimiter = (0, _pRatelimit.pRateLimit)({
   rate: 1,
   concurrency: 1
 });
-const folderPath = 'dist/';
+const outputPath = 'dist';
 
 const generateShortLinkCachePage = async (tx, shortLink) => {
   // TODO update edit
@@ -122,6 +122,25 @@ const clone = async () => {
 };
 
 const main = async () => {
+  let shortLinks = {};
+  let milestones = {};
+  let indexes = {}; // ############################################
+  // #### Read last output folder, and restore.
+  // if exist create output folder
+
+  if (!(_fs.default.existsSync(outputPath) && _fs.default.lstatSync(outputPath).isDirectory())) _fs.default.mkdirSync(outputPath); // check dist/output.json
+
+  const outputjsonPath = _path.default.join(outputPath, 'output.json');
+
+  if (_fs.default.existsSync(outputjsonPath) && _fs.default.lstatSync(outputjsonPath).isFile()) {
+    const rawData = _fs.default.readFileSync(outputjsonPath);
+
+    const jsonData = JSON.parse(rawData);
+    if (jsonData.hasOwnProperty('shortLinks')) shortLinks = jsonData.shortLinks;
+    if (jsonData.hasOwnProperty('milestones')) milestones = jsonData.milestones;
+    if (jsonData.hasOwnProperty('indexes')) indexes = jsonData.indexes;
+  }
+
   dett = new _dett.default();
   await dett.init(web3, _web.default); // cache init
 
@@ -139,68 +158,62 @@ const main = async () => {
   //   }
   // }
   // else await clone()
-
-  await clone();
-  if (!_fs.default.existsSync(folderPath)) _fs.default.mkdirSync(folderPath); // ##############
-
-  const milestones = await dett.BBSCache.methods.getMilestones().call();
-  console.log(milestones);
-  const indexes = await dett.BBSCache.methods.getIndexes().call();
-  console.log(indexes); // const fromBlock = milestones.length!==0 ? +milestones[milestones.length-1]: dett.fromBlock
-
-  const fromBlock = dett.fromBlock;
-  let events = await dett.BBS.getPastEvents('Posted', {
-    fromBlock: fromBlock
-  }); // delete lastest cache page block's part
+  // await clone()
+  // // ##############
+  // const milestones = await dett.BBSCache.methods.getMilestones().call()
+  // console.log(milestones)
+  // const indexes = await dett.BBSCache.methods.getIndexes().call()
+  // console.log(indexes)
+  // // const fromBlock = milestones.length!==0 ? +milestones[milestones.length-1]: dett.fromBlock
+  // const fromBlock = dett.fromBlock
+  // let events = await dett.BBS.getPastEvents('Posted', {fromBlock : fromBlock})
+  // delete lastest cache page block's part
   // if ((milestones.length !== 0) && (indexes.length !== 0)){
   //   events.splice(0, (+indexes[indexes.length-1])+1)
   // }
   // generate cache
-
-  let last = 0;
-  let index = 0;
-
-  for (const [i, event] of events.entries()) {
-    const tx = event.transactionHash;
-    const link = await dett.BBSCache.methods.links(tx).call(); // generate short links
-
-    if (!+link) {
-      await rpcRateLimiter(() => generateShortLink(tx));
-    } else {
-      // generate short links cache page
-      const shortLink = web3.utils.hexToUtf8(link);
-      generateShortLinkCachePage(tx, shortLink);
-    } // generate milestone block index
-
-
-    if (last === event.blockNumber) {
-      index += 1;
-    } else {
-      last = event.blockNumber;
-      index = 0;
-    }
-
-    if ((i + 1) % dett.perPageLength === 0) {
-      console.log(event.blockNumber, index);
-
-      if (!milestones.includes(event.blockNumber + '')) {
-        if (!(indexes[milestones.indexOf(event.blockNumber + '')] === index + '')) await rpcRateLimiter(() => addMilestone(event.blockNumber, index));
-      }
-    }
-  }
-
-  console.log('######'); // ###### ln -s gh-pages to gh-pages folder
-
-  const files = await _fs.default.readdirSync(folderPath);
-
-  for (const file of files) {
-    const output = _path.default.join('gh-pages/', file);
-
-    await _fs.default.copyFileSync(_path.default.join(folderPath, file), output);
-  } // push gh-pages
-
-
-  (0, _simpleGit.default)(__dirname + '/../gh-pages').add('./*').commit("Add cache page").push(['-u', 'origin', 'gh-pages'], () => console.log('Push done')); // await dett.BBSCache.methods.clearMilestone().send({
+  // let last = 0
+  // let index = 0
+  // for (const [i, event] of events.entries()) {
+  //   const tx = event.transactionHash
+  //   const link = await dett.BBSCache.methods.links(tx).call()
+  //   // generate short links
+  //   if (!+(link)) {
+  //     await rpcRateLimiter(() => generateShortLink(tx))
+  //   } else {
+  //     // generate short links cache page
+  //     const shortLink = web3.utils.hexToUtf8(link)
+  //     generateShortLinkCachePage(tx, shortLink)
+  //   }
+  //   // generate milestone block index
+  //   if (last === event.blockNumber) {
+  //     index+=1
+  //   }
+  //   else {
+  //     last = event.blockNumber
+  //     index = 0
+  //   }
+  //   if ((i+1) % dett.perPageLength === 0) {
+  //     console.log(event.blockNumber, index)
+  //     if ( !milestones.includes(event.blockNumber+'')){
+  //       if ( !(indexes[milestones.indexOf(event.blockNumber+'')] === index+''))
+  //         await rpcRateLimiter(() => addMilestone(event.blockNumber, index))
+  //     }
+  //   }
+  // }
+  // console.log('######')
+  // ###### ln -s gh-pages to gh-pages folder
+  // const files = await fs.readdirSync(folderPath)
+  // for (const file of files) {
+  //   const output = path.join('gh-pages/', file)
+  //   await fs.copyFileSync(path.join(folderPath, file), output)
+  // }
+  // push gh-pages
+  // git(__dirname + '/../gh-pages')
+  // .add('./*')
+  // .commit("Add cache page")
+  // .push(['-u', 'origin', 'gh-pages'], () => console.log('Push done'));
+  // await dett.BBSCache.methods.clearMilestone().send({
   //   from: contractOwner,
   //   // gasPrice: 6000000000,
   //   gas: 210000,

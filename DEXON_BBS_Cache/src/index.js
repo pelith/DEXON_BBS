@@ -26,8 +26,8 @@ const rpcRateLimiter = pRateLimit({
   concurrency: 1,
 })
 
-const folderPath = 'dist/'
-
+const outputPath = 'dist'
+let shortLinks = null
 
 const generateShortLinkCachePage = async (tx, shortLink) => {
   // TODO update edit
@@ -83,7 +83,7 @@ const generateShortLink = async (tx) => {
       gas: 240000,
     }).on('confirmation', (confirmationNumber, receipt) => {
       if (confirmationNumber == 1)
-        ;// console.log(receipt)
+        shortLinks
     }).catch(err => {
       console.log(err)
     })
@@ -116,6 +116,35 @@ const clone = async () => {
 }
 
 const main = async () => {
+  let milestones = null
+  let indexes = null
+
+  // ############################################
+  // #### Read last output folder, and restore.
+
+  // if exist create output folder
+  if (!(fs.existsSync(outputPath) && fs.lstatSync(outputPath).isDirectory()))
+    fs.mkdirSync(outputPath)
+
+  // check dist/output.json
+  const outputjsonPath = path.join(outputPath, 'output.json')
+  if (fs.existsSync(outputjsonPath) && fs.lstatSync(outputjsonPath).isFile()) {
+    const rawData = fs.readFileSync(outputjsonPath)
+    const jsonData = JSON.parse(rawData)
+
+    if (jsonData.hasOwnProperty('shortLinks'))
+      shortLinks = jsonData.shortLinks
+
+    if (jsonData.hasOwnProperty('milestones'))
+      milestones = jsonData.milestones
+
+    if (jsonData.hasOwnProperty('indexes'))
+      indexes = jsonData.indexes
+  }
+
+  // ############################################
+  // ####
+
   dett = new Dett()
   await dett.init(web3, Web3)
 
@@ -124,38 +153,29 @@ const main = async () => {
   contractOwner = account.address
   dett.cacheweb3.eth.accounts.wallet.add(account)
 
-  // check gh-pages folder
-  // if (fs.existsSync('gh-pages') && fs.lstatSync('gh-pages').isDirectory()){
-  //   try {
-  //     await gitP(__dirname + '/../gh-pages').status()
-  //     gitP
-  //   } catch (err) {
-  //     // .git not init or it's an empty dir
-  //     await clone()
-  //     console.error('failed: ', err)
-  //   }
-  // }
-  // else await clone()
-  await clone()
-
-  if (!fs.existsSync(folderPath)) fs.mkdirSync(folderPath)
-
-  // ##############
-
-  const milestones = await dett.BBSCache.methods.getMilestones().call()
+  if (milestones)
+    milestones = await dett.BBSCache.methods.getMilestones().call()
   console.log(milestones)
 
-  const indexes = await dett.BBSCache.methods.getIndexes().call()
+  if (indexes)
+    indexes = await dett.BBSCache.methods.getIndexes().call()
   console.log(indexes)
 
-  // const fromBlock = milestones.length!==0 ? +milestones[milestones.length-1]: dett.fromBlock
-  const fromBlock = dett.fromBlock
+  const fromBlock = milestones.length ? +milestones[milestones.length-1]: dett.fromBlock
   let events = await dett.BBS.getPastEvents('Posted', {fromBlock : fromBlock})
 
   // delete lastest cache page block's part
-  // if ((milestones.length !== 0) && (indexes.length !== 0)){
-  //   events.splice(0, (+indexes[indexes.length-1])+1)
-  // }
+  if (milestones.length && indexes.length)
+    events.splice(0, (+indexes[indexes.length-1])+1)
+
+
+  // ############################################
+  // #### Generate Cache && Short link
+
+  // remove gh-pages folder && clone
+  if (fs.existsSync('gh-pages') && fs.lstatSync('gh-pages').isDirectory())
+    fs.rmdirSync('gh-pages')
+  await clone()
 
   // generate cache
   let last = 0
@@ -192,22 +212,22 @@ const main = async () => {
   }
 
 
-  console.log('######')
+  // console.log('######')
 
   // ###### ln -s gh-pages to gh-pages folder
 
-  const files = await fs.readdirSync(folderPath)
-  for (const file of files) {
-    const output = path.join('gh-pages/', file)
-    await fs.copyFileSync(path.join(folderPath, file), output)
-  }
+  // const files = await fs.readdirSync(folderPath)
+  // for (const file of files) {
+  //   const output = path.join('gh-pages/', file)
+  //   await fs.copyFileSync(path.join(folderPath, file), output)
+  // }
 
   // push gh-pages
 
-  git(__dirname + '/../gh-pages')
-  .add('./*')
-  .commit("Add cache page")
-  .push(['-u', 'origin', 'gh-pages'], () => console.log('Push done'));
+  // git(__dirname + '/../gh-pages')
+  // .add('./*')
+  // .commit("Add cache page")
+  // .push(['-u', 'origin', 'gh-pages'], () => console.log('Push done'));
 
 
   // await dett.BBSCache.methods.clearMilestone().send({
