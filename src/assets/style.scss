@@ -9,6 +9,7 @@ $enable-shadows: true;
 @import '~bootstrap/scss/_transitions';
 @import '~bootstrap/scss/_close';
 @import '~bootstrap/scss/_forms';
+@import '~bootstrap/scss/_input-group';
 @import '~bootstrap/scss/_custom-forms';
 @import '~bootstrap/scss/_modal';
 
@@ -62,6 +63,11 @@ button.btn {
     padding-left: .5em;
     padding-right: .5em;
     font-weight: 500;
+
+    &:disabled {
+      opacity: .5;
+      pointer-events: none;
+    }
 }
 
 .bbs-content {

@@ -67,19 +67,19 @@
             </button>
           </div>
           <div class="modal-body">
-            <form id="loginForm">
+            <form id="loginForm" onsubmit="return false">
               <div class="wrapper wrapper--injected">
                 <div class="custom-control custom-radio">
-                  <input id="c1" type="radio" name="accountSource" value="injected" class="custom-control-input" autocomplete="off">
-                  <label for="c1" class="custom-control-label">
+                  <input id="loginFormC1" type="radio" name="accountSource" value="injected" class="custom-control-input" autocomplete="off">
+                  <label for="loginFormC1" class="custom-control-label">
                     <span>從瀏覽器偵測錢包登入</span>
                     <div class="desc">
                       偵測到 <span class="--injectedProviderName">...</span>，狀態：<span class="--injectedProviderStatus">...</span><br>
-                      <div class="desc-ok">
+                      <div class="desc-ok" style="display:none">
                         錢包地址：<span class="--injectedAccountAddress">...</span>
                       </div>
                       <div class="desc-err">
-                        未偵測到錢包、無法取得地址、或在錯誤鏈上
+                        ...
                       </div>
                     </div>
                   </label>
@@ -87,28 +87,32 @@
               </div>
               <div class="wrapper wrapper--seed">
                 <div class="custom-control custom-radio">
-                  <input id="c2" type="radio" name="accountSource" value="seed" class="custom-control-input" autocomplete="off">
-                  <label for="c2" class="custom-control-label">
+                  <input id="loginFormC2" type="radio" name="accountSource" value="seed" class="custom-control-input" autocomplete="off">
+                  <label for="loginFormC2" class="custom-control-label">
                     <span>使用助記詞登入</span>
                     <div class="desc">
-                      <div class="desc-ok">
-                        錢包地址：...
+                      <div class="desc-ok" style="display:none">
+                        錢包地址：<span class="--seedAccountAddress">...</span>
                       </div>
                       <div class="desc-err">
-                        尚未設定助記詞
+                        尚未設定助記詞，按這裡隨機產生一組
                       </div>
                     </div>
                   </label>
-                  <div id="seedConfigArea">
-                    <hr>
-                    <strong>設定助記詞</strong>
-                    <input type="text" name="" class="form-control">
-                    <div style="margin-top: .2rem">
-                      <button type="button" class="btn">產生</button>
-                      <button type="button" class="btn btn-success">儲存</button>
-                      <button type="button" class="btn btn-danger">刪除</button>
-                    </div>
+                </div>
+              </div>
+              <div id="seedConfigArea">
+                <hr>
+                <strong>設定助記詞</strong>
+                <div class="input-group">
+                  <input type="text" name="seed" class="form-control">
+                  <div class="input-group-append">
+                    <button id="commitSeedPhrase" type="button" class="btn" style="height: 100%">確認</button>
                   </div>
+                </div>
+                <div style="margin-top: .2rem">
+                  <button id="generateSeedPhrase" type="button" class="btn">產生</button>
+                  <button id="deleteSeedPhrase" type="button" class="btn btn-danger">刪除</button>
                 </div>
               </div>
             </form>

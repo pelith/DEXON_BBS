@@ -32,11 +32,41 @@ class EventEmitter{
   }
 }
 
+// provide an abstraction over dexon provider & seed
+class IdentityManager extends EventEmitter {
+  constructor(provider) {
+    super()
+    this.injectedProvider = provider
+    this.__usingSeed = false
+    this.__seed = localStorage.getItem('dett-seed') || null
+  }
+
+  async initWeb3ForSeed() {
+    // TODO
+  }
+
+  get seed() {
+    return this.__seed
+  }
+
+  set seed(s) {
+    if (s == null) {
+      localStorage.removeItem('dett-seed')
+      return
+    }
+    this.__seed = s
+    localStorage.setItem('dett-seed', s)
+  }
+}
+
 class Dexon extends EventEmitter {
-  constructor(_dexon) {
+  constructor(_dexon, identityManager = null) {
     super()
     // this.dexon = _dexon
     this.providerName = null
+    this.dexonWeb3 = ''
+    this.__selectedAddress = null
+    this.__networkId = null
 
     const providerDetectList = [
       {
@@ -58,10 +88,10 @@ class Dexon extends EventEmitter {
         return false
       }
     })
-    this.isOfficial = (this.dexon && this.dexon == _dexon)
 
-    this.dexonWeb3 = ''
-    this.__selectedAddress = ''
+    this.isOfficial = (this.dexon && this.dexon == _dexon)
+    this.identityManager = identityManager || new IdentityManager(this.dexon)
+
     this.init()
   }
 
@@ -77,15 +107,13 @@ class Dexon extends EventEmitter {
             this.selectedAddress = 'selectedAddress' in data ? data.selectedAddress : ''
           }
       })
-    }
-    else {
-      const start = async () => {
+    } else {
+      const poll = async () => {
         const networkID = await this.dexonWeb3.eth.net.getId()
+        this.networkId = networkID
         if (networkID === 237) {
           const accounts = await this.dexonWeb3.eth.getAccounts()
           this.selectedAddress = accounts.length > 0 ? accounts[0] : ''
-          // XXX: only emit update when the address do change
-          this.emit('update', this.selectedAddress)
         } else {
           const error = new Error('Wrong network')
           error.code = 'wrong-network'
@@ -94,8 +122,8 @@ class Dexon extends EventEmitter {
         }
       }
 
-      start()
-      setInterval(start, 1000)
+      poll()
+      setInterval(poll, 1000)
     }
   }
 
@@ -111,10 +139,22 @@ class Dexon extends EventEmitter {
   }
 
   set selectedAddress(addr) {
-    if (this.__selectedAddress != addr) {
-      this.emit('update', addr)
-    }
+    if (this.__selectedAddress == addr) return
+    this.emit('update', addr)
     this.__selectedAddress = addr
+  }
+
+  get networkId() {
+    return this.__networkId
+  }
+
+  set networkId(id) {
+    if (this.__networkId == id) return
+    this.emit('updateNetwork', {
+      id,
+      isValid: id === 237,
+    })
+    this.__networkId = id
   }
 }
 
