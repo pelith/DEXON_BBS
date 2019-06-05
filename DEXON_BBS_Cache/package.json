@@ -5,7 +5,8 @@
     "scripts": {
         "preinstall": "rm -rf src/dett.js src/utils.js && ln -s ../../src/scripts/dett.js src/dett.js && ln -s ../../src/scripts/utils.js src/utils.js",
         "dev": "npm run build && node bin/dev",
-        "build": "npx babel src/ -d lib/"
+        "build": "npx babel src/ -d lib/",
+        "start": "npm run build && node bin/index"
     },
     "author": [
         "SiriusTsou",
@@ -26,5 +27,9 @@
         "rimraf": "^2.6.3",
         "simple-git": "^1.113.0",
         "web3": "1.0.0-beta.37"
+    },
+    "engines": {
+        "node": "8.15.1",
+        "npm": "6.9.0"
     }
 }

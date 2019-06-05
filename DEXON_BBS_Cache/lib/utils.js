@@ -3,7 +3,7 @@
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.parseContent = exports.parseUser = exports.parseText = exports.getUrlParameter = exports.htmlEntities = void 0;
+exports.awaitTx = exports.parseContent = exports.parseUser = exports.parseText = exports.getUrlParameter = exports.htmlEntities = void 0;
 
 var _linkifyIt = _interopRequireDefault(require("linkify-it"));
 
@@ -131,3 +131,20 @@ const parseContent = (content, loc) => {
 };
 
 exports.parseContent = parseContent;
+
+const awaitTx = promiseEvent => {
+  let fulfilled = false;
+  return new Promise((resolve, reject) => {
+    promiseEvent.on('confirmation', (no, receipt) => {
+      if (fulfilled) return;
+      fulfilled = true;
+      resolve(receipt);
+    }).catch(err => {
+      if (fulfilled) return;
+      fulfilled = true;
+      reject(err);
+    });
+  });
+};
+
+exports.awaitTx = awaitTx;

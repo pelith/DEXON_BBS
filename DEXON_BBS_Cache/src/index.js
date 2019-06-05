@@ -9,7 +9,7 @@ import { pRateLimit } from 'p-ratelimit'
 import Dett from './dett.js'
 import fs from 'fs'
 import path from 'path'
-import { parseText } from './utils.js'
+import { parseText, awaitTx } from './utils.js'
 
 import keythereum from 'keythereum'
 import keystore from '../keystore.json'
@@ -27,18 +27,21 @@ const rpcRateLimiter = pRateLimit({
 })
 
 const outputPath = 'dist'
-let shortLinks = null
+const outputJsonPath = path.join(outputPath, 'output.json')
+const cachePath = 'gh-pages/s'
+
+let shortLinks = {}
+let milestones = []
+let indexes = []
 
 const generateShortLinkCachePage = async (tx, shortLink) => {
-  // TODO update edit
-  const fileName = folderPath + shortLink + '.html'
-
-  // if (!fs.existsSync(fileName)) {
   const article = await dett.getArticle(tx)
   const title = article.title
   const url = 'https://dett.cc/' + shortLink + '.html'
   const description = parseText(article.content, 160).replace(/\n|\r/g, ' ')
-  const cacheMeta = { 'Cache - DEXON BBS': title, 'https://dett.cc/cache.html': url, 'Cache Cache Cache Cache Cache': description }
+  const cacheMeta = { 'Cache - DEXON BBS': title,
+                      'https://dett.cc/cache.html': url,
+                      'Cache Cache Cache Cache Cache': description }
   const reg = new RegExp(Object.keys(cacheMeta).join("|"),"gi")
   const template = fs.readFileSync('gh-pages/cache.html', 'utf-8')
 
@@ -46,8 +49,8 @@ const generateShortLinkCachePage = async (tx, shortLink) => {
     return cacheMeta[matched]
   });
 
-  await fs.writeFileSync(fileName, cacheFile, 'utf8')
-  // }
+  const filePath = path.join(cachePath, shortLink + '.html')
+  await fs.writeFileSync(filePath, cacheFile, 'utf8')
 }
 
 // is hash collison posible(?)
@@ -72,64 +75,79 @@ class ShortURL {
 ShortURL.alphabet = '23456789bcdfghjkmnpqrstvwxyzBCDFGHJKLMNPQRSTVWXYZ'
 ShortURL.base = ShortURL.alphabet.length;
 
-
 const generateShortLink = async (tx) => {
-  const originalId = ShortURL.encode(dett.cacheweb3.utils.hexToNumber(tx.substr(0,10))).padStart(6,'0')
-  const hexId = dett.cacheweb3.utils.padLeft(dett.cacheweb3.utils.toHex(originalId), 64)
+  const shortLink = ShortURL.encode(dett.cacheweb3.utils.hexToNumber(tx.substr(0,10))).padStart(6,'0')
+  const hexId = dett.cacheweb3.utils.padLeft(dett.cacheweb3.utils.toHex(shortLink), 64)
 
-  await Promise.resolve([
-    await dett.BBSCache.methods.link(tx, hexId).send({
+  await awaitTx(
+    dett.BBSCache.methods.link(tx, hexId).send({
       from: contractOwner,
       gas: 240000,
-    }).on('confirmation', (confirmationNumber, receipt) => {
-      if (confirmationNumber == 1)
-        shortLinks
-    }).catch(err => {
-      console.log(err)
     })
-  ])
+  ).then((receipt) => {
+    console.log('#Add ShortLink : '+tx+' '+shortLink)
+    shortLinks[tx] = shortLink
+  })
 }
 
-const addMilestone = async (block, index) => {
-  await Promise.resolve([
-    dett.BBSCache.methods.addMilestone(block, index).send({
+const addMilestone = async (blockNumber, index) => {
+  await awaitTx(
+    dett.BBSCache.methods.addMilestone(+blockNumber, index).send({
       from: contractOwner,
       gas: 240000,
-    }).on('confirmation', (confirmationNumber, receipt) => {
-      if (confirmationNumber == 1)
-        console.log(receipt)
-    }).catch(err => {
-      console.log(err)
     })
-  ])
+  ).then((receipt) => {
+    console.log('#Add Milestone : '+blockNumber+'-'+index)
+    milestones.push(+blockNumber)
+    indexes.push(index)
+  })
 }
-
 
 const clone = async () => {
-  //dett gh-pages repo clone
-  await rimraf.sync('gh-pages')
+  //delete gh-pages folder
+  if (fs.existsSync('gh-pages') && fs.lstatSync('gh-pages').isDirectory())
+    await rimraf.sync('gh-pages')
 
   await gitP().silent(true)
   .clone('https://github.com/pelith/DEXON_BBS', 'gh-pages', ['--single-branch','--branch','gh-pages'])
-  .then(() => console.log('finished'))
+  .then(() => console.log('#Clone Done.'))
   .catch((err) => console.error('failed: ', err))
 }
 
-const main = async () => {
-  let milestones = null
-  let indexes = null
+const syncContract = async () => {
+  dett = new Dett()
+  await dett.init(web3, Web3)
+  const events = await dett.BBSCache.getPastEvents('Link', {fromBlock : 0})
 
-  // ############################################
-  // #### Read last output folder, and restore.
+  for (const event of events) {
+    const tx = event.returnValues.long
+    const shortLink = event.returnValues.short
+    shortLinks[tx] = web3.utils.hexToUtf8(shortLink)
+  }
 
+  milestones = await dett.BBSCache.methods.getMilestones().call()
+  indexes = await dett.BBSCache.methods.getIndexes().call()
+  saveLocalStorage()
+  console.log('#Sync Done')
+}
+
+const saveLocalStorage = () => {
+  // if exist create output folder
+  if (!(fs.existsSync(outputPath) && fs.lstatSync(outputPath).isDirectory()))
+    fs.mkdirSync(outputPath)
+
+  const jsonData = JSON.stringify({'shortLinks':shortLinks,'milestones':milestones,'indexes':indexes}, null, 4)
+  fs.writeFileSync(outputJsonPath, jsonData, 'utf8');
+}
+
+const loadLocalStorage = () => {
   // if exist create output folder
   if (!(fs.existsSync(outputPath) && fs.lstatSync(outputPath).isDirectory()))
     fs.mkdirSync(outputPath)
 
   // check dist/output.json
-  const outputjsonPath = path.join(outputPath, 'output.json')
-  if (fs.existsSync(outputjsonPath) && fs.lstatSync(outputjsonPath).isFile()) {
-    const rawData = fs.readFileSync(outputjsonPath)
+  if (fs.existsSync(outputJsonPath) && fs.lstatSync(outputJsonPath).isFile()) {
+    const rawData = fs.readFileSync(outputJsonPath)
     const jsonData = JSON.parse(rawData)
 
     if (jsonData.hasOwnProperty('shortLinks'))
@@ -141,9 +159,14 @@ const main = async () => {
     if (jsonData.hasOwnProperty('indexes'))
       indexes = jsonData.indexes
   }
+}
+
+export const generateCacheAndShortLink = async () => {
+
+  loadLocalStorage()
 
   // ############################################
-  // ####
+  // #### init Dett
 
   dett = new Dett()
   await dett.init(web3, Web3)
@@ -153,81 +176,74 @@ const main = async () => {
   contractOwner = account.address
   dett.cacheweb3.eth.accounts.wallet.add(account)
 
-  if (milestones)
-    milestones = await dett.BBSCache.methods.getMilestones().call()
-  console.log(milestones)
+  let fromBlock = dett.fromBlock
 
-  if (indexes)
-    indexes = await dett.BBSCache.methods.getIndexes().call()
-  console.log(indexes)
+  const hasLocalMilestones = milestones.length && indexes.length
 
-  const fromBlock = milestones.length ? +milestones[milestones.length-1]: dett.fromBlock
+  if (hasLocalMilestones)
+    fromBlock = +milestones[milestones.length-1]
+
   let events = await dett.BBS.getPastEvents('Posted', {fromBlock : fromBlock})
 
   // delete lastest cache page block's part
-  if (milestones.length && indexes.length)
-    events.splice(0, (+indexes[indexes.length-1])+1)
-
+  if (hasLocalMilestones)
+    events.splice(0, (+indexes[indexes.length-1]) + 1)
 
   // ############################################
   // #### Generate Cache && Short link
 
-  // remove gh-pages folder && clone
-  if (fs.existsSync('gh-pages') && fs.lstatSync('gh-pages').isDirectory())
-    fs.rmdirSync('gh-pages')
-  await clone()
-
-  // generate cache
   let last = 0
   let index = 0
   for (const [i, event] of events.entries()) {
     const tx = event.transactionHash
+    const blockNumber = event.blockNumber.toString()
     const link = await dett.BBSCache.methods.links(tx).call()
 
     // generate short links
-    if (!+(link)) {
-      await rpcRateLimiter(() => generateShortLink(tx))
-    } else {
-      // generate short links cache page
-      const shortLink = web3.utils.hexToUtf8(link)
-      generateShortLinkCachePage(tx, shortLink)
-    }
+    if (!+(link))
+      await rpcRateLimiter(() => generateShortLink(tx, blockNumber))
 
     // generate milestone block index
-    if (last === event.blockNumber) {
-      index+=1
+    if (last === blockNumber) {
+      index += 1
     }
     else {
-      last = event.blockNumber
+      last = blockNumber
       index = 0
     }
 
     if ((i+1) % dett.perPageLength === 0) {
-      console.log(event.blockNumber, index)
-      if ( !milestones.includes(event.blockNumber+'')){
-        if ( !(indexes[milestones.indexOf(event.blockNumber+'')] === index+''))
-          await rpcRateLimiter(() => addMilestone(event.blockNumber, index))
+      if (!milestones.includes(blockNumber)){
+        if (!(indexes[milestones.indexOf(blockNumber)] === index+''))
+          await rpcRateLimiter(() => addMilestone(blockNumber, index))
       }
     }
   }
 
+  saveLocalStorage()
 
-  // console.log('######')
+  // ############################################
+  // #### Generate Cache Page to gh-pages folder
 
-  // ###### ln -s gh-pages to gh-pages folder
+  // clone dett gh-page branch
+  await clone()
 
-  // const files = await fs.readdirSync(folderPath)
-  // for (const file of files) {
-  //   const output = path.join('gh-pages/', file)
-  //   await fs.copyFileSync(path.join(folderPath, file), output)
-  // }
+  // if exist create cache output folder
+  if (!(fs.existsSync(cachePath) && fs.lstatSync(cachePath).isDirectory()))
+    fs.mkdirSync(cachePath)
 
-  // push gh-pages
+  for (const tx of Object.keys(shortLinks))
+    await generateShortLinkCachePage(tx, shortLinks[tx])
+  console.log('#Generate Cache Page Done.')
 
-  // git(__dirname + '/../gh-pages')
-  // .add('./*')
-  // .commit("Add cache page")
-  // .push(['-u', 'origin', 'gh-pages'], () => console.log('Push done'));
+
+  // ############################################
+  // #### Commit & push
+
+  git(__dirname + '/../gh-pages/')
+  .add('.')
+  .commit("Add cache page")
+  .push(['-u', 'origin', 'gh-pages'], () => console.log('#Push Done.'));
 
 
   // await dett.BBSCache.methods.clearMilestone().send({
@@ -235,8 +251,11 @@ const main = async () => {
   //   // gasPrice: 6000000000,
   //   gas: 210000,
   // })
+}
 
-  return
+const main = async () => {
+  // syncContract()
+  await generateCacheAndShortLink()
 }
 
 main()
