@@ -2,7 +2,7 @@
 
 ## Install and develop
 
-1.add keystore.json & keystore password to env
+1.add keystore.json & keystore password to .env
 
 ```
 # Tested in node v8.15.1
