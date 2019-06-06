@@ -1,6 +1,3 @@
-// import Web3 from 'web3'
-// // inject Web3 to Global
-// window.Web3 = Web3
 
 class EventEmitter{
   constructor(){

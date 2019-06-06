@@ -115,3 +115,19 @@ export const parseContent = (content, loc) => {
 
   return result
 }
+
+export const awaitTx = promiseEvent => {
+  let fulfilled = false
+  return new Promise((resolve, reject) => {
+    promiseEvent.on('confirmation', (no, receipt) => {
+      if (fulfilled) return
+      fulfilled = true
+      resolve(receipt)
+    })
+    .catch(err => {
+      if (fulfilled) return
+      fulfilled = true
+      reject(err)
+    })
+  })
+}

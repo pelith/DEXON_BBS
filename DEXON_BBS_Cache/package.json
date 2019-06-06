@@ -1,0 +1,37 @@
+{
+    "name": "dexon_bbs_cache",
+    "version": "1.0.0",
+    "description": "",
+    "scripts": {
+        "preinstall": "rm -rf src/dett.js src/utils.js && ln -s ../../src/scripts/dett.js src/dett.js && ln -s ../../src/scripts/utils.js src/utils.js",
+        "dev": "npm run build && node bin/dev",
+        "dev-server": "npm run build && node bin/dev-server",
+        "build": "npx babel src/ -d lib/",
+        "start": "npm run build && node bin/index"
+    },
+    "author": [
+        "SiriusTsou",
+        "gilg4mesh"
+    ],
+    "license": "MIT",
+    "devDependencies": {
+        "@babel/cli": "^7.4.4",
+        "@babel/core": "^7.4.5",
+        "@babel/preset-env": "^7.4.5",
+        "gaze": "^1.1.3",
+        "nodemon": "^1.19.1",
+        "path": "^0.12.7"
+    },
+    "dependencies": {
+        "keythereum": "^1.0.4",
+        "morgan": "^1.9.1",
+        "p-ratelimit": "^0.10.0",
+        "rimraf": "^2.6.3",
+        "simple-git": "^1.113.0",
+        "web3": "1.0.0-beta.37"
+    },
+    "engines": {
+        "node": "8.15.1",
+        "npm": "6.9.0"
+    }
+}
