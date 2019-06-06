@@ -112,7 +112,7 @@ const main = async ({ _dexon }) => {
   tx = getUrlParameter('tx')
 
   // cache case
-  let shortlink = window.location.pathname.split('/')[1].replace('.html', '')
+  let shortlink = window.location.pathname.split('s/')[1].replace('.html', '')
   if (shortlink.length===6) tx = await dett.getOriginalTx(shortlink)
 
   if (!tx) return error()
