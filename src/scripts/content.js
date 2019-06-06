@@ -101,17 +101,22 @@ const getAddressLink = (from, __namePool) => {
 const error = () => { $('#main-content-content').text('404 - Page not found.') }
 
 const main = async ({ _dexon }) => {
+  _dexon.on('update',(account) => {
+    render(account)
+  })
+
   dett = new Dett()
   await dett.init(_dexon.dexonWeb3, Web3)
 
   // get tx
-  tx = getUrlParameter('tx') ? getUrlParameter('tx') : await dett.getOriTx(window.location.pathname.split('/')[1].replace('.html', ''))
+  tx = getUrlParameter('tx')
+
+  // cache case
+  let shortlink = window.location.pathname.split('/')[1].replace('.html', '')
+  if (shortlink.length===6) tx = await dett.getOriginalTx(shortlink)
+
   if (!tx) return error()
   if (!tx.match(/^0x[a-fA-F0-9]{64}$/g)) return error()
-
-  _dexon.on('update',(account) => {
-    render(account)
-  })
 
   $('#reply-btn').click(() => { showReplyType() })
   $('#reply-type0').click(() => { showReply(0) })
@@ -233,7 +238,8 @@ const renderArticle = (article) => {
       console.log('tx hash', txhash)
       // _.prop('disabled', false)
     })
-    .finally(() => showHideReward(false))
+    .on('confirmation', () => showHideReward(false))
+    .on('error', () => showHideReward(false))
   })
 }
 

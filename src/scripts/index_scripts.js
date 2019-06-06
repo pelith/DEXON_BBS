@@ -20,7 +20,7 @@ const render = (_account) => {
 const main = async ({ _dexon }) => {
   _dexon.on('update',(account) => {
     render(account)
-  }
+  })
 
   dett = new Dett()
   await dett.init(_dexon.dexonWeb3, Web3)
@@ -151,7 +151,7 @@ const directDisplay = (article, votes, banned) => {
         <div class="trigger" style="display: none;">⋯</div>
         <div class="dropdown">
           ${article.author.toLowerCase() === dett.account.toLowerCase() ?
-            `<div class="article-edit item"><a href="post.html?etx=${article.transaction.hash}">編緝文章</a></div>` : ''}
+            `<div class="article-edit item"><a href="post.html?etx=${article.transaction.hash}">編輯文章</a></div>` : ''}
           <div id="article-reply" class="item"><a href="post.html?rtx=${article.transaction.hash}">回應文章</a></div>
         </div>
       </div>

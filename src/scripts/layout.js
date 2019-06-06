@@ -1,3 +1,7 @@
+import patchWeb3 from './patch-web3.js'
+
+patchWeb3()
+
 import Dexon from './dexon.js'
 import {parseUser} from './utils.js'
 

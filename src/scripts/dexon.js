@@ -36,7 +36,7 @@ class Dexon extends EventEmitter {
     super()
     this.dexon = _dexon
     this.dexonWeb3 = ''
-    this.selectedAddress = ''
+    this.__selectedAddress = ''
     this.init()
   }
 
@@ -50,7 +50,6 @@ class Dexon extends EventEmitter {
         if ('networkVersion' in data)
           if (data.networkVersion === '237'){
             this.selectedAddress = 'selectedAddress' in data ? data.selectedAddress : ''
-            this.emit('update', this.selectedAddress)
           }
       })
     }
@@ -60,7 +59,6 @@ class Dexon extends EventEmitter {
         if (networkID === 237) {
           const accounts = await this.dexonWeb3.eth.getAccounts()
           this.selectedAddress = accounts.length > 0 ? accounts[0] : ''
-          this.emit('update', this.selectedAddress)
         }
         else return console.log('Wrong network')
       }
@@ -75,6 +73,17 @@ class Dexon extends EventEmitter {
 
     this.dexon.enable()
     this.init()
+  }
+
+  get selectedAddress() {
+    return this.__selectedAddress
+  }
+
+  set selectedAddress(addr) {
+    if (this.__selectedAddress != addr) {
+      this.emit('update', addr)
+    }
+    this.__selectedAddress = addr
   }
 }
 

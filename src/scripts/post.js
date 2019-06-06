@@ -124,7 +124,7 @@ const main = async ({ _dexon }) => {
   })
 
   if ($(window).width() > 992) {
-    $("#bbs-content")[0].placeholder = "標題跟內文都有內容才能發文!\r\n"+"~\r\n".repeat(19)
+    $("#bbs-content")[0].placeholder = "標題跟內文都有內容才能發文!\r\n"+"~\r\n".repeat(18)
   } else {
     // mobile
     $("#bbs-content")[0].placeholder = "標題跟內文都有內容才能發文!\r\n\r\n請輸入您欲發布的內容";

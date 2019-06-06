@@ -1,4 +1,5 @@
 {% extends '_layout.njk' %}
+{%- import '_macros.njk' as macros -%}
 
 {% set title = 'DEXON BBS' %}
 
@@ -16,40 +17,8 @@
     </div>
   </div>
   <div class="r-list-container action-bar-margin bbs-screen">
-    <div class="r-ent">
-      <div class="nrec"></div>
-      <div class="title">
-      <a href="about.njk">
-        [公告] 領取免費的 DEXON 代幣 &amp; DEXON BBS 使用教學
-      </a>
-      </div>
-      <div class="meta">
-        <div class="author">
-          <a>
-            Admin
-          </a>
-        </div>
-        <div class="article-menu"></div>
-        <div class="date"></div>
-      </div>
-    </div>
-    <div class="r-ent">
-      <div class="nrec"></div>
-      <div class="title">
-      <a href="mayday.njk">
-        [公告] DEXON BBS 搬家預告
-      </a>
-      </div>
-      <div class="meta">
-        <div class="author">
-          <a>
-            Admin
-          </a>
-        </div>
-        <div class="article-menu"></div>
-        <div class="date"></div>
-      </div>
-    </div>
+    {{ macros.articleEntry('[公告] 領取免費的 DEXON 代幣 &amp; DEXON BBS 使用教學', 'about.njk', 'Admin') }}
+    {{ macros.articleEntry('[公告] DEXON BBS 搬家預告', 'mayday.njk', 'Admin') }}
     <div class="r-list-sep"></div>
   </div>
 </div>
