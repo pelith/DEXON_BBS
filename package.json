@@ -5,13 +5,13 @@
     "scripts": {
         "dev": "npm run clean && parcel src/__dev__.html --out-dir dist/",
         "build": "npm run clean && parcel build --no-content-hash --no-source-maps src/*.njk --out-dir build/ --public-url /",
-        "cache": "node -r esm cache/shortlink.js",
+        "cache": "cd DEXON_BBS_Cache && npm run start",
         "build-cache": "parcel build --no-source-maps src/s/*.njk --out-dir build/s/",
         "build-with-cache": "npm run clean:cache && npm run build && npm run cache",
         "clean": "rm -rf dist build",
         "clean:cache": "rm -rf .cache",
         "gh-help": "gh-pages --help",
-        "deploy-prep": "bin/before-deploy.sh",
+        "deploy-prep": "npm run cache && bin/before-deploy.sh",
         "deploy-test": "npm run deploy-prep && gh-pages -d build -m \"Automated deployment to GitHub Pages: Test\" -t",
         "deploy-ci": "npm run deploy-prep && gh-pages -d build -m \"Automated deployment to GitHub Pages: ${CIRCLE_SHA1}\" -t",
         "purge-cloudflare-cache": "purge -f build/ -e ${CF_EMAIL} -d ${CF_DOMAIN} -z ${CF_ZONE_ID} -k ${CF_KEY}"
