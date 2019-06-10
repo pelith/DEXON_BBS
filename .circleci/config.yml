@@ -60,6 +60,7 @@ jobs:
             cd ./DEXON_BBS_Cache
             ln -s ../build gh-pages
             npm run cache
+            cp -R ./dist/s gh-pages/
       - save_cache:
           name: Save DEXON_BBS_Cache dist Cache
           key: DEXON_BBS_Cache-dist-cache-v3-{{ .Branch }}-{{ checksum "./build/cache.html" }}
