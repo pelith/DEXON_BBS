@@ -58,7 +58,6 @@ jobs:
           command: |
             cd ./DEXON_BBS_Cache
             ln -s ../build gh-pages
-            cat package.json
             npm run cache
       - save_cache:
           name: Save DEXON_BBS_Cache dist Cache
