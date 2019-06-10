@@ -3,6 +3,7 @@ jobs:
   build:
     docker:
       - image: node:8
+    parallelism: 4
     working_directory: ~/repo
     steps:
       - checkout
@@ -50,9 +51,9 @@ jobs:
       - run:
           name: Build DEXON_BBS_Cache
           command: |
-            node -v
             cd ./DEXON_BBS_Cache
             ln -s ../build gh-pages
+            cat package.json
             npm run cache
       - save_cache:
           name: Save DEXON_BBS_Cache dist Cache
