@@ -112,8 +112,10 @@ const main = async ({ _dexon }) => {
   tx = getUrlParameter('tx')
 
   // cache case
-  let shortlink = window.location.pathname.split('s/')[1].replace('.html', '')
-  if (shortlink.length===6) tx = await dett.getOriginalTx(shortlink)
+  if (window.location.pathname.includes('/s/')) {
+    let shortlink = window.location.pathname.split('s/')[1].replace('.html', '')
+    tx = $('meta[property="dett:tx"]').attr("content")
+  }
 
   if (!tx) return error()
   if (!tx.match(/^0x[a-fA-F0-9]{64}$/g)) return error()
