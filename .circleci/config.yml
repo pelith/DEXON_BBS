@@ -47,11 +47,13 @@ jobs:
           key: DEXON_BBS_Cache-yarn-packages-v1-{{ .Branch }}-{{ checksum "./DEXON_BBS_Cache/yarn.lock" }}
           paths:
             - ~/.cache/yarn
+
       - restore_cache:
           name: Restore DEXON_BBS_Cache dist Cache
           keys:
-            - DEXON_BBS_Cache-dist-cache-v2-{{ .Branch }}-
-            - DEXON_BBS_Cache-dist-cache-v2-
+            - DEXON_BBS_Cache-dist-cache-v3-{{ .Branch }}-{{ checksum "./build/cache.html" }}
+            - DEXON_BBS_Cache-dist-cache-v3-{{ .Branch }}-
+            - DEXON_BBS_Cache-dist-cache-v3-
       - run:
           name: Build DEXON_BBS_Cache
           command: |
@@ -60,7 +62,7 @@ jobs:
             npm run cache
       - save_cache:
           name: Save DEXON_BBS_Cache dist Cache
-          key: DEXON_BBS_Cache-dist-cache-v2-{{ .Branch }}-{{ checksum "./DEXON_BBS_Cache/dist/output.json" }}
+          key: DEXON_BBS_Cache-dist-cache-v3-{{ .Branch }}-{{ checksum "./build/cache.html" }}
           paths:
             - ./DEXON_BBS_Cache/dist
       - deploy:
