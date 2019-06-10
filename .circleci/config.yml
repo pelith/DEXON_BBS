@@ -36,17 +36,17 @@ jobs:
       - restore_cache:
           name: Restore DEXON_BBS_Cache Yarn Package Cache
           keys:
-            - DEXON_BBS_Cache-yarn-packages-v1-{{ .Branch }}-{{ checksum "./DEXON_BBS_Cache/yarn.lock" }}
-            - DEXON_BBS_Cache-yarn-packages-v1-{{ .Branch }}-
-            - DEXON_BBS_Cache-yarn-packages-v1-
+            - DEXON_BBS_Cache-yarn-packages-v2-{{ .Branch }}-{{ checksum "./DEXON_BBS_Cache/yarn.lock" }}
+            - DEXON_BBS_Cache-yarn-packages-v2-{{ .Branch }}-
+            - DEXON_BBS_Cache-yarn-packages-v2-
       - run:
           name: Install DEXON_BBS_Cache Dependencies
           command: cd ./DEXON_BBS_Cache; yarn install --frozen-lockfile
       - save_cache:
           name: Save DEXON_BBS_Cache Yarn Package Cache
-          key: DEXON_BBS_Cache-yarn-packages-v1-{{ .Branch }}-{{ checksum "./DEXON_BBS_Cache/yarn.lock" }}
+          key: DEXON_BBS_Cache-yarn-packages-2-{{ .Branch }}-{{ checksum "./DEXON_BBS_Cache/yarn.lock" }}
           paths:
-            - ~/.cache/yarn
+            - ./DEXON_BBS_Cache/node_modules
 
       - restore_cache:
           name: Restore DEXON_BBS_Cache dist Cache
