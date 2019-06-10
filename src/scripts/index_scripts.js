@@ -135,11 +135,16 @@ const keyboardHook = () => {
 const directDisplay = (article, votes, banned) => {
   if (banned) return
 
-  let href = 's/' + ShortURL.encode(dett.cacheweb3.utils.hexToNumber(article.transaction.hash.substr(0,10))).padStart(6,'0')
+  const shortURL = 's/' + ShortURL.encode(dett.cacheweb3.utils.hexToNumber(article.transaction.hash.substr(0,10))).padStart(6,'0')
+  let href = shortURL
   // for dev
-  if (+window.localStorage.getItem('dev')) href += '.html'
-  if ((Date.now()-article.timestamp)/1000 < 30)
+  if (+window.localStorage.getItem('dev')) href = shortURL+'.html'
+
+  const cacheTime = (Date.now()-article.timestamp)/1000
+  if (cacheTime < 30) // 30s
     href = 'content.html?tx=' + article.transaction.hash
+  else if (cacheTime < 30*60) //1800s
+    href = shortURL+'.html'
 
   const elem = $('<div class="r-ent"></div>')
   elem.html(
