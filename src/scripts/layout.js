@@ -57,10 +57,6 @@ const render = (_account) => {
     // $("#bbs-login").hide()
     $("#bbs-more").hide()
     $("#bbs-user-menu").show()
-
-    loginForm.find('.--injectedProviderStatus').text('正常')
-    loginForm.find('.--injectedAccountAddress').text(account)
-    toggleDescStatus(loginForm.find('.wrapper--injected'), true)
   } else {
     // show Login/Register
     $("#bbs-login").show()
@@ -103,8 +99,10 @@ const initLoginForm = async _dexon => {
     const address = wallet.getAddressString()
     toggleDescStatus($el, true)
     loginForm.find('.--seedAccountAddress').text(address)
+    manager.seedAddress = address
   }
 
+  // TODO: auto login if last used account is detected
   optInjected.click(() => {
     if (!lastError && !_dexon.selectedAddress) {
       _dexon.login()
@@ -158,7 +156,10 @@ window._layoutInit = async () => {
     if (account) {
       toggleDescStatus(loginForm.find('.wrapper--injected'), true)
       loginForm.find('.wrapper--injected .desc-err').hide()
+      loginForm.find('.--injectedProviderStatus').text('正常')
       loginForm.find('.--injectedAccountAddress').text(account)
+      _dexon.identityManager.injectedAddress = account
+      // render(account, _dexon)
     } else {
       if (getLoginType() == 'injected') {
         optInjected.prop('checked', false)
@@ -167,8 +168,6 @@ window._layoutInit = async () => {
       loginForm.find('.--injectedProviderStatus').text('需要登入')
       loginForm.find('.wrapper--injected .desc-err').text('按這裡登入錢包')
     }
-
-    render(account, _dexon)
   })
 
   _dexon.on('error', (err) => {
@@ -206,6 +205,22 @@ window._layoutInit = async () => {
       // the modal will be shown instead
       // _dexon.login()
     }
+  })
+
+  $('#bbs-modal-login').click(() => {
+    if (getLoginType() == '') {
+      return
+    } else if (getLoginType() == 'injected') {
+      account = _dexon.identityManager.injectedAddress
+    } else if (getLoginType() == 'seed') {
+      account = _dexon.identityManager.seedAddress
+    } else {
+      console.warn('Unsupported login type', getLoginType())
+    }
+    console.log('init account', account)
+    // TODO: remember account last used
+    render(account, _dexon)
+    $('#loginModal').modal('hide')
   })
 
   hotkey()
