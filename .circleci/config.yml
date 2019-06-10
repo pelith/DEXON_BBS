@@ -44,13 +44,12 @@ jobs:
           command: cd ./DEXON_BBS_Cache; npm ci
       - save_cache:
           name: Save DEXON_BBS_Cache NPM Package Cache
-          key: DEXON_BBS_Cache-cache-v2-{{ .Branch }}-{{ checksum "./DEXON_BBS_Cache/package-lock.json" }}
+          key: DEXON_BBS_Cache-cache-v2-{{ .Branch }}-
           paths:
             - ./DEXON_BBS_Cache/node_modules
       - restore_cache:
           name: Restore DEXON_BBS_Cache dist Cache
           keys:
-            - DEXON_BBS_Cache-dist-cache-v2-{{ .Branch }}-{{ checksum "./DEXON_BBS_Cache/dist/output.json" }}
             - DEXON_BBS_Cache-dist-cache-v2-{{ .Branch }}-
             - DEXON_BBS_Cache-dist-cache-v2-
       - run:
