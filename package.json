@@ -12,7 +12,7 @@
         "deploy-prep": "bin/before-deploy.sh",
         "deploy-test": "npm run deploy-prep && gh-pages -d build -m \"Automated deployment to GitHub Pages: Test\" -t",
         "deploy-ci": "npm run deploy-prep && gh-pages -d build -m \"Automated deployment to GitHub Pages: ${CIRCLE_SHA1}\" -t",
-        "cloudflare-purge-cache": "npx cloudflare-purge-cache -e ${CF_EMAIL} -k ${CF_KEY} -z ${CF_ZONE_ID}"
+        "cloudflare-purge-cache": "cloudflare-purge-cache -e ${CF_EMAIL} -k ${CF_KEY} -z ${CF_ZONE_ID}"
     },
     "repository": {
         "type": "git",
