@@ -41,14 +41,24 @@ jobs:
           key: DEXON_BBS_Cache-cache-v1-{{ .Branch }}-{{ checksum "package-lock.json" }}
           paths:
             - ./DEXON_BBS_Cache/node_modules
+      - restore_cache:
+          name: Restore DEXON_BBS_Cache dist Cache
+          keys:
+            - DEXON_BBS_Cache-dist-cache-v1-{{ .Branch }}-{{ checksum "package-lock.json" }}
+            - DEXON_BBS_Cache-dist-cache-v1-{{ .Branch }}-
+            - DEXON_BBS_Cache-dist-cache-v1-
       - run:
           name: Build DEXON_BBS_Cache
           command: |
+            node -v
             cd ./DEXON_BBS_Cache
             ln -s ../build gh-pages
-            ls -al
-            cd gh-pages
-            ls -al
+            npm run cache
+      - save_cache:
+          name: Save DEXON_BBS_Cache dist Cache
+          key: DEXON_BBS_Cache-dist-cache-v1-{{ .Branch }}-{{ checksum "package-lock.json" }}
+          paths:
+            - ./DEXON_BBS_Cache/dist
       - deploy:
           name: Deploy to branch gh-pages with "gh-pages" tool
           command: |
