@@ -29,7 +29,7 @@ jobs:
             npm run deploy-ci
       - run:
           name: Purge Cloudflare Cache
-          command: npm run purge-cloudflare-cache
+          command: npm run cloudflare-purge-cache
 
 workflows:
   version: 2
