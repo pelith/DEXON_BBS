@@ -36,11 +36,11 @@
     },
     "dependencies": {
         "@babel/runtime": "^7.4.4",
+        "cloudflare-purge-cache": "git+https://git@github.com/SiriusTsou/cloudflare-purge-cache.git",
         "core-js": "^2.6.5",
         "linkify-it": "^2.1.0",
         "nunjucks": "^3.0.0",
         "parcel-plugin-nunjucks": "^1.1.0",
-        "cloudflare-purge-cache": "git+https://git@github.com/SiriusTsou/cloudflare-purge-cache.git",
         "url-parse": "^1.4.7"
     },
     "engines": {
