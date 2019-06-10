@@ -3,7 +3,8 @@
     "version": "1.0.0",
     "description": "",
     "scripts": {
-        "dev": "npm run clean && parcel src/__dev__.html --out-dir dist/",
+        "dev-prep": "for file in `find DEXON_BBS_Cache/dist/s/*.html -type f -exec basename {} \\;`; do `cp DEXON_BBS_Cache/dist/s/$file dist/s/${file/.html/}`; done ",
+        "dev": "npm run clean && mkdir -p dist/s/ && cp -R DEXON_BBS_Cache/dist/s dist/ && parcel src/__dev__.html --out-dir dist/",
         "build": "npm run clean && parcel build --no-content-hash --no-source-maps src/*.njk --out-dir build/ --public-url /",
         "clean": "rm -rf dist build",
         "clean:cache": "rm -rf .cache",

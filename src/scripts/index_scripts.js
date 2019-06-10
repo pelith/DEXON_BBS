@@ -1,4 +1,5 @@
 import Dett from './dett.js'
+import ShortURL from './shortURL.js'
 
 import {htmlEntities, parseUser} from './utils.js'
 
@@ -133,11 +134,16 @@ const keyboardHook = () => {
 
 const directDisplay = (article, votes, banned) => {
   if (banned) return
+
+  let href = 's/' + ShortURL.encode(dett.cacheweb3.utils.hexToNumber(article.transaction.hash.substr(0,10))).padStart(6,'0') + '.html'
+  if ((Date.now()-article.timestamp)/1000 < 30)
+    href = 'content.html?tx=' + article.transaction.hash
+
   const elem = $('<div class="r-ent"></div>')
   elem.html(
     `<div class="nrec"></div>
     <div class="title">
-    <a href="content.html?tx=${article.transaction.hash}">
+    <a href="${href}">
       ${htmlEntities(article.title)}
     </a>
     </div>
