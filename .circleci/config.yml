@@ -9,15 +9,15 @@ jobs:
       - restore_cache:
           name: Restore NPM Package Cache
           keys:
-            - node-v1-{{ .Branch }}-{{ checksum "package-lock.json" }}
-            - node-v1-{{ .Branch }}-
-            - node-v1-
+            - node-v2-{{ .Branch }}-{{ checksum "package-lock.json" }}
+            - node-v2-{{ .Branch }}-
+            - node-v2-
       - run:
           name: Install Dependencies
           command: npm ci
       - save_cache:
           name: Save NPM Package Cache
-          key: node-v1-{{ .Branch }}-{{ checksum "package-lock.json" }}
+          key: node-v2-{{ .Branch }}-{{ checksum "package-lock.json" }}
           paths:
             - ./node_modules
       - deploy:
