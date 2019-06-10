@@ -114,7 +114,6 @@ const main = async ({ _dexon }) => {
   // cache case
   if (window.location.pathname.includes('/s/')) {
     let shortlink = window.location.pathname.split('s/')[1].replace('.html', '')
-    window.history.pushState("", "", '/s/'+shortlink)
     tx = $('meta[property="dett:tx"]').attr("content")
   }
 
