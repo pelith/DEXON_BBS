@@ -45,6 +45,8 @@ jobs:
           name: Build DEXON_BBS_Cache
           command: |
             cd ./DEXON_BBS_Cache; ln -s ../build gh-pages
+            ls
+            cd ./DEXON_BBS_Cache; ls
       - deploy:
           name: Deploy to branch gh-pages with "gh-pages" tool
           command: |
