@@ -36,7 +36,7 @@
     },
     "dependencies": {
         "@babel/runtime": "^7.4.4",
-        "cloudflare-purge-cache": "git+https://git@github.com/SiriusTsou/cloudflare-purge-cache.git",
+        "cloudflare-purge-cache": "^1.1.0",
         "core-js": "^2.6.5",
         "linkify-it": "^2.1.0",
         "nunjucks": "^3.0.0",

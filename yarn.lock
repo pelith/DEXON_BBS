@@ -1494,9 +1494,10 @@ clones@^1.2.0:
   resolved "https://registry.yarnpkg.com/clones/-/clones-1.2.0.tgz#b34c872045446a9f264ccceb7731bca05c529b71"
   integrity sha512-FXDYw4TjR8wgPZYui2LeTqWh1BLpfQ8lB6upMtlpDF6WlOOxghmTTxWyngdKTgozqBgKnHbTVwTE+hOHqAykuQ==
 
-"cloudflare-purge-cache@git+https://git@github.com/SiriusTsou/cloudflare-purge-cache.git":
-  version "1.0.0"
-  resolved "git+https://git@github.com/SiriusTsou/cloudflare-purge-cache.git#853c69ab4f31a74779c896038bf3b4c8c2e21274"
+cloudflare-purge-cache@^1.1.0:
+  version "1.1.0"
+  resolved "https://registry.yarnpkg.com/cloudflare-purge-cache/-/cloudflare-purge-cache-1.1.0.tgz#f7dbcaaf15a0da0c87cf84a3897fe2cf3e7713fd"
+  integrity sha512-3fsHdqbTI/sN1YXmCh2ZUzvZHj2CorALLBjSMPi1+XpApOBvBeQFAwPQqtcNC/WRo9tCYEagUd70sN3FBxa6BA==
   dependencies:
     r2 "^2.0.1"
     yargs "^13.2.4"
