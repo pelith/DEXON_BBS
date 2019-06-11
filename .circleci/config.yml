@@ -48,11 +48,15 @@ jobs:
           paths:
             - ./DEXON_BBS_Cache/node_modules
       - run:
+          name: DEXON_BBS_Cache - build
+          command: |
+            cd ./DEXON_BBS_Cache
+            npm run build
+      - run:
           name: DEXON_BBS_Cache - cache
           command: |
             cd ./DEXON_BBS_Cache
             npm run cache
-
       - restore_cache:
           name: DEXON_BBS_Cache - Restore dist Cache
           keys:
@@ -60,7 +64,7 @@ jobs:
             - DEXON_BBS_Cache-dist-cache-v4-{{ .Branch }}-
             - DEXON_BBS_Cache-dist-cache-v4-
       - run:
-          name: DEXON_BBS_Cache - build cache
+          name: DEXON_BBS_Cache - build-cache
           command: |
             cd ./DEXON_BBS_Cache
             ln -s ../build gh-pages
