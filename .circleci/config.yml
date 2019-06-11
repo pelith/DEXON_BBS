@@ -15,55 +15,64 @@ jobs:
 
       # Run DEXON_BBS
       - restore_cache:
-          name: Restore DEXON_BBS NPM Package Cache
+          name: DEXON_BBS - Restore NPM Package Cache
           keys:
             - DEXON_BBS-cache-v1-{{ .Branch }}-{{ checksum "package-lock.json" }}
             - DEXON_BBS-cache-v1-{{ .Branch }}-
             - DEXON_BBS-cache-v1-
       - run:
-          name: Install DEXON_BBS Dependencies
+          name: DEXON_BBS - Install Dependencies
           command: npm ci
       - save_cache:
-          name: Save DEXON_BBS NPM Package Cache
+          name: DEXON_BBS - Save NPM Package Cache
           key: DEXON_BBS-cache-v1-{{ .Branch }}-{{ checksum "package-lock.json" }}
           paths:
             - ./node_modules
       - run:
-          name: Build DEXON_BBS
+          name: DEXON_BBS - Build
           command: npm run build
 
       # Run DEXON_BBS_Cache
       - restore_cache:
-          name: Restore DEXON_BBS_Cache Yarn Package Cache
+          name: DEXON_BBS_Cache - Restore Yarn Package Cache
           keys:
             - DEXON_BBS_Cache-yarn-packages-v2-{{ .Branch }}-{{ checksum "./DEXON_BBS_Cache/yarn.lock" }}
             - DEXON_BBS_Cache-yarn-packages-v2-{{ .Branch }}-
             - DEXON_BBS_Cache-yarn-packages-v2-
       - run:
-          name: Install DEXON_BBS_Cache Dependencies
+          name: DEXON_BBS_Cache - Install Dependencies
           command: cd ./DEXON_BBS_Cache; yarn install --frozen-lockfile
       - save_cache:
-          name: Save DEXON_BBS_Cache Yarn Package Cache
+          name: DEXON_BBS_Cache - Save Yarn Package Cache
           key: DEXON_BBS_Cache-yarn-packages-v2-{{ .Branch }}-{{ checksum "./DEXON_BBS_Cache/yarn.lock" }}
           paths:
             - ./DEXON_BBS_Cache/node_modules
-
-      - restore_cache:
-          name: Restore DEXON_BBS_Cache dist Cache
-          keys:
-            - DEXON_BBS_Cache-dist-cache-v3-{{ .Branch }}-{{ checksum "./build/cache.html" }}
-            - DEXON_BBS_Cache-dist-cache-v3-{{ .Branch }}-
-            - DEXON_BBS_Cache-dist-cache-v3-
       - run:
-          name: Build DEXON_BBS_Cache
+          name: DEXON_BBS_Cache - build
+          command: |
+            cd ./DEXON_BBS_Cache
+            npm run build
+      - run:
+          name: DEXON_BBS_Cache - cache
+          command: |
+            cd ./DEXON_BBS_Cache
+            npm run cache
+      - restore_cache:
+          name: DEXON_BBS_Cache - Restore dist Cache
+          keys:
+            - DEXON_BBS_Cache-dist-cache-v4-{{ .Branch }}-{{ checksum "./DEXON_BBS_Cache/dist/output.json" }}
+            - DEXON_BBS_Cache-dist-cache-v4-{{ .Branch }}-
+            - DEXON_BBS_Cache-dist-cache-v4-
+      - run:
+          name: DEXON_BBS_Cache - build-cache
           command: |
             cd ./DEXON_BBS_Cache
             ln -s ../build gh-pages
-            npm run cache
+            npm run build-cache
             cp -R ./dist/s gh-pages/
       - save_cache:
-          name: Save DEXON_BBS_Cache dist Cache
-          key: DEXON_BBS_Cache-dist-cache-v3-{{ .Branch }}-{{ checksum "./build/cache.html" }}
+          name: DEXON_BBS_Cache - Save dist Cache
+          key: DEXON_BBS_Cache-dist-cache-v4-{{ .Branch }}-{{ checksum "./DEXON_BBS_Cache/dist/output.json" }}
           paths:
             - ./DEXON_BBS_Cache/dist
       - deploy:
