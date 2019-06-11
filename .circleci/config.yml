@@ -15,17 +15,17 @@ jobs:
 
       # Run DEXON_BBS
       - restore_cache:
-          name: DEXON_BBS - Restore NPM Package Cache
+          name: DEXON_BBS - Restore Yarn Package Cache
           keys:
-            - DEXON_BBS-cache-v1-{{ .Branch }}-{{ checksum "package-lock.json" }}
-            - DEXON_BBS-cache-v1-{{ .Branch }}-
-            - DEXON_BBS-cache-v1-
+            - DEXON_BBS-yarn-packages-v1-{{ .Branch }}-{{ checksum "yarn.lock" }}
+            - DEXON_BBS-yarn-packages-v1-{{ .Branch }}-
+            - DEXON_BBS-yarn-packages-v1-
       - run:
           name: DEXON_BBS - Install Dependencies
-          command: npm ci
+          command: yarn install --frozen-lockfile
       - save_cache:
-          name: DEXON_BBS - Save NPM Package Cache
-          key: DEXON_BBS-cache-v1-{{ .Branch }}-{{ checksum "package-lock.json" }}
+          name: DEXON_BBS - Save Yarn Package Cache
+          key: DEXON_BBS-yarn-packages-v1-{{ .Branch }}-{{ checksum "yarn.lock" }}
           paths:
             - ./node_modules
       - run:
@@ -48,12 +48,12 @@ jobs:
           paths:
             - ./DEXON_BBS_Cache/node_modules
       - run:
-          name: DEXON_BBS_Cache - build
+          name: DEXON_BBS_Cache - Build
           command: |
             cd ./DEXON_BBS_Cache
             npm run build
       - run:
-          name: DEXON_BBS_Cache - cache
+          name: DEXON_BBS_Cache - Cache
           command: |
             cd ./DEXON_BBS_Cache
             npm run cache
@@ -64,7 +64,7 @@ jobs:
             - DEXON_BBS_Cache-dist-cache-v4-{{ .Branch }}-
             - DEXON_BBS_Cache-dist-cache-v4-
       - run:
-          name: DEXON_BBS_Cache - build-cache
+          name: DEXON_BBS_Cache - Build-cache
           command: |
             cd ./DEXON_BBS_Cache
             ln -s ../build gh-pages
