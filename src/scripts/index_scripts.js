@@ -1,7 +1,7 @@
 import Dett from './dett.js'
 import ShortURL from './shortURL.js'
 
-import {htmlEntities, parseUser} from './utils.js'
+import {htmlEntities, getUrlParameter, parseUser} from './utils.js'
 
 let dett = null
 let focusPost
@@ -28,36 +28,60 @@ const main = async ({ _dexon }) => {
 
   if (+window.localStorage.getItem('hotkey-mode')) keyboardHook()
 
-  // const milestones = await dett.BBSCache.methods.getMilestones().call()
-  // const indexes = await dett.BBSCache.methods.getIndexes().call()
+  let milestones = await dett.BBSCache.methods.getMilestones().call()
+  milestones = milestones.map((milestone) => {
+    return dett.cacheweb3.utils.hexToUtf8(milestone)
+  })
 
   let articles = []
-
-  // if ((milestones.length > 0 && indexes.length > 0)){
-  //   0 1170 - xxx
-  //   1 xxx - yyy
-  //   2
-  //   // get page number
-  //   const p = getUrlParameter('p')
-  //   if (p && p.match(/[0-9]+/g) && (0 <= +p && +p < milestones.length)) {
-  //     if (+p === 0)
-  //       articles = await dett.getArticles({toBlock: milestones[0], indexes: indexes[0]})
-  //     else
-  //       articles = await dett.getArticles({fromBlock: milestones[+p], toBlock: milestones[+p+1], indexes: indexes[+p]})
-  //   }
-  //   else
-  //     articles = await dett.getArticles({fromBlock: milestones[milestones.length-1], indexes: indexes[indexes.length-1]})
-  // }
-  // else {
-  //   articles = await dett.getArticles()
-  // }
-
-  articles = await dett.getArticles()
+  let addAnnouncement = false
+  if (milestones.length > 0){
+    // get page number
+    const p = getUrlParameter('p')
+    if (p && p.match(/[0-9]+/g) && (1 <= +p && +p <= milestones.length)) {
+      const _p = +p
+      if (_p === 1) { // first page
+        $("#prevpage").addClass('disabled')
+        $("#nextpage").removeClass('disabled')
+        $("#nextpage").attr('href', 'index.html?p=2')
+        articles = await dett.getArticles({toBlock: milestones[0]})
+      }
+      else if (_p === milestones.length) { // last page
+        addAnnouncement = true
+        $("#prevpage").attr('href', 'index.html?p='+(milestones.length-1))
+        articles = await dett.getArticles({fromBlock: milestones[milestones.length-1]})
+      }
+      else {
+        $("#prevpage").attr('href', 'index.html?p='+(_p-1))
+        $("#nextpage").removeClass('disabled')
+        $("#nextpage").attr('href', 'index.html?p='+(_p+1))
+        articles = await dett.getArticles({fromBlock: milestones[_p-1], toBlock: milestones[_p]})
+      }
+    }
+    else {
+      addAnnouncement = true
+      window.history.replaceState("", "", "/")
+      $("#prevpage").attr('href', 'index.html?p='+(milestones.length-1))
+      articles = await dett.getArticles({fromBlock: milestones[milestones.length-1]})
+    }
+  }
+  else { // if no milestones show all article
+    $("#prevpage").addClass('disabled')
+    $("#nextpage").addClass('disabled')
+    articles = await dett.getArticles()
+  }
 
   await articles.reduce( async (n,p) => {
     await n
     directDisplay(...await p)
   }, Promise.resolve())
+
+  // temporary fix announcement
+  if (addAnnouncement){
+    $('.r-list-container.action-bar-margin.bbs-screen').append($('<div class="r-list-sep"></div>'))
+    displayAnnouncement('[公告] DEXON BBS 搬家預告', 'mayday.html', 'Admin')
+    displayAnnouncement('[公告] 領取免費的 DEXON 代幣 &amp; DEXON BBS 使用教學', 'about.html', 'Admin')
+  }
 
   if (+window.localStorage.getItem('focus-state')===2){
     const post =  $('.r-list-container > .r-ent > div > a[href="'+window.localStorage.getItem('focus-href')+'"]')
@@ -217,6 +241,26 @@ const directDisplay = (article, votes, banned) => {
   if (_class) {
     $(elem).find('.nrec').html(`<span class="${_class}"> ${votes} </span>`)
   }
+}
+
+const displayAnnouncement = (title, href, author) => {
+  const elem = $('<div class="r-ent"></div>')
+  elem.html(
+    `<div class="nrec"></div>
+    <div class="title">
+    <a href="${href}">
+      ${title}
+    </a>
+    </div>
+    <div class="meta">
+      <div class="author">
+        <a>
+          ${author}
+        </a>
+      </div>
+    </div>`)
+
+  $('.r-list-container.action-bar-margin.bbs-screen').append(elem)
 }
 
 _layoutInit().then(main)
