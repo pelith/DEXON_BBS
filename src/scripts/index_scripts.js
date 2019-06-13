@@ -28,7 +28,25 @@ const main = async ({ _dexon }) => {
 
   if (+window.localStorage.getItem('hotkey-mode')) keyboardHook()
 
-  const articles = await dett.getArticles()
+  const milestones = await dett.BBSCache.methods.getMilestones().call()
+  const indexes = await dett.BBSCache.methods.getIndexes().call()
+
+  let articles = []
+
+  if ((milestones.length > 0 && indexes.length > 0)){
+
+    // get page number
+    const p = getUrlParameter('p')
+    if (p && p.match(/[0-9]+/g) && (0 <= +p && +p < milestones.length)){
+      p = +p
+      articles = await dett.getArticles({fromBlock: milestones[p-1], toBlock: milestones[p-1], indexes: indexes[p-1]})
+    }
+    else
+      articles = await dett.getArticles({fromBlock: milestones[milestones.length-1], indexes: indexes[indexes.length-1]})
+  }
+  else {
+    articles = await dett.getArticles()
+  }
 
   await articles.reduce( async (n,p) => {
     await n

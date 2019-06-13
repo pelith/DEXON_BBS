@@ -12,7 +12,7 @@ const BBSContract = '0x663002C4E41E5d04860a76955A7B9B8234475952'
 const BBSExtContract = '0xec368ba43010056abb3e5afd01957ea1fdbd3d8f'
 const BBSAdminContract = '0x88eb672e01c1a2a6f398b9d52c7dab5f87ca8c2c'
 const BBSEditContract = '0x826cb3e5aa484869d9511aad3ead74d382608147'
-const BBSCacheContract = '0x355D8417C2f034be725F48d12e29e21d04029Ce6'
+const BBSCacheContract = '0xff9cae0ecec479b87472df77b1f5d8d182ab7658'
 
 const fromBlock = '1170000'
 const titleLength = 40
@@ -107,7 +107,7 @@ class Dett {
     this.dettBBSEdit = this.dettweb3 ? new this.dettweb3.eth.Contract(ABIBBSEdit, BBSEditContract) : null
 
     web3 = new _Web3(new _Web3.providers.WebsocketProvider('wss://mainnet-rpc.dexon.org/ws'))
-    cacheweb3 = new _Web3('https://testnet-rpc.dexon.org')
+    cacheweb3 = new _Web3(new _Web3.providers.WebsocketProvider('wss://mainnet-rpc.dexon.org/ws'))
     this.cacheweb3 = cacheweb3
 
     this.BBS = new web3.eth.Contract(ABIBBS, BBSContract)
@@ -116,11 +116,14 @@ class Dett {
     this.BBSEdit = new web3.eth.Contract(ABIBBSEdit, BBSEditContract)
     this.BBSCache = new cacheweb3.eth.Contract(ABICache, BBSCacheContract)
 
-    this.BBSEvents = await this.BBS.getPastEvents('Posted', {fromBlock : this.fromBlock })
     this.BBSEditEvents = await this.BBSEdit.getPastEvents('Edited', {fromBlock : this.fromBlock })
   }
 
-  async getArticles(){
+  async getArticles({fromBlock, toBlock, indexes}){
+    const _toBlock = toBlock || 'latest'
+    const _fromBlock = fromBlock || this.fromBlock
+
+    this.BBSEvents = await this.BBS.getPastEvents('Posted', {fromBlock : _fromBlock, toBlock: _toBlock})
     return this.BBSEvents.reverse().map(async (event) => {
       const [article, votes, banned] = await Promise.all([
         this.getArticle(event.transactionHash, false),

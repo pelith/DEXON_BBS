@@ -3,9 +3,10 @@
     "version": "1.9.0",
     "description": "",
     "scripts": {
-        "dev-prep": "for file in `find DEXON_BBS_Cache/dist/s/*.html -type f -exec basename {} \\;`; do `cp DEXON_BBS_Cache/dist/s/$file dist/s/${file/.html/}`; done ",
-        "dev": "npm run clean && mkdir -p dist/s/ && cp -R DEXON_BBS_Cache/dist/s dist/ && parcel src/__dev__.html --out-dir dist/",
+        "dev": "npm run clean && node bin/dev",
         "build": "npm run clean && parcel build --no-content-hash --no-source-maps src/*.njk --out-dir build/ --public-url /",
+        "cache": "cd DEXON_BBS_Cache && npm run start",
+        "build-cache": "bin/build-cache.sh",
         "clean": "rm -rf dist build",
         "clean:cache": "rm -rf .cache",
         "gh-help": "gh-pages --help",
@@ -36,6 +37,7 @@
     },
     "dependencies": {
         "@babel/runtime": "^7.4.4",
+        "chokidar": "^3.0.1",
         "cloudflare-purge-cache": "^1.1.0",
         "core-js": "^2.6.5",
         "linkify-it": "^2.1.0",
