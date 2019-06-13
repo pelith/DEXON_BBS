@@ -40,6 +40,8 @@ const main = async ({ _dexon }) => {
   let articles = []
   let addAnnouncement = false
   const root = dev ? 'index.html' : ''
+  $("#oldpage").attr('href', root+'?p=1')
+
   if (milestones.length > 0){
     // get page number
     const p = getUrlParameter('p')
