@@ -86,8 +86,8 @@ const main = async ({ _dexon }) => {
   // temporary fix announcement
   if (addAnnouncement){
     $('.r-list-container.action-bar-margin.bbs-screen').append($('<div class="r-list-sep"></div>'))
-    displayAnnouncement('[公告] DEXON BBS 搬家預告', 'mayday.html', 'Admin')
-    displayAnnouncement('[公告] 領取免費的 DEXON 代幣 &amp; DEXON BBS 使用教學', 'about.html', 'Admin')
+    displayAnnouncement('[公告] DEXON BBS 搬家預告', 'mayday'+(dev?'.html':''), 'Admin')
+    displayAnnouncement('[公告] 領取免費的 DEXON 代幣 &amp; DEXON BBS 使用教學', 'about'+(dev?'.html':''), 'Admin')
   }
 
   if (+window.localStorage.getItem('focus-state')===2){
