@@ -5,6 +5,7 @@ import {htmlEntities, getUrlParameter, parseUser} from './utils.js'
 
 let dett = null
 let focusPost
+let dev = false // for parcel debug use
 
 const render = (_account) => {
   dett.account = _account
@@ -19,6 +20,9 @@ const render = (_account) => {
 }
 
 const main = async ({ _dexon }) => {
+  // for dev
+  if (+window.localStorage.getItem('dev')) dev = true
+
   _dexon.on('update',(account) => {
     render(account)
   })
@@ -35,6 +39,7 @@ const main = async ({ _dexon }) => {
 
   let articles = []
   let addAnnouncement = false
+  const root = dev ? 'index.html' : ''
   if (milestones.length > 0){
     // get page number
     const p = getUrlParameter('p')
@@ -43,25 +48,25 @@ const main = async ({ _dexon }) => {
       if (_p === 1) { // first page
         $("#prevpage").addClass('disabled')
         $("#nextpage").removeClass('disabled')
-        $("#nextpage").attr('href', 'index.html?p=2')
+        $("#nextpage").attr('href', root+'?p=2')
         articles = await dett.getArticles({toBlock: milestones[0]})
       }
       else if (_p === milestones.length) { // last page
         addAnnouncement = true
-        $("#prevpage").attr('href', 'index.html?p='+(milestones.length-1))
+        $("#prevpage").attr('href', root+'?p='+(milestones.length-1))
         articles = await dett.getArticles({fromBlock: milestones[milestones.length-1]})
       }
       else {
-        $("#prevpage").attr('href', 'index.html?p='+(_p-1))
+        $("#prevpage").attr('href', root+'?p='+(_p-1))
         $("#nextpage").removeClass('disabled')
-        $("#nextpage").attr('href', 'index.html?p='+(_p+1))
+        $("#nextpage").attr('href', root+'?p='+(_p+1))
         articles = await dett.getArticles({fromBlock: milestones[_p-1], toBlock: milestones[_p]})
       }
     }
     else {
       addAnnouncement = true
       window.history.replaceState("", "", "/")
-      $("#prevpage").attr('href', 'index.html?p='+(milestones.length-1))
+      $("#prevpage").attr('href', root+'?p='+(milestones.length-1))
       articles = await dett.getArticles({fromBlock: milestones[milestones.length-1]})
     }
   }
@@ -185,8 +190,8 @@ const directDisplay = (article, votes, banned) => {
 
   const shortURL = 's/' + ShortURL.encode(dett.cacheweb3.utils.hexToNumber(article.transaction.hash.substr(0,10))).padStart(6,'0')
   let href = shortURL
-  // for dev
-  if (+window.localStorage.getItem('dev')) href = shortURL+'.html'
+
+  if (dev) href = shortURL+'.html'
 
   const cacheTime = (Date.now()-article.timestamp)/1000
   if (cacheTime < 30) // 30s
