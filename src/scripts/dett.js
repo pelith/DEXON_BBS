@@ -120,12 +120,6 @@ class Dett {
   }
 
   async getArticles(){
-    // {fromBlock, toBlock, indexes}
-    // const _toBlock = toBlock || 'latest'
-    // const _fromBlock = fromBlock || this.fromBlock
-    // console.log(_toBlock)
-
-    // this.BBSEvents = await this.BBS.getPastEvents('Posted', {fromBlock : _fromBlock, toBlock: _toBlock})
     this.BBSEvents = await this.BBS.getPastEvents('Posted', {fromBlock : this.fromBlock})
     return this.BBSEvents.reverse().map(async (event) => {
       const [article, votes, banned] = await Promise.all([

@@ -28,8 +28,8 @@ const main = async ({ _dexon }) => {
 
   if (+window.localStorage.getItem('hotkey-mode')) keyboardHook()
 
-  const milestones = await dett.BBSCache.methods.getMilestones().call()
-  const indexes = await dett.BBSCache.methods.getIndexes().call()
+  // const milestones = await dett.BBSCache.methods.getMilestones().call()
+  // const indexes = await dett.BBSCache.methods.getIndexes().call()
 
   let articles = []
 
