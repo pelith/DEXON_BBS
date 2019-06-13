@@ -33,20 +33,26 @@ const main = async ({ _dexon }) => {
 
   let articles = []
 
-  if ((milestones.length > 0 && indexes.length > 0)){
+  // if ((milestones.length > 0 && indexes.length > 0)){
+  //   0 1170 - xxx
+  //   1 xxx - yyy
+  //   2
+  //   // get page number
+  //   const p = getUrlParameter('p')
+  //   if (p && p.match(/[0-9]+/g) && (0 <= +p && +p < milestones.length)) {
+  //     if (+p === 0)
+  //       articles = await dett.getArticles({toBlock: milestones[0], indexes: indexes[0]})
+  //     else
+  //       articles = await dett.getArticles({fromBlock: milestones[+p], toBlock: milestones[+p+1], indexes: indexes[+p]})
+  //   }
+  //   else
+  //     articles = await dett.getArticles({fromBlock: milestones[milestones.length-1], indexes: indexes[indexes.length-1]})
+  // }
+  // else {
+  //   articles = await dett.getArticles()
+  // }
 
-    // get page number
-    const p = getUrlParameter('p')
-    if (p && p.match(/[0-9]+/g) && (0 <= +p && +p < milestones.length)){
-      p = +p
-      articles = await dett.getArticles({fromBlock: milestones[p-1], toBlock: milestones[p-1], indexes: indexes[p-1]})
-    }
-    else
-      articles = await dett.getArticles({fromBlock: milestones[milestones.length-1], indexes: indexes[indexes.length-1]})
-  }
-  else {
-    articles = await dett.getArticles()
-  }
+  articles = await dett.getArticles()
 
   await articles.reduce( async (n,p) => {
     await n
