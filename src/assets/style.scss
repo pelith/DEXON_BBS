@@ -125,8 +125,10 @@ a.--link-to-addr.hover:hover:after {
   vertical-align: .2em;
   color: #fff;
   font-size: .6em;
-  background: #000;
+  background: rgba(0, 0, 0, 0.7);
+  border: 1px dashed #333;
   text-decoration: none;
+  pointer-events: none;
   /*box-shadow: 1px 1px 2px rgba(55,55,55,.3);*/
   /*white-space: nowrap;*/
 }

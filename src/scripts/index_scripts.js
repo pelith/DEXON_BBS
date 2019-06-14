@@ -1,9 +1,11 @@
 import Dett from './dett.js'
+import ShortURL from './shortURL.js'
 
-import {htmlEntities, parseUser} from './utils.js'
+import {htmlEntities, getUrlParameter, parseUser} from './utils.js'
 
 let dett = null
 let focusPost
+let dev = false // for parcel debug use
 
 const render = (_account) => {
   dett.account = _account
@@ -18,24 +20,79 @@ const render = (_account) => {
 }
 
 const main = async ({ _dexon }) => {
+  // for dev
+  if (+window.localStorage.getItem('dev')) dev = true
+
   _dexon.on('update',(account) => {
     render(account)
   })
 
-  dett = new Dett(_dexon.dexonWeb3)
-  await dett.init()
+  dett = new Dett()
+  await dett.init(_dexon.dexonWeb3, Web3)
 
   if (+window.localStorage.getItem('hotkey-mode')) keyboardHook()
 
-  const articles = await dett.getArticles()
+  let milestones = await dett.BBSCache.methods.getMilestones().call()
+  milestones = milestones.map((milestone) => {
+    return dett.cacheweb3.utils.hexToUtf8(milestone)
+  })
+
+  let articles = []
+  let addAnnouncement = false
+  const root = dev ? 'index.html' : ''
+  $("#oldpage").attr('href', root+'?p=1')
+
+  if (milestones.length > 0){
+    // get page number
+    const p = getUrlParameter('p')
+    if (p && p.match(/[0-9]+/g) && (1 <= +p && +p <= milestones.length)) {
+      const _p = +p
+      if (_p === 1) { // first page
+        $("#prevpage").addClass('disabled')
+        $("#nextpage").removeClass('disabled')
+        $("#nextpage").attr('href', root+'?p=2')
+        articles = await dett.getArticles({toBlock: milestones[0]})
+      }
+      else if (_p === milestones.length) { // last page
+        addAnnouncement = true
+        $("#prevpage").attr('href', root+'?p='+(milestones.length-1))
+        articles = await dett.getArticles({fromBlock: milestones[milestones.length-1]})
+      }
+      else {
+        $("#prevpage").attr('href', root+'?p='+(_p-1))
+        $("#nextpage").removeClass('disabled')
+        $("#nextpage").attr('href', root+'?p='+(_p+1))
+        articles = await dett.getArticles({fromBlock: milestones[_p-1], toBlock: milestones[_p]})
+      }
+    }
+    else {
+      addAnnouncement = true
+      window.history.replaceState("", "", "/")
+      $("#prevpage").attr('href', root+'?p='+(milestones.length-1))
+      articles = await dett.getArticles({fromBlock: milestones[milestones.length-1]})
+    }
+  }
+  else { // if no milestones show all article
+    $("#prevpage").addClass('disabled')
+    $("#nextpage").addClass('disabled')
+    articles = await dett.getArticles()
+  }
 
   await articles.reduce( async (n,p) => {
     await n
     directDisplay(...await p)
   }, Promise.resolve())
 
+  // temporary fix announcement
+  if (addAnnouncement){
+    $('.r-list-container.action-bar-margin.bbs-screen').append($('<div class="r-list-sep"></div>'))
+    displayAnnouncement('[公告] DEXON BBS 搬家預告', 'mayday'+(dev?'.html':''), 'Admin')
+    displayAnnouncement('[公告] 領取免費的 DEXON 代幣 &amp; DEXON BBS 使用教學', 'about'+(dev?'.html':''), 'Admin')
+  }
+
   if (+sessionStorage.getItem('focus-state')===2){
     const post =  $('.r-list-container > .r-ent > div > a[href="'+sessionStorage.getItem('focus-href')+'"]')
+
     focusOnPost(post.parent().parent()[0], true)
     sessionStorage.setItem('focus-href', '')
     sessionStorage.setItem('focus-state', 0)
@@ -44,6 +101,11 @@ const main = async ({ _dexon }) => {
   if (dett.account) {
     // const meta = await dett.getMetaByAddress(dett.account)
     // _dexon.emit('_setMeta', meta)
+  }
+
+  if (dett.account) {
+    const meta = await dett.getMetaByAddress(dett.account)
+    _dexon.emit('_setMeta', meta)
   }
 
   attachDropdown()
@@ -142,18 +204,30 @@ const keyboardHook = () => {
 
 const directDisplay = (article, votes, banned) => {
   if (banned) return
+
+  const shortURL = 's/' + ShortURL.encode(dett.cacheweb3.utils.hexToNumber(article.transaction.hash.substr(0,10))).padStart(6,'0')
+  let href = shortURL
+
+  if (dev) href = shortURL+'.html'
+
+  const cacheTime = (Date.now()-article.timestamp)/1000
+  if (cacheTime < 30) // 30s
+    href = 'content.html?tx=' + article.transaction.hash
+  // else if (cacheTime < 30*60) //600-1800s github page cdn time
+  //   href = shortURL+'?new' // tricky skill
+
   const elem = $('<div class="r-ent"></div>')
   elem.html(
     `<div class="nrec"></div>
     <div class="title">
-    <a href="content.html?tx=${article.transaction.hash}">
+    <a href="${href}">
       ${htmlEntities(article.title)}
     </a>
     </div>
     <div class="meta">
       <div class="author">
         <a class="--link-to-addr hover" href="https://dexscan.app/address/${article.author}" target="_blank" data-address="${article.author}">
-          ${parseUser(article.author)}
+          ${parseUser(article.author, article.authorMeta)}
         </a>
       </div>
       <div class="article-menu">
@@ -189,6 +263,26 @@ const directDisplay = (article, votes, banned) => {
   if (_class) {
     $(elem).find('.nrec').html(`<span class="${_class}"> ${votes} </span>`)
   }
+}
+
+const displayAnnouncement = (title, href, author) => {
+  const elem = $('<div class="r-ent"></div>')
+  elem.html(
+    `<div class="nrec"></div>
+    <div class="title">
+    <a href="${href}">
+      ${title}
+    </a>
+    </div>
+    <div class="meta">
+      <div class="author">
+        <a>
+          ${author}
+        </a>
+      </div>
+    </div>`)
+
+  $('.r-list-container.action-bar-margin.bbs-screen').append(elem)
 }
 
 _layoutInit().then(main)

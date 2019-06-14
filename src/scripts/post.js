@@ -96,8 +96,8 @@ const main = async ({ _dexon }) => {
     render(account)
   })
 
-  dett = new Dett(_dexon.dexonWeb3)
-  await dett.init()
+  dett = new Dett()
+  await dett.init(_dexon.dexonWeb3, Web3)
 
   // get reply tx
   const rtx = getUrlParameter('rtx')
@@ -124,7 +124,7 @@ const main = async ({ _dexon }) => {
   })
 
   if ($(window).width() > 992) {
-    $("#bbs-content")[0].placeholder = "標題跟內文都有內容才能發文!\r\n"+"~\r\n".repeat(19)
+    $("#bbs-content")[0].placeholder = "標題跟內文都有內容才能發文!\r\n"+"~\r\n".repeat(18)
   } else {
     // mobile
     $("#bbs-content")[0].placeholder = "標題跟內文都有內容才能發文!\r\n\r\n請輸入您欲發布的內容";
