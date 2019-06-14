@@ -42,7 +42,10 @@ export const parseText = (str, len) => {
   return tmp
 }
 
-export const parseUser = (address) => {
+export const parseUser = (address, meta) => {
+  if (meta && meta.name) {
+    return meta.name
+  }
   return address.replace(/^(0x.{4}).+(.{4})$/, '$1…$2')
 }
 

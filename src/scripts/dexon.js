@@ -18,7 +18,9 @@ class EventEmitter{
     const event = args[0]
     const params = [].slice.call(args,1)
     const callbacks = this._events[event]
-    callbacks.forEach(fn => fn.apply(this, params))
+    if (callbacks) {
+      callbacks.forEach(fn => fn.apply(this, params))
+    }
     return this
   }
   once(event,callback){
@@ -60,7 +62,6 @@ class Dexon extends EventEmitter {
           const accounts = await this.dexonWeb3.eth.getAccounts()
           this.selectedAddress = accounts.length > 0 ? accounts[0] : ''
         }
-        else return console.log('Wrong network')
       }
 
       start()

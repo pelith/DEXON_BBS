@@ -90,10 +90,12 @@ const showHideReward = y => {
   $('#reward-toggle-region-2')[y ? 'show' : 'hide']()
 }
 
-const getAddressLink = (from, __namePool) => {
+const getCommentLink = comment => {
+  const {authorMeta} = comment
+  const {from} = comment.transaction
   // TODO: bind the event to get / substitute name
   return $('<a class="--link-to-addr tooltip" target="_blank"></a>')
-    .html(parseUser(from)+'<span>('+from+')</span>')
+    .html(parseUser(from, authorMeta)+'<span>('+from+')</span>')
     // .attr('data-address', from)
     .attr('href', 'https://dexscan.app/address/' + from)
 }
@@ -120,6 +122,11 @@ const main = async ({ _dexon }) => {
   if (!tx) return error()
   if (!tx.match(/^0x[a-fA-F0-9]{64}$/g)) return error()
 
+  if (dett.account) {
+    const meta = await dett.getMetaByAddress(dett.account)
+    _dexon.emit('_setMeta', meta)
+  }
+
   $('#reply-btn').click(() => { showReplyType() })
   $('#reply-type0').click(() => { showReply(0) })
   $('#reply-type1').click(() => { showReply(1) })
@@ -138,7 +145,51 @@ const main = async ({ _dexon }) => {
   // check transaction to address is bbs contract
   if (!article) return error()
 
-  renderArticle(article)
+  const contentNodeList = parseContent(article.content, 'post')
+
+  document.title = article.title + ' - Gossiping - DEXON BBS'
+
+  const authorLink = $('<a class="--link-to-addr hover" target="_blank"></a>')
+                    .text(parseUser(article.transaction.from, article.authorMeta))
+                    .attr('data-address', article.transaction.from)
+                    .attr('href', 'https://dexscan.app/address/' + article.transaction.from)
+  $('#main-content-author').append(authorLink)
+
+  $('#main-content-title').text(article.title)
+
+  $('.--send-reward').click(evt => {
+    const _ = $(evt.currentTarget)
+    // _.prop('disabled', true)
+    return dett.rewardAuthor(article, _.attr('data-value').toString())
+    .on('transactionHash', txhash => {
+      console.log('tx hash', txhash)
+      // _.prop('disabled', false)
+    })
+  })
+  $('#reward-custom-submit').click(evt => {
+    const _ = $('#reward-custom-value')
+    // _.prop('disabled', true)
+    if (!_.val().length) {
+      showHideReward(false)
+      return Promise.resolve()
+    }
+    return dett.rewardAuthor(article, _.val())
+    .on('transactionHash', txhash => {
+      console.log('tx hash', txhash)
+      // _.prop('disabled', false)
+    })
+    .finally(() => showHideReward(false))
+  })
+
+  const elContent = $('#main-content-content')
+  contentNodeList.forEach(el => elContent.append(el))
+
+  $('#main-content-date').text((''+new Date(article.block.timestamp)).substr(0,24))
+
+  $('#main-content-href').attr('href', window.location.href)
+  $('#main-content-href').text(window.location.href)
+  $('#main-content-from').text('@'+article.transaction.blockNumber)
+  $('#main-content-from').attr('href', 'https://dexonscan.app/transaction/'+tx)
 
   const comments = await dett.getComments(tx)
   comments.reduce( async (n,p) => {
@@ -255,7 +306,7 @@ const displayReply = (comment) => {
   elem.html(`<span class="${comment.vote != 1 ? 'f1 ' : ''}hl push-tag">${voteName[comment.vote]} </span>`)
 
   const authorNode = $('<span class="f3 hl push-userid"></span>')
-  authorNode.append(getAddressLink(comment.author))
+  authorNode.append(getCommentLink(comment))
   elem.append(authorNode)
 
   const contentNode = $('<span class="f3 push-content">: </span>')

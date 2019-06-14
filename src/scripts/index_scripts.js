@@ -97,6 +97,11 @@ const main = async ({ _dexon }) => {
     window.localStorage.setItem('focus-state', 0)
   }
 
+  if (dett.account) {
+    const meta = await dett.getMetaByAddress(dett.account)
+    _dexon.emit('_setMeta', meta)
+  }
+
   attachDropdown()
 }
 
@@ -212,7 +217,7 @@ const directDisplay = (article, votes, banned) => {
     <div class="meta">
       <div class="author">
         <a class="--link-to-addr hover" href="https://dexscan.app/address/${article.author}" target="_blank" data-address="${article.author}">
-          ${parseUser(article.author)}
+          ${parseUser(article.author, article.authorMeta)}
         </a>
       </div>
       <div class="article-menu">
