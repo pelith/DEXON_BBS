@@ -1,6 +1,6 @@
 {
     "name": "dexon_bbs",
-    "version": "1.9.0",
+    "version": "1.9.1",
     "description": "",
     "scripts": {
         "dev": "npm run clean && node bin/dev",

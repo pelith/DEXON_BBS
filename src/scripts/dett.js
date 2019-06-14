@@ -107,6 +107,7 @@ class Dett {
     this.dettBBSEdit = this.dettweb3 ? new this.dettweb3.eth.Contract(ABIBBSEdit, BBSEditContract) : null
 
     web3 = new _Web3(new _Web3.providers.WebsocketProvider('wss://mainnet-rpc.dexon.org/ws'))
+    // Todo : Should be env
     cacheweb3 = new _Web3(new _Web3.providers.WebsocketProvider('wss://mainnet-rpc.dexon.org/ws'))
     this.cacheweb3 = cacheweb3
 
