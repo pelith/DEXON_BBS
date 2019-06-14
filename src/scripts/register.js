@@ -75,7 +75,8 @@ const main = async () => {
     render(account)
   })
 
-  dett = new Dett(_dexon.dexonWeb3)
+  dett = new Dett()
+  await dett.init(_dexon.dexonWeb3, Web3)
 
   const elNickname = $('#register-nickname')
   elNickname.on('input', evt => checkRules($(evt.currentTarget).val()))

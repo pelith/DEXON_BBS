@@ -1,5 +1,3 @@
-// Web3 is from layout
-const web3 = new Web3(new Web3.providers.WebsocketProvider('wss://mainnet-rpc.dexon.org/ws'))
 import {awaitTx, parseText} from './utils'
 
 let web3 = null
@@ -31,9 +29,11 @@ class PostBase {
     if (cache.has(addr)) {
       return cache.get(addr)
     }
+
+    const BBSPB = new web3.eth.Contract(ABIBBSPB, BBSPBContract)
     const promise = BBSPB.methods.getPlayer(address).call()
     .then(data => ({
-      name: Web3.utils.hexToUtf8(data[0]),
+      name: web3.utils.hexToUtf8(data[0]),
       names: +data[1],
       exp: +data[2],
       referrer: data[3],
@@ -231,16 +231,16 @@ class Dett {
   }
 
   getRegisterFee(_) {
-    return BBSPB.methods.fee().call()
+    return this.BBSPB.methods.fee().call()
   }
 
   getRegisterHistory() {
-    return BBSPB.getPastEvents('allEvents', {fromBlock: 0})
+    return this.BBSPB.getPastEvents('allEvents', {fromBlock: 0})
   }
 
   async checkIdAvailable(id) {
     try {
-      await BBSPB.methods.register(id).estimateGas({
+      await this.BBSPB.methods.register(id).estimateGas({
         value: '0x7' + 'f'.repeat(63),
       })
       return true
@@ -251,14 +251,11 @@ class Dett {
   }
 
   async registerName(id, registerFee) {
-    if (!this.dexonWeb3)
-      return alert('Please connect to your DEXON Wallet.')
-
-    const gas = await this.dexonBBSPB.methods.register(id).estimateGas({
+    const gas = await this.dettBBSPB.methods.register(id).estimateGas({
       value: registerFee,
     })
     try {
-      await awaitTx(this.dexonBBSPB.methods.register(id).send({
+      await awaitTx(this.dettBBSPB.methods.register(id).send({
         from: this.account,
         // FIXME: this gas estimation is WRONG, why?
         gas: gas * 2,
