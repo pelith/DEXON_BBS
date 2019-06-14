@@ -6,30 +6,79 @@ jobs:
     working_directory: ~/repo
     steps:
       - checkout
-      - restore_cache:
-          name: Restore NPM Package Cache
-          keys:
-            - node-v1-{{ .Branch }}-{{ checksum "package-lock.json" }}
-            - node-v1-{{ .Branch }}-
-            - node-v1-
+
       - run:
-          name: Install Dependencies
-          command: npm ci
+          name: "Pull Submodules"
+          command: |
+            git submodule init
+            git submodule update --remote
+
+      # Run DEXON_BBS
+      - restore_cache:
+          name: DEXON_BBS - Restore Yarn Package Cache
+          keys:
+            - DEXON_BBS-yarn-packages-v1-{{ .Branch }}-{{ checksum "yarn.lock" }}
+            - DEXON_BBS-yarn-packages-v1-{{ .Branch }}-
+            - DEXON_BBS-yarn-packages-v1-
+      - run:
+          name: DEXON_BBS - Install Dependencies
+          command: yarn install --frozen-lockfile
       - save_cache:
-          name: Save NPM Package Cache
-          key: node-v1-{{ .Branch }}-{{ checksum "package-lock.json" }}
+          name: DEXON_BBS - Save Yarn Package Cache
+          key: DEXON_BBS-yarn-packages-v1-{{ .Branch }}-{{ checksum "yarn.lock" }}
           paths:
             - ./node_modules
+      - run:
+          name: DEXON_BBS - Build
+          command: npm run build
+
+      # Run DEXON_BBS_Cache
+      - restore_cache:
+          name: DEXON_BBS_Cache - Restore Yarn Package Cache
+          keys:
+            - DEXON_BBS_Cache-yarn-packages-v2-{{ .Branch }}-{{ checksum "./DEXON_BBS_Cache/yarn.lock" }}
+            - DEXON_BBS_Cache-yarn-packages-v2-{{ .Branch }}-
+            - DEXON_BBS_Cache-yarn-packages-v2-
+      - run:
+          name: DEXON_BBS_Cache - Install Dependencies
+          command: cd ./DEXON_BBS_Cache; yarn install --frozen-lockfile
+      - save_cache:
+          name: DEXON_BBS_Cache - Save Yarn Package Cache
+          key: DEXON_BBS_Cache-yarn-packages-v2-{{ .Branch }}-{{ checksum "./DEXON_BBS_Cache/yarn.lock" }}
+          paths:
+            - ./DEXON_BBS_Cache/node_modules
+      - run:
+          name: DEXON_BBS_Cache - Cache
+          command: |
+            cd ./DEXON_BBS_Cache
+            npm run cache
+      - restore_cache:
+          name: DEXON_BBS_Cache - Restore dist Cache
+          keys:
+            - DEXON_BBS_Cache-dist-cache-v6-{{ .Branch }}-{{ checksum "./DEXON_BBS_Cache/dist/output.json" }}
+            - DEXON_BBS_Cache-dist-cache-v6-{{ .Branch }}-
+            - DEXON_BBS_Cache-dist-cache-v6-
+      - run:
+          name: DEXON_BBS_Cache - Build-Cache
+          command: |
+            cd ./DEXON_BBS_Cache
+            ln -s ../build gh-pages
+            npm run build-cache
+            cp -R ./dist/s gh-pages/
+      - save_cache:
+          name: DEXON_BBS_Cache - Save dist Cache
+          key: DEXON_BBS_Cache-dist-cache-v6-{{ .Branch }}-{{ checksum "./DEXON_BBS_Cache/dist/output.json" }}
+          paths:
+            - ./DEXON_BBS_Cache/dist
       - deploy:
           name: Deploy to branch gh-pages with "gh-pages" tool
           command: |
             git config --global user.email $GH_EMAIL
             git config --global user.name $GH_NAME
-            npm run build
             npm run deploy-ci
       - run:
-          name: Purge Cloudflare Cache
-          command: npm run purge-cloudflare-cache
+          name: Cloudflare Purge Cache
+          command: npm run cloudflare-purge-cache
 
 workflows:
   version: 2

@@ -119,10 +119,10 @@ export const parseContent = (content, loc) => {
   return result
 }
 
-export const awaitTx = promievent => {
+export const awaitTx = promiseEvent => {
   let fulfilled = false
   return new Promise((resolve, reject) => {
-    promievent.on('confirmation', (no, receipt) => {
+    promiseEvent.on('confirmation', (no, receipt) => {
       if (fulfilled) return
       fulfilled = true
       resolve(receipt)

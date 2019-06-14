@@ -1,0 +1,43 @@
+'use strict';
+
+const chokidar = require('chokidar');
+const path = require('path');
+const Bundler = require('parcel-bundler');
+const { execSync } = require('child_process');
+
+(async () => {
+  // parcel
+  const entryFiles = [
+    path.join('src/__dev__.html')
+  ]
+
+  const options = {
+    watch: true,
+    contentHash: false,
+    minify: true,
+    outDir: './dist',
+    publicUrl: '/'
+  }
+
+  const bundler = new Bundler(entryFiles, options)
+  bundler.serve()
+  await bundler.bundle()
+
+  // watch & build cache
+  try {
+    chokidar.watch('dist/cache.html').on('all', (event, path) => {
+      console.log("Rebuild cache...")
+      const postBuildFile = './bin/build-cache.sh'
+      console.log(`running: ${postBuildFile}`)
+      const stdout = execSync(`${postBuildFile}`)
+      console.log("Rebuild done.")
+      // console.log(stdout.toString())
+    });
+  } catch (e) {
+    console.error(e.message, e.stack);
+  }
+})()
+
+process.once('SIGINT',() => {
+    process.exit(0);
+});

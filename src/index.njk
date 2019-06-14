@@ -8,49 +8,17 @@
     <div class="action-bar">
       <div class="btn-group btn-group-dir" style="text-align: left; padding: 1px">
         <a class="btn selected" href="/">看板</a>
-        <a id="bbs-post" class="btn" href="post.njk" style="display: none;">發文</a>
+        <a id="bbs-post" class="btn" href="post.njk" style="display: none;">發文(^P)</a>
       </div>
-      <div class="btn-group btn-group-paging" style="text-align: right; padding: 1px">
-        <a class="btn wide" href="#">Top</a>
+      <div class="btn-group btn-group-paging">
+        <a id="oldpage" class="btn wide">最舊</a>
+        <a id="prevpage" class="btn wide">‹ 上頁</a>
+        <a id="nextpage" class="btn wide disabled">下頁 ›</a>
+        <a class="btn wide" href="/">最新</a>
       </div>
     </div>
   </div>
   <div class="r-list-container action-bar-margin bbs-screen">
-    <div class="r-ent">
-      <div class="nrec"></div>
-      <div class="title">
-      <a href="about.njk">
-        [公告] 領取免費的 DEXON 代幣 &amp; DEXON BBS 使用教學
-      </a>
-      </div>
-      <div class="meta">
-        <div class="author">
-          <a>
-            Admin
-          </a>
-        </div>
-        <div class="article-menu"></div>
-        <div class="date"></div>
-      </div>
-    </div>
-    <div class="r-ent">
-      <div class="nrec"></div>
-      <div class="title">
-      <a href="mayday.njk">
-        [公告] DEXON BBS 搬家預告
-      </a>
-      </div>
-      <div class="meta">
-        <div class="author">
-          <a>
-            Admin
-          </a>
-        </div>
-        <div class="article-menu"></div>
-        <div class="date"></div>
-      </div>
-    </div>
-    <div class="r-list-sep"></div>
   </div>
 </div>
 {% endblock %}

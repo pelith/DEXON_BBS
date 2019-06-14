@@ -41,12 +41,12 @@ contract shortURLandMilestone is Ownable {
     function link(bytes32 long, bytes32 short, uint256 cur) public onlyOwner {
         links[long] = short;
         links[short] = long;
-        time = cur;
         emit Link(long, short, cur);
     }
 
-    function addMilestone(uint256 milestone) public onlyOwner {
+    function addMilestone(uint256 milestone, uint256 cur) public onlyOwner {
         milestones.push(milestone);
+        time = cur;
     }
 
     function clearMilestone() public onlyOwner {

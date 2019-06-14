@@ -16,7 +16,7 @@
     {%- endblock %}
 
     {% block head_extra -%}
-    <link rel="shortcut icon" type="image/png" href="favicon.ico">
+    <link rel="shortcut icon" type="image/png" href="assets/icon.png">
     <link rel="stylesheet" type="text/css" href="https://images.ptt.cc/bbs/v2.25/bbs-common.css">
     <link rel="stylesheet" type="text/css" href="https://images.ptt.cc/bbs/v2.25/bbs-base.css" media="screen">
     <link rel="stylesheet" type="text/css" href="https://images.ptt.cc/bbs/v2.25/bbs-custom.css">
@@ -58,6 +58,7 @@
     {%- endblock %}
 
     <script language="javascript" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+    <script language="javascript" type="text/javascript" src="https://cdn.jsdelivr.net/gh/andy0130tw/web3.js-browser@v0.0.2-beta.55/build/web3.min.js"></script>
     <script language="javascript" type="text/javascript" src="scripts/layout.js"></script>
 
     {% block scripts_extra -%}
@@ -70,7 +71,7 @@
     </div>
     <script async type="text/javascript">
         $(document).ready(function(){
-            let domain = $("#wrapfabtest").height() > 0 ? '//www.googletagmanager.com' : domain = '//dett.cc/assets'
+            let domain = $("#wrapfabtest").height() > 0 ? '//www.googletagmanager.com' : domain = '//cdn.dett.cc'
 
             var script = document.createElement('script');
             script.src=domain+"/gtag/js?id=UA-140044770-1";

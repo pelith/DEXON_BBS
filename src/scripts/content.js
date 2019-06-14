@@ -103,17 +103,24 @@ const getCommentLink = comment => {
 const error = () => { $('#main-content-content').text('404 - Page not found.') }
 
 const main = async ({ _dexon }) => {
-  // get tx
-  tx = getUrlParameter('tx')
-  if (!tx) return error()
-  if (!tx.match(/^0x[a-fA-F0-9]{64}$/g)) return error()
-
   _dexon.on('update',(account) => {
     render(account)
   })
 
-  dett = new Dett(_dexon.dexonWeb3)
-  await dett.init()
+  dett = new Dett()
+  await dett.init(_dexon.dexonWeb3, Web3)
+
+  // get tx
+  tx = getUrlParameter('tx')
+
+  // cache case
+  if (window.location.pathname.includes('/s/')) {
+    let shortlink = window.location.pathname.split('s/')[1].replace('.html', '')
+    tx = $('meta[property="dett:tx"]').attr("content")
+  }
+
+  if (!tx) return error()
+  if (!tx.match(/^0x[a-fA-F0-9]{64}$/g)) return error()
 
   if (dett.account) {
     const meta = await dett.getMetaByAddress(dett.account)
@@ -284,7 +291,8 @@ const renderArticle = (article) => {
       console.log('tx hash', txhash)
       // _.prop('disabled', false)
     })
-    .finally(() => showHideReward(false))
+    .on('confirmation', () => showHideReward(false))
+    .on('error', () => showHideReward(false))
   })
 }
 

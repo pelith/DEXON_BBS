@@ -3,3 +3,8 @@
 {% set title = 'Cache - ' + title %}
 {% set canonicalUrl = 'https://dett.cc/cache.html' %}
 {% set description = 'Cache Cache Cache Cache Cache' %}
+
+{% block meta -%}
+  {{super()}}
+  <meta property="dett:tx" content="dett:tx:content">
+{% endblock meta -%}

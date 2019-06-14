@@ -1,17 +1,19 @@
 {
     "name": "dexon_bbs",
-    "version": "1.0.0",
+    "version": "1.9.1",
     "description": "",
     "scripts": {
-        "dev": "npm run clean && parcel src/__dev__.html --out-dir dist/",
-        "build": "npm run clean && parcel build --no-source-maps src/*.njk --out-dir build/ --public-url .",
+        "dev": "npm run clean && node bin/dev",
+        "build": "npm run clean && parcel build --no-content-hash --no-source-maps src/*.njk --out-dir build/ --public-url /",
+        "cache": "cd DEXON_BBS_Cache && npm run start",
+        "build-cache": "bin/build-cache.sh",
         "clean": "rm -rf dist build",
         "clean:cache": "rm -rf .cache",
         "gh-help": "gh-pages --help",
-        "deploy-prep": "echo dett.cc > build/CNAME && cp -r .circleci build && mkdir -p build/assets/gtag && cp src/assets/meta.png build/assets && cp src/assets/gtag/js build/assets/gtag/js",
+        "deploy-prep": "bin/before-deploy.sh",
         "deploy-test": "npm run deploy-prep && gh-pages -d build -m \"Automated deployment to GitHub Pages: Test\" -t",
         "deploy-ci": "npm run deploy-prep && gh-pages -d build -m \"Automated deployment to GitHub Pages: ${CIRCLE_SHA1}\" -t",
-        "purge-cloudflare-cache": "purge -f build/ -e ${CF_EMAIL} -d ${CF_DOMAIN} -z ${CF_ZONE_ID} -k ${CF_KEY}"
+        "cloudflare-purge-cache": "cloudflare-purge-cache -e ${CF_EMAIL} -k ${CF_KEY} -z ${CF_ZONE_ID}"
     },
     "repository": {
         "type": "git",
@@ -35,12 +37,16 @@
     },
     "dependencies": {
         "@babel/runtime": "^7.4.4",
+        "chokidar": "^3.0.1",
+        "cloudflare-purge-cache": "^1.1.0",
         "core-js": "^2.6.5",
         "linkify-it": "^2.1.0",
         "nunjucks": "^3.0.0",
         "parcel-plugin-nunjucks": "^1.1.0",
-        "purge-cloudflare-cache": "^1.2.2",
-        "url-parse": "^1.4.7",
-        "web3": "^1.0.0-beta.55"
+        "url-parse": "^1.4.7"
+    },
+    "engines": {
+        "node": "8.16.0",
+        "npm": "6.9.0"
     }
 }
