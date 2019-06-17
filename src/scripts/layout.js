@@ -6,6 +6,7 @@ import patchWeb3 from './patch-web3.js'
 patchWeb3()
 
 import Dexon from './dexon.js'
+import Dett from './dett.js'
 import {parseUser} from './utils.js'
 
 const loginForm = $('#loginForm')
@@ -199,8 +200,11 @@ const initLoginForm = async _dexon => {
 window._layoutInit = async () => {
   const _dexon = new Dexon(window.dexon)
   // populate login form event / initial state
-  // also setup identityManager
+  // also setup identityManager‘
   await initLoginForm(_dexon)
+
+  const _dett = new Dett()
+  await _dett.init(_dexon.dexonWeb3, Web3)
 
   _dexon.identityManager.on('login', account => {
     render(account, _dexon)
@@ -217,5 +221,5 @@ window._layoutInit = async () => {
 
   attachDropdown()
 
-  return { _dexon }
+  return { _dexon, _dett }
 }
