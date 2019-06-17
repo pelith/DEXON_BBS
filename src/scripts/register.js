@@ -24,7 +24,7 @@ const render = (_account) => {
   $('#main-content-address').text(account)
 }
 
-const checkRules = val => {
+const checkRules = async (val) => {
   const ruleCtrls = $('.--rule')
   ruleCtrls.removeClass('f1 f2 hl')
 
@@ -42,12 +42,20 @@ const checkRules = val => {
     return false
   })
 
+  // TODO: dry run to check if it is used
+
   if (isValid) {
-    $('#register-ok').show()
-    $('#register-no').hide()
     // update UI for esti. cost
     // XXX: strange bug. fee returns a bn object instead of a string
-    $('#register-fee').text(`${Web3.utils.fromWei(registerFee.toString())} DXN`)
+    if (await dett.checkIdAvailable(val)){
+      $('#register-no').show()
+      $('#register-ok').hide()
+    }
+    else{
+      $('#register-fee').text(`${Web3.utils.fromWei(registerFee.toString())} DXN`)
+      $('#register-no').hide()
+      $('#register-ok').show()
+    }
   } else {
     $('#register-ok').hide()
     $('#register-no').show()
@@ -59,11 +67,6 @@ const checkRules = val => {
 const doNewRegister = async nick => {
   if (!checkRules(nick)) {
     // failed pre-check
-    return
-  }
-  // TODO: dry run to check if it is used
-  if (!await dett.checkIdAvailable(nick)) {
-    alert('抱歉，此暱稱可能已被使用！')
     return
   }
   await dett.registerName(nick, registerFee)

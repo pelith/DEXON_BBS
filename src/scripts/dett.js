@@ -269,15 +269,7 @@ class Dett {
   }
 
   async checkIdAvailable(id) {
-    try {
-      await this.BBSPB.methods.register(id).estimateGas({
-        value: '0x7' + 'f'.repeat(63),
-      })
-      return true
-    } catch (e) {
-      console.log('checkIdAvailable', e)
-      return false
-    }
+    return +(await this.BBSPB.methods.name2addr(web3.utils.fromAscii(id)).call())
   }
 
   async registerName(id, registerFee) {

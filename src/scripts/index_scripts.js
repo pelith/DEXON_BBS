@@ -2,6 +2,7 @@ import ShortURL from './shortURL.js'
 
 import {htmlEntities, getUrlParameter, parseUser} from './utils.js'
 
+let dev = false
 let dett = null
 let focusPost
 let currentPage = null
@@ -269,6 +270,7 @@ const displayAnnouncement = (title, href, author) => {
 const main = async ({ _dexon, _dett }) => {
   // set _dett to global
   dett = _dett
+  dev = window.dev
 
   await renderArticles()
 

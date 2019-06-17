@@ -1,5 +1,6 @@
 import {getUrlParameter, parseUser, parseText, parseContent} from './utils.js'
 
+let dev = false
 let dett = null
 let tx = ''
 
@@ -245,6 +246,7 @@ const error = () => { $('#main-content-content').text('404 - Page not found.') }
 const main = async ({ _dexon, _dett }) => {
   // set _dett to global
   dett = _dett
+  dev = window.dev
 
   // get tx
   tx = getUrlParameter('tx')
