@@ -87,9 +87,9 @@ const keyboardHook = () => {
   })
 }
 
-const main = async ({ _dexon }) => {
-  dett = new Dett()
-  await dett.init(_dexon.dexonWeb3, Web3)
+const main = async ({ _dexon, _dett }) => {
+  // set _dett to global
+  dett = _dett
 
   _dexon.identityManager.on('login', ({account, wallet}) => {
     render(account)
@@ -129,6 +129,7 @@ const main = async ({ _dexon }) => {
   }
 
   const postFunc = () => {
+    if (!check()) return alert("標題跟內文都有內容才能發文!")
     if ((!checkContent() && !checkTitle()) || confirm('確定發文?')) {
       if (edit) {
         dett.edit(etx, $("#bbs-title").val(), $("#bbs-content").val())
@@ -136,17 +137,6 @@ const main = async ({ _dexon }) => {
       else dett.post($("#bbs-title").val(), $("#bbs-content").val())
     }
   }
-
-  const checkPost = () => {
-    $(".bbs-post")[0].disabled = !check()
-
-    // Handle mobile version
-    if ($(".bbs-post")[1] !== undefined)
-      $(".bbs-post")[1].disabled = !check()
-  }
-
-  $("#bbs-content")[0].onblur = checkPost
-  $("#bbs-title")[0].onblur = checkPost
 
   $(".bbs-post")[0].onclick = postFunc // 電腦版
   $(".bbs-post")[1].onclick = postFunc // 手機版

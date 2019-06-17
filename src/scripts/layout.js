@@ -13,6 +13,7 @@ const loginForm = $('#loginForm')
 const optInjected = loginForm.find('[name="accountSource"][value="injected"]')
 const optSeed = loginForm.find('[name="accountSource"][value="seed"]')
 
+let dett = null
 let account = ''
 let lastError
 let metaCache
@@ -50,7 +51,7 @@ const hotkey = () => {
   })
 }
 
-const render = (_account) => {
+const render = async (_account) => {
   account = _account ? _account : ''
 
   if (account){
@@ -58,19 +59,19 @@ const render = (_account) => {
     $("#bbs-login").hide()
     $("#bbs-more").hide()
     $("#bbs-user-menu").show()
+
+    const addrDisp = parseUser(account)
+    const nickname = await dett.getMetaByAddress(account)
+    if (nickname.name) {
+      $('#bbs-user').text(`${nickname.name} (${addrDisp})`)
+    } else {
+      $('#bbs-user').text(addrDisp)
+    }
   } else {
     // show Login/Register
     $("#bbs-login").show()
     $("#bbs-more").show()
     $("#bbs-user-menu").hide()
-  }
-
-  const addrDisp = parseUser(account)
-  const nickname = metaCache ? metaCache.name : null
-  if (nickname) {
-    $('#bbs-user').text(`${nickname} (${addrDisp})`)
-  } else {
-    $('#bbs-user').text(addrDisp)
   }
 }
 
@@ -163,11 +164,6 @@ const initLoginForm = async _dexon => {
       loginForm.find('.--injectedProviderStatus').text('正常')
       loginForm.find('.--injectedAccountAddress').text(account)
 
-      // re-emit login event if we are using wallet
-      manager.injectedAddress = account
-      if (manager.loginType == 'injected') {
-        manager.commitLoginType('injected')
-      }
     } else {
       if (getLoginFormType() == 'injected') {
         optInjected.prop('checked', false)
@@ -175,6 +171,11 @@ const initLoginForm = async _dexon => {
       toggleDescStatus(loginForm.find('.wrapper--injected'), false)
       loginForm.find('.--injectedProviderStatus').text('需要登入')
       loginForm.find('.wrapper--injected .desc-err').text('按這裡登入錢包')
+    }
+
+    manager.injectedAddress = account
+    if (manager.loginType == 'injected') {
+      manager.commitLoginType('injected')
     }
   })
 
@@ -207,6 +208,7 @@ window._layoutInit = async () => {
 
   const _dett = new Dett()
   await _dett.init(_dexon.dexonWeb3, Web3)
+  dett = _dett
 
   _dexon.identityManager.on('login', ({account}) => {
     render(account, _dexon)

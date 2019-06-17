@@ -18,9 +18,7 @@ const render = (_account) => {
   }
 }
 
-const renderArticle = async () => {
-
-
+const renderArticles = async () => {
   // Get milestones
   let milestones = await dett.BBSCache.methods.getMilestones().call()
   milestones = milestones.map((milestone) => {
@@ -272,7 +270,7 @@ const main = async ({ _dexon, _dett }) => {
   // set _dett to global
   dett = _dett
 
-  await renderArticle()
+  await renderArticles()
 
   _dexon.identityManager.on('login', ({account, wallet}) => {
     render(account)

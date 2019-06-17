@@ -1,6 +1,4 @@
-import Dett from './dett.js'
-
-import {htmlEntities, getUrlParameter, parseUser, parseText, parseContent} from './utils.js'
+import {getUrlParameter, parseUser, parseText, parseContent} from './utils.js'
 
 let dett = null
 let tx = ''
@@ -8,24 +6,26 @@ let tx = ''
 let isShowReply = false, isShowReplyType = false
 
 const render = (_account) => {
-  dett.account = _account
-
   if (_account){
     $('#reward-line').show()
 
     // only show reply btn at first time
     if (!$("#reply-user").text()) $("#reply-btn").show()
   }
-  else{
-    hideReplyTypeBtn()
-    hideReply()
-
+  else {
     $('#reward-line').hide()
 
     // hide reply btn
     $("#reply-btn").hide()
-
   }
+
+  // account not exist or not equal prevent account
+  if (!_account || (_account !== dett.account)){
+    hideReplyTypeBtn()
+    hideReply()
+  }
+
+  dett.account = _account
 
   $("#reply-user").text(parseUser(_account))
 }
@@ -100,101 +100,6 @@ const getCommentLink = comment => {
     .attr('href', 'https://dexscan.app/address/' + from)
 }
 
-const error = () => { $('#main-content-content').text('404 - Page not found.') }
-
-const main = async ({ _dexon }) => {
-  dett = new Dett()
-  await dett.init(_dexon.dexonWeb3, Web3)
-
-  // get tx
-  tx = getUrlParameter('tx')
-
-  // cache case
-  if (window.location.pathname.includes('/s/')) {
-    let shortlink = window.location.pathname.split('s/')[1].replace('.html', '')
-    tx = $('meta[property="dett:tx"]').attr("content")
-  }
-
-  if (!tx) return error()
-  if (!tx.match(/^0x[a-fA-F0-9]{64}$/g)) return error()
-
-  _dexon.identityManager.on('login', ({account, wallet}) => {
-    render(account)
-    dett.setWallet(wallet)
-  })
-  _dexon.identityManager.init()
-
-  $('#reply-btn').click(() => { showReplyType() })
-  $('#reply-type0').click(() => { showReply(0) })
-  $('#reply-type1').click(() => { showReply(1) })
-  $('#reply-type2').click(() => { showReply(2) })
-  $('#reply-cancel').click(() => { hideReply() })
-  $('#reply-send').click(() => { dett.reply(tx, $("#reply-type").val(), $("#reply-content").val()) })
-
-  $("#reply-content").blur(() => { $("#reply-content").val(parseText($("#reply-content").val(), dett.commentLength)) })
-
-  $('#reward-customize').click(() => showHideReward(true))
-
-  if (+window.localStorage.getItem('hotkey-mode')) keyboardHook()
-
-  const article = await dett.getArticle(tx, true)
-
-  // check transaction to address is bbs contract
-  if (!article) return error()
-
-  const contentNodeList = parseContent(article.content, 'post')
-
-  document.title = article.title + ' - Gossiping - DEXON BBS'
-
-  const authorLink = $('<a class="--link-to-addr hover" target="_blank"></a>')
-                    .text(parseUser(article.transaction.from, article.authorMeta))
-                    .attr('data-address', article.transaction.from)
-                    .attr('href', 'https://dexscan.app/address/' + article.transaction.from)
-  $('#main-content-author').append(authorLink)
-
-  $('#main-content-title').text(article.title)
-
-  $('.--send-reward').click(evt => {
-    const _ = $(evt.currentTarget)
-    // _.prop('disabled', true)
-    return dett.rewardAuthor(article, _.attr('data-value').toString())
-    .on('transactionHash', txhash => {
-      console.log('tx hash', txhash)
-      // _.prop('disabled', false)
-    })
-  })
-  $('#reward-custom-submit').click(evt => {
-    const _ = $('#reward-custom-value')
-    // _.prop('disabled', true)
-    if (!_.val().length) {
-      showHideReward(false)
-      return Promise.resolve()
-    }
-    return dett.rewardAuthor(article, _.val())
-    .on('transactionHash', txhash => {
-      console.log('tx hash', txhash)
-      // _.prop('disabled', false)
-    })
-    .finally(() => showHideReward(false))
-  })
-
-  const elContent = $('#main-content-content')
-  contentNodeList.forEach(el => elContent.append(el))
-
-  $('#main-content-date').text((''+new Date(article.block.timestamp)).substr(0,24))
-
-  $('#main-content-href').attr('href', window.location.href)
-  $('#main-content-href').text(window.location.href)
-  $('#main-content-from').text('@'+article.transaction.blockNumber)
-  $('#main-content-from').attr('href', 'https://dexonscan.app/transaction/'+tx)
-
-  const comments = await dett.getComments(tx)
-  comments.reduce( async (n,p) => {
-    await n
-    displayReply(...await p)
-  }, Promise.resolve())
-}
-
 const keyboardHook = () => {
   const returnCode = 13, escCode = 27, leftCode = 37, rightCode = 39
   $(document).keyup((e) => {
@@ -250,9 +155,10 @@ const renderArticle = (article) => {
   document.title = article.title + ' - Gossiping - DEXON BBS'
 
   const authorLink = $('<a class="--link-to-addr hover" target="_blank"></a>')
-                    .text(parseUser(article.transaction.from))
+                    .text(parseUser(article.transaction.from, article.authorMeta))
                     .attr('data-address', article.transaction.from)
                     .attr('href', 'https://dexscan.app/address/' + article.transaction.from)
+
   $('#main-content-author').append(authorLink)
 
   $('#main-content-title').text(article.title)
@@ -276,6 +182,17 @@ const renderArticle = (article) => {
     $('.edit').append(elem)
   }
 
+  $('#reply-btn').click(() => { showReplyType() })
+  $('#reply-type0').click(() => { showReply(0) })
+  $('#reply-type1').click(() => { showReply(1) })
+  $('#reply-type2').click(() => { showReply(2) })
+  $('#reply-cancel').click(() => { hideReply() })
+  $('#reply-send').click(() => { dett.reply(tx, $("#reply-type").val(), $("#reply-content").val()) })
+
+  $("#reply-content").blur(() => { $("#reply-content").val(parseText($("#reply-content").val(), dett.commentLength)) })
+
+  $('#reward-customize').click(() => showHideReward(true))
+
   // Render Reward
   $('.--send-reward').click(evt => {
     const _ = $(evt.currentTarget)
@@ -298,8 +215,7 @@ const renderArticle = (article) => {
       console.log('tx hash', txhash)
       // _.prop('disabled', false)
     })
-    .on('confirmation', () => showHideReward(false))
-    .on('error', () => showHideReward(false))
+    .finally(() => showHideReward(false))
   })
 }
 
@@ -322,6 +238,48 @@ const displayReply = (comment) => {
 
   elem.append(`<span class="push-ipdatetime">${formatDate}</span>`)
   $('.comment').append(elem)
+}
+
+const error = () => { $('#main-content-content').text('404 - Page not found.') }
+
+const main = async ({ _dexon, _dett }) => {
+  // set _dett to global
+  dett = _dett
+
+  // get tx
+  tx = getUrlParameter('tx')
+
+  // cache case
+  if (window.location.pathname.includes('/s/')) {
+    let shortlink = window.location.pathname.split('s/')[1].replace('.html', '')
+    tx = $('meta[property="dett:tx"]').attr("content")
+  }
+
+  if (!tx) return error()
+  if (!tx.match(/^0x[a-fA-F0-9]{64}$/g)) return error()
+
+  _dexon.identityManager.on('login', ({account, wallet}) => {
+    render(account)
+    dett.setWallet(wallet)
+  })
+  _dexon.identityManager.init()
+
+  // render Article
+  const article = await dett.getArticle(tx, true)
+  // check transaction to address is bbs contract
+  if (!article) return error()
+
+  renderArticle(article)
+
+  // render Comments
+  const comments = await dett.getComments(tx)
+  comments.reduce( async (n,p) => {
+    await n
+    displayReply(...await p)
+  }, Promise.resolve())
+
+  // hotkey mode
+  if (+window.localStorage.getItem('hotkey-mode')) keyboardHook()
 }
 
 _layoutInit().then(main)
