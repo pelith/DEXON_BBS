@@ -58,6 +58,7 @@
     {% block content -%}
     {%- endblock %}
 
+    {% if showTopbar -%}
     <div id="loginModal" class="modal fade" tabindex="-1" role="dialog">
       <div class="modal-dialog" role="document">
         <div class="modal-content">
@@ -125,6 +126,7 @@
         </div>
       </div>
     </div>
+    {%- endif %}
 
     <script language="javascript" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
     <script language="javascript" type="text/javascript" src="https://cdn.jsdelivr.net/npm/bootstrap@4.3.1/js/dist/util.js"></script>
