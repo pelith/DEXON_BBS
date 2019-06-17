@@ -15,14 +15,10 @@ const checkTitle = () => { return $("#bbs-title").val().length > 0 }
 const check = () => { return (checkContent() && checkTitle()) }
 
 const render = (_account) => {
+  console.log(_account)
   account = _account
   dett.account = account
   if (_account){
-    $(".bbs-post")[0].disabled = !check()
-
-    // Handle mobile version
-    if ($(".bbs-post")[1] !== undefined)
-      $(".bbs-post")[1].disabled = !check()
     $("#bbs-user").text(parseUser(account))
   }
   else
@@ -139,6 +135,17 @@ const main = async ({ _dexon }) => {
       else dett.post($("#bbs-title").val(), $("#bbs-content").val())
     }
   }
+
+  const checkPost = () => {
+    $(".bbs-post")[0].disabled = !check()
+
+    // Handle mobile version
+    if ($(".bbs-post")[1] !== undefined)
+      $(".bbs-post")[1].disabled = !check()
+  }
+
+  $("#bbs-content")[0].onblur = checkPost
+  $("#bbs-title")[0].onblur = checkPost
 
   $(".bbs-post")[0].onclick = postFunc // 電腦版
   $(".bbs-post")[1].onclick = postFunc // 手機版
