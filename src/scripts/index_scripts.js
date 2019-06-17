@@ -270,7 +270,7 @@ const displayAnnouncement = (title, href, author) => {
 const main = async ({ _dexon, _dett }) => {
   // set _dett to global
   dett = _dett
-  dev = window.dev
+  if (window.dev) dev = true
 
   await renderArticles()
 

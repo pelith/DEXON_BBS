@@ -246,7 +246,7 @@ const error = () => { $('#main-content-content').text('404 - Page not found.') }
 const main = async ({ _dexon, _dett }) => {
   // set _dett to global
   dett = _dett
-  dev = window.dev
+  if (window.dev) dev = true
 
   // get tx
   tx = getUrlParameter('tx')
