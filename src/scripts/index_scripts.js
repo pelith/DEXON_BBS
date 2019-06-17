@@ -26,6 +26,12 @@ const main = async ({ _dexon }) => {
   dett = new Dett()
   await dett.init(_dexon.dexonWeb3, Web3)
 
+  _dexon.identityManager.on('login', ({account, wallet}) => {
+    render(account)
+    dett.setWallet(wallet)
+  })
+  _dexon.identityManager.init()
+
   if (+window.localStorage.getItem('hotkey-mode')) keyboardHook()
 
   let milestones = await dett.BBSCache.methods.getMilestones().call()
@@ -93,11 +99,6 @@ const main = async ({ _dexon }) => {
     sessionStorage.setItem('focus-href', '')
     sessionStorage.setItem('focus-state', 0)
   }
-
-  _dexon.identityManager.on('login', (account) => {
-    render(account)
-  })
-  _dexon.identityManager.init()
 
   attachDropdown()
 }

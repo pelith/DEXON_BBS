@@ -14,7 +14,7 @@ const { execSync } = require('child_process');
   const options = {
     watch: true,
     contentHash: false,
-    minify: true,
+    // minify: true,
     outDir: './dist',
     publicUrl: '/'
   }

@@ -118,15 +118,11 @@ const main = async ({ _dexon }) => {
   if (!tx) return error()
   if (!tx.match(/^0x[a-fA-F0-9]{64}$/g)) return error()
 
-  _dexon.identityManager.on('login', (account) => {
+  _dexon.identityManager.on('login', ({account, wallet}) => {
     render(account)
+    dett.setWallet(wallet)
   })
   _dexon.identityManager.init()
-
-  if (dett.account) {
-    const meta = await dett.getMetaByAddress(dett.account)
-    _dexon.emit('_setMeta', meta)
-  }
 
   $('#reply-btn').click(() => { showReplyType() })
   $('#reply-type0').click(() => { showReply(0) })

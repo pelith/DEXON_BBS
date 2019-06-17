@@ -99,6 +99,8 @@ const initLoginForm = async _dexon => {
     const address = wallet.getAddressString()
     toggleDescStatus($el, true)
     loginForm.find('.--seedAccountAddress').text(address)
+    // TODO: move the logic into identityManager
+    manager.wallet = wallet
     manager.seedAddress = address
   }
 
@@ -202,7 +204,7 @@ window._layoutInit = async () => {
   // also setup identityManager
   await initLoginForm(_dexon)
 
-  _dexon.identityManager.on('login', account => {
+  _dexon.identityManager.on('login', ({account}) => {
     render(account, _dexon)
   })
 
