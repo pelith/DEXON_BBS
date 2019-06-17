@@ -138,7 +138,8 @@ class Dett {
 
     web3 = new _Web3(new _Web3.providers.WebsocketProvider('wss://mainnet-rpc.dexon.org/ws'))
     // Todo : Should be env
-    cacheweb3 = new _Web3(new _Web3.providers.WebsocketProvider('wss://mainnet-rpc.dexon.org/ws'))
+    cacheweb3 = web3
+    // cacheweb3 = new _Web3(new _Web3.providers.WebsocketProvider('wss://mainnet-rpc.dexon.org/ws'))
     // WTF: cacheweb3 is already a global
     this.cacheweb3 = cacheweb3
 
