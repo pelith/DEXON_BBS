@@ -23,10 +23,6 @@ const main = async ({ _dexon }) => {
   // for dev
   if (+window.localStorage.getItem('dev')) dev = true
 
-  _dexon.on('update',(account) => {
-    render(account)
-  })
-
   dett = new Dett()
   await dett.init(_dexon.dexonWeb3, Web3)
 
@@ -90,17 +86,18 @@ const main = async ({ _dexon }) => {
     displayAnnouncement('[公告] 領取免費的 DEXON 代幣 &amp; DEXON BBS 使用教學', 'about'+(dev?'.html':''), 'Admin')
   }
 
-  if (+window.localStorage.getItem('focus-state')===2){
-    const post =  $('.r-list-container > .r-ent > div > a[href="'+window.localStorage.getItem('focus-href')+'"]')
+  if (+sessionStorage.getItem('focus-state')===2){
+    const post =  $('.r-list-container > .r-ent > div > a[href="'+sessionStorage.getItem('focus-href')+'"]')
+
     focusOnPost(post.parent().parent()[0], true)
-    window.localStorage.setItem('focus-href', '')
-    window.localStorage.setItem('focus-state', 0)
+    sessionStorage.setItem('focus-href', '')
+    sessionStorage.setItem('focus-state', 0)
   }
 
-  if (dett.account) {
-    const meta = await dett.getMetaByAddress(dett.account)
-    _dexon.emit('_setMeta', meta)
-  }
+  _dexon.identityManager.on('login', (account) => {
+    render(account)
+  })
+  _dexon.identityManager.init()
 
   attachDropdown()
 }
@@ -148,6 +145,10 @@ const focusOnPost = (post, scroll, up) => {
 const keyboardHook = () => {
   const upCode = 38, rightCode = 39, downCode = 40
   $(document).keydown((e) => {
+    if ($(document.body).hasClass('modal-open')) {
+      return
+    }
+
     if (e.keyCode === upCode) {
       let posts = $('.r-list-container > .r-ent')
       if (posts.length === 0) {
@@ -180,8 +181,8 @@ const keyboardHook = () => {
     }
     if (e.keyCode == rightCode && focusPost) {
       const href = $('.title > a', focusPost).attr('href')
-      window.localStorage.setItem('focus-href', href)
-      window.localStorage.setItem('focus-state', 1)
+      sessionStorage.setItem('focus-href', href)
+      sessionStorage.setItem('focus-state', 1)
       window.location = href
     }
 

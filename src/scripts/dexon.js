@@ -33,12 +33,95 @@ class EventEmitter{
   }
 }
 
-class Dexon extends EventEmitter {
-  constructor(_dexon) {
+// provide an abstraction over dexon provider & seed
+class IdentityManager extends EventEmitter {
+  constructor(provider) {
     super()
-    this.dexon = _dexon
+    this.injectedProvider = provider
+    this.injectedAddress = null
+    this.seedAddress = null
+    this.__loginType = null
+    this.__seed = localStorage.getItem('dett-seed') || null
+  }
+
+  init() {
+    // recover last used login type
+    const savedLoginType = localStorage.getItem('dett-login-type')
+    if (savedLoginType) {
+      this.commitLoginType(savedLoginType)
+    }
+  }
+
+  commitLoginType(type) {
+    this.__loginType = type
+    if (this.activeAccount) {
+      this.emit('login', this.activeAccount)
+    }
+  }
+
+  get loginType() {
+    return this.__loginType
+  }
+
+  get activeAccount() {
+    const t = this.loginType
+    if (t == 'injected') {
+      return this.injectedAddress
+    } else if (t == 'seed') {
+      return this.seedAddress
+    } else if (t != null) {
+      console.warn('[IdentityManager] Unsupported login type', t)
+      return ''  // NULL?
+    }
+  }
+
+  get seed() {
+    return this.__seed
+  }
+
+  set seed(s) {
+    if (s == null) {
+      localStorage.removeItem('dett-seed')
+      return
+    }
+    this.__seed = s
+    localStorage.setItem('dett-seed', s)
+  }
+}
+
+class Dexon extends EventEmitter {
+  constructor(_dexon, identityManager = null) {
+    super()
+    // this.dexon = _dexon
+    this.providerName = null
     this.dexonWeb3 = ''
-    this.__selectedAddress = ''
+    this.__selectedAddress = null
+    this.__networkId = null
+
+    const providerDetectList = [
+      {
+        name: 'DEXON Wallet',
+        factory: () => _dexon,
+      },
+      {
+        name: 'MetaMask',
+        factory: () => window.ethereum,
+      },
+    ]
+    providerDetectList.some(({name, factory}) => {
+      const p = factory()
+      if (p) {
+        this.dexon = p
+        this.providerName = name
+        return true
+      } else {
+        return false
+      }
+    })
+
+    this.isOfficial = (this.dexon && this.dexon == _dexon)
+    this.identityManager = identityManager || new IdentityManager(this.dexon)
+
     this.init()
   }
 
@@ -54,18 +137,23 @@ class Dexon extends EventEmitter {
             this.selectedAddress = 'selectedAddress' in data ? data.selectedAddress : ''
           }
       })
-    }
-    else {
-      const start = async () => {
+    } else {
+      const poll = async () => {
         const networkID = await this.dexonWeb3.eth.net.getId()
+        this.networkId = networkID
         if (networkID === 237) {
           const accounts = await this.dexonWeb3.eth.getAccounts()
           this.selectedAddress = accounts.length > 0 ? accounts[0] : ''
+        } else {
+          const error = new Error('Wrong network')
+          error.code = 'wrong-network'
+          this.emit('error', error)
+          return
         }
       }
 
-      start()
-      setInterval(start, 1000)
+      poll()
+      setInterval(poll, 1000)
     }
   }
 
@@ -81,10 +169,22 @@ class Dexon extends EventEmitter {
   }
 
   set selectedAddress(addr) {
-    if (this.__selectedAddress != addr) {
-      this.emit('update', addr)
-    }
+    if (this.__selectedAddress == addr) return
+    this.emit('update', addr)
     this.__selectedAddress = addr
+  }
+
+  get networkId() {
+    return this.__networkId
+  }
+
+  set networkId(id) {
+    if (this.__networkId == id) return
+    this.emit('updateNetwork', {
+      id,
+      isValid: id === 237,
+    })
+    this.__networkId = id
   }
 }
 

@@ -103,10 +103,6 @@ const getCommentLink = comment => {
 const error = () => { $('#main-content-content').text('404 - Page not found.') }
 
 const main = async ({ _dexon }) => {
-  _dexon.on('update',(account) => {
-    render(account)
-  })
-
   dett = new Dett()
   await dett.init(_dexon.dexonWeb3, Web3)
 
@@ -121,6 +117,11 @@ const main = async ({ _dexon }) => {
 
   if (!tx) return error()
   if (!tx.match(/^0x[a-fA-F0-9]{64}$/g)) return error()
+
+  _dexon.identityManager.on('login', (account) => {
+    render(account)
+  })
+  _dexon.identityManager.init()
 
   if (dett.account) {
     const meta = await dett.getMetaByAddress(dett.account)
@@ -201,13 +202,16 @@ const main = async ({ _dexon }) => {
 const keyboardHook = () => {
   const returnCode = 13, escCode = 27, leftCode = 37, rightCode = 39
   $(document).keyup((e) => {
+    if ($(document.body).hasClass('modal-open')) {
+      return
+    }
     if (!isShowReply && !isShowReplyType && dett.account && e.keyCode === 'X'.charCodeAt()) {
       showReplyType()
       return
     }
     else if (!isShowReply && !isShowReplyType && e.keyCode === leftCode) {
-      if (window.localStorage.getItem('focus-href'))
-        window.localStorage.setItem('focus-state', 2)
+      if (sessionStorage.getItem('focus-href'))
+        sessionStorage.setItem('focus-state', 2)
       window.location = '/'
       return
     }

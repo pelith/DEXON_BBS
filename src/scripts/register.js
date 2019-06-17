@@ -69,18 +69,20 @@ const doNewRegister = async nick => {
   await dett.registerName(nick, registerFee)
 }
 
-const main = async () => {
-  const _dexon = new Dexon(window.dexon)
-  _dexon.on('update',(account) => {
-    render(account)
-  })
-
+const main = async ({ _dexon }) => {
   dett = new Dett()
   await dett.init(_dexon.dexonWeb3, Web3)
+
+  _dexon.identityManager.on('login', (account) => {
+    console.log(account)
+    render(account)
+  })
+  _dexon.identityManager.init()
 
   const elNickname = $('#register-nickname')
   elNickname.on('input', evt => checkRules($(evt.currentTarget).val()))
   $('#register-submit').click(() => doNewRegister(elNickname.val()))
+
 
   registerFee = await dett.getRegisterFee()
   checkRules(elNickname.val())
