@@ -289,6 +289,7 @@ class Dett {
         // FIXME: this gas estimation is WRONG, why?
         gas: gas * 2,
         value: registerFee,
+        chainId:237
       }))
       window.location.reload()
     }
@@ -311,7 +312,7 @@ class Dett {
     if (tx) {
       const gas = await this.dettBBSExt.methods.Reply(tx, +replyType, content).estimateGas()
       try {
-        await this.dettBBSExt.methods.Reply(tx, +replyType, content).send({ from: this.account, gas: gas })
+        await this.dettBBSExt.methods.Reply(tx, +replyType, content).send({ from: this.account, gas: gas, chainId:237 })
         .on('confirmation', (confirmationNumber, receipt) => {
           window.location.reload()
         })
@@ -330,7 +331,7 @@ class Dett {
 
     const gas = await this.dettBBSExt.methods.Post(post).estimateGas()
     try {
-      await this.dettBBSExt.methods.Post(post).send({ from: this.account, gas: gas })
+      await this.dettBBSExt.methods.Post(post).send({ from: this.account, gas: gas, chainId:237 })
       .on('confirmation', (confirmationNumber, receipt) => {
         window.location = '/'
       })
@@ -352,7 +353,7 @@ class Dett {
 
     const gas = await this.dexonBBSEdit.methods.edit(tx, post).estimateGas()
     try {
-      await this.dettBBSEdit.methods.edit(tx, post).send({ from: this.account, gas: gas })
+      await this.dettBBSEdit.methods.edit(tx, post).send({ from: this.account, gas: gas, chainId:237 })
       .on('confirmation', (confirmationNumber, receipt) => {
         window.location = '/'
       })

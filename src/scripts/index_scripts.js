@@ -1,11 +1,10 @@
-import Dett from './dett.js'
 import ShortURL from './shortURL.js'
 
 import {htmlEntities, getUrlParameter, parseUser} from './utils.js'
 
 let dett = null
 let focusPost
-let dev = false // for parcel debug use
+let currentPage = null
 
 const render = (_account) => {
   dett.account = _account
@@ -19,21 +18,8 @@ const render = (_account) => {
   }
 }
 
-const main = async ({ _dexon }) => {
-  // for dev
-  if (+window.localStorage.getItem('dev')) dev = true
-
-  dett = new Dett()
-  await dett.init(_dexon.dexonWeb3, Web3)
-
-  _dexon.identityManager.on('login', ({account, wallet}) => {
-    render(account)
-    dett.setWallet(wallet)
-  })
-  _dexon.identityManager.init()
-
-  if (+window.localStorage.getItem('hotkey-mode')) keyboardHook()
-
+const renderArticles = async () => {
+  // Get milestones
   let milestones = await dett.BBSCache.methods.getMilestones().call()
   milestones = milestones.map((milestone) => {
     return dett.cacheweb3.utils.hexToUtf8(milestone)
@@ -49,6 +35,7 @@ const main = async ({ _dexon }) => {
     const p = getUrlParameter('p')
     if (p && p.match(/[0-9]+/g) && (1 <= +p && +p <= milestones.length)) {
       const _p = +p
+      currentPage = _p
       if (_p === 1) { // first page
         $("#prevpage").addClass('disabled')
         $("#nextpage").removeClass('disabled')
@@ -92,25 +79,26 @@ const main = async ({ _dexon }) => {
     displayAnnouncement('[公告] 領取免費的 DEXON 代幣 &amp; DEXON BBS 使用教學', 'about'+(dev?'.html':''), 'Admin')
   }
 
-  if (+sessionStorage.getItem('focus-state')===2){
-    const post =  $('.r-list-container > .r-ent > div > a[href="'+sessionStorage.getItem('focus-href')+'"]')
-
-    focusOnPost(post.parent().parent()[0], true)
-    sessionStorage.setItem('focus-href', '')
-    sessionStorage.setItem('focus-state', 0)
-  }
-
-  attachDropdown()
+  // atircles list attach dropdown list
+  articleAttachDropdown()
 }
 
-const attachDropdown = () => {
+const articleAttachDropdown = () => {
   $('.article-menu > .trigger').click((e) => {
-      var isShown = e.target.parentElement.classList.contains('shown');
-      $('.article-menu.shown').toggleClass('shown');
-      if (!isShown) {
-          e.target.parentElement.classList.toggle('shown');
-      }
-      e.stopPropagation();
+    // check show article-edit condition
+    const selectedArticleAuthor = $(e.target).parent().parent().children(".author").children().attr("data-address")
+    if (selectedArticleAuthor.toLowerCase() === dett.account.toLowerCase()) {
+      $(e.target).parent().children(".dropdown").children(".article-edit").show()
+    } else {
+      $(e.target).parent().children(".dropdown").children(".article-edit").hide()
+    }
+
+    var isShown = e.target.parentElement.classList.contains('shown');
+    $('.article-menu.shown').toggleClass('shown');
+    if (!isShown) {
+      e.target.parentElement.classList.toggle('shown');
+    }
+    e.stopPropagation()
   })
 
   $(document).click((e) => { $('.article-menu.shown').toggleClass('shown') })
@@ -183,6 +171,8 @@ const keyboardHook = () => {
     if (e.keyCode == rightCode && focusPost) {
       const href = $('.title > a', focusPost).attr('href')
       sessionStorage.setItem('focus-href', href)
+      if (currentPage)
+        sessionStorage.setItem('focus-page', currentPage)
       sessionStorage.setItem('focus-state', 1)
       window.location = href
     }
@@ -212,9 +202,9 @@ const directDisplay = (article, votes, banned) => {
   elem.html(
     `<div class="nrec"></div>
     <div class="title">
-    <a href="${href}">
-      ${htmlEntities(article.title)}
-    </a>
+      <a href="${href}">
+        ${htmlEntities(article.title)}
+      </a>
     </div>
     <div class="meta">
       <div class="author">
@@ -225,9 +215,8 @@ const directDisplay = (article, votes, banned) => {
       <div class="article-menu">
         <div class="trigger" style="display: none;">⋯</div>
         <div class="dropdown">
-          ${article.author.toLowerCase() === dett.account.toLowerCase() ?
-            `<div class="article-edit item"><a href="post.html?etx=${article.transaction.hash}">編輯文章</a></div>` : ''}
-          <div id="article-reply" class="item"><a href="post.html?rtx=${article.transaction.hash}">回應文章</a></div>
+          <div class="article-reply item"><a href="post.html?rtx=${article.transaction.hash}">回應文章</a></div>
+          <div class="article-edit item" style="display: none;"><a href="post.html?etx=${article.transaction.hash}">編輯文章</a></div>
         </div>
       </div>
       <div class="date">...</div>
@@ -275,6 +264,32 @@ const displayAnnouncement = (title, href, author) => {
     </div>`)
 
   $('.r-list-container.action-bar-margin.bbs-screen').append(elem)
+}
+
+const main = async ({ _dexon, _dett }) => {
+  // set _dett to global
+  dett = _dett
+
+  await renderArticles()
+
+  _dexon.identityManager.on('login', ({account, wallet}) => {
+    render(account)
+    dett.setWallet(wallet)
+  })
+  _dexon.identityManager.init()
+
+  // keyboard mode
+  if (+window.localStorage.getItem('hotkey-mode')) {
+    keyboardHook()
+
+    if (+sessionStorage.getItem('focus-state')===2){
+      const post =  $('.r-list-container > .r-ent > div > a[href="'+sessionStorage.getItem('focus-href')+'"]')
+
+      focusOnPost(post.parent().parent()[0], true)
+      sessionStorage.removeItem('focus-href')
+      sessionStorage.removeItem('focus-state')
+    }
+  }
 }
 
 _layoutInit().then(main)

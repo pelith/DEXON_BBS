@@ -60,7 +60,8 @@ class IdentityManager extends EventEmitter {
         throw new Error('Seed is to be used but no valid wallet is given.')
       }
     }
-    if (this.activeAccount) {
+
+    if (this.activeAccount !== null) {
       this.emit('login', {
         account: this.activeAccount,
         wallet: type == 'seed' ? this.wallet : null,
@@ -80,7 +81,7 @@ class IdentityManager extends EventEmitter {
       return this.seedAddress
     } else if (t != null) {
       console.warn('[IdentityManager] Unsupported login type', t)
-      return ''  // NULL?
+      return null  // NULL?
     }
   }
 
@@ -143,6 +144,7 @@ class Dexon extends EventEmitter {
       this.dexonWeb3.currentProvider.publicConfigStore.on('update', (data) => {
         if ('networkVersion' in data)
           if (data.networkVersion === '237'){
+            console.log(data.selectedAddress)
             this.selectedAddress = 'selectedAddress' in data ? data.selectedAddress : ''
           }
       })
