@@ -1,5 +1,4 @@
 import Dexon from './dexon.js'
-import Dett from './dett.js'
 
 import {parseText, parseUser, getUrlParameter} from './utils.js'
 
@@ -15,7 +14,6 @@ const checkTitle = () => { return $("#bbs-title").val().length > 0 }
 const check = () => { return (checkContent() && checkTitle()) }
 
 const render = (_account) => {
-  console.log(_account)
   account = _account
   dett.account = account
   if (_account){
@@ -86,7 +84,6 @@ const keyboardHook = () => {
     }
   })
 }
-
 const main = async ({ _dexon, _dett }) => {
   // set _dett to global
   dett = _dett

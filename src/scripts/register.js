@@ -1,5 +1,4 @@
 import Dexon from './dexon.js'
-import Dett from './dett.js'
 
 import {parseText, parseUser} from './utils.js'
 
@@ -24,9 +23,19 @@ const render = (_account) => {
   $('#main-content-address').text(account)
 }
 
-const checkRules = async (val) => {
+// XXX: check rules originally checks against rules in order to merely update the view;
+// but eventually also check for availability, and the view update is then async.
+
+// returns if the nickname is valid
+const checkRules = async nick => {
   const ruleCtrls = $('.--rule')
   ruleCtrls.removeClass('f1 f2 hl')
+
+  if (!nick) {
+    $('#register-ok').hide()
+    $('#register-no').hide()
+    return false
+  }
 
   const isValid = [
     v => v.match(/^[A-Za-z0-9 ]{3,12}$/),
@@ -34,7 +43,7 @@ const checkRules = async (val) => {
     v => !v.match(/^\d+$/),
     v => !v.match(/  +/),
   ].every((test, idx) => {
-    if (test(val)) {
+    if (test(nick)) {
       ruleCtrls.eq(idx).addClass('hl f2')
       return true
     }
@@ -42,30 +51,37 @@ const checkRules = async (val) => {
     return false
   })
 
-  // TODO: dry run to check if it is used
+  $('#register-submit').prop('disabled', !isValid)
 
   if (isValid) {
     // update UI for esti. cost
-    // XXX: strange bug. fee returns a bn object instead of a string
-    if (await dett.checkIdAvailable(val)){
-      $('#register-no').show()
-      $('#register-ok').hide()
-    }
-    else{
-      $('#register-fee').text(`${Web3.utils.fromWei(registerFee.toString())} DXN`)
-      $('#register-no').hide()
+    const isAvailable = await dett.checkIdAvailable(nick)
+
+    if (isAvailable) {
       $('#register-ok').show()
+      $('#register-no').hide()
+      // XXX: strange web3 bug. fee returns a bn object instead of a string
+      $('#register-fee').text(`${Web3.utils.fromWei(registerFee.toString())} DXN`)
+    } else {
+      $('#register-ok').hide()
+      $('#register-no').show()
+      $('#register-no').text('此ID已被註冊 :(')
+      // XXX: revert; a bad pattern?
+      $('#register-submit').prop('disabled', true)
     }
   } else {
     $('#register-ok').hide()
     $('#register-no').show()
+    $('#register-no').text('無法使用此ID :(')
   }
 
   return isValid
 }
 
 const doNewRegister = async nick => {
-  if (!checkRules(nick)) {
+  if (!await checkRules(nick) ||
+      // do not rely on view state
+      !await dett.checkIdAvailable(nick)) {
     // failed pre-check
     return
   }
@@ -73,7 +89,6 @@ const doNewRegister = async nick => {
 }
 
 const main = async ({ _dexon, _dett }) => {
-  // set _dett to global
   dett = _dett
 
   _dexon.identityManager.on('login', ({account, wallet}) => {
@@ -87,10 +102,10 @@ const main = async ({ _dexon, _dett }) => {
   $('#register-submit').click(() => doNewRegister(elNickname.val()))
 
   registerFee = await dett.getRegisterFee()
-  // checkRules(elNickname.val())
+  checkRules(elNickname.val())
 
   const history = await dett.getRegisterHistory()
-  console.log(history)
+  console.log('name history', history)
 }
 
 _layoutInit().then(main)

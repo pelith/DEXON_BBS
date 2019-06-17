@@ -105,6 +105,8 @@ class Dexon extends EventEmitter {
     // this.dexon = _dexon
     this.providerName = null
     this.dexonWeb3 = ''
+    this.__selectedAddress = ''
+    this.__dett = null
     this.__selectedAddress = null
     this.__networkId = null
 
@@ -144,7 +146,6 @@ class Dexon extends EventEmitter {
       this.dexonWeb3.currentProvider.publicConfigStore.on('update', (data) => {
         if ('networkVersion' in data)
           if (data.networkVersion === '237'){
-            console.log(data.selectedAddress)
             this.selectedAddress = 'selectedAddress' in data ? data.selectedAddress : ''
           }
       })

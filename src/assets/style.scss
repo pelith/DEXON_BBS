@@ -141,6 +141,9 @@ a.--link-to-addr.hover:hover:after {
 /* event: hover */
 .tooltip:hover span{ display: block; }
 
+.wrappable {
+  word-break: break-all;
+}
 
 @media (max-width: 375px) {
   #logo:before {

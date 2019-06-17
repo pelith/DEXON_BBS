@@ -19,8 +19,19 @@ const render = (_account) => {
   }
 }
 
-const renderArticles = async () => {
-  // Get milestones
+const main = async ({ _dett, _dexon }) => {
+  // for dev
+  if (+window.localStorage.getItem('dev')) dev = true
+  if (+window.localStorage.getItem('hotkey-mode')) keyboardHook()
+
+  dett = _dett
+
+  _dexon.identityManager.on('login', ({account, wallet}) => {
+    render(account)
+    dett.setWallet(wallet)
+  })
+  _dexon.identityManager.init()
+
   let milestones = await dett.BBSCache.methods.getMilestones().call()
   milestones = milestones.map((milestone) => {
     return dett.cacheweb3.utils.hexToUtf8(milestone)
@@ -78,6 +89,13 @@ const renderArticles = async () => {
     $('.r-list-container.action-bar-margin.bbs-screen').append($('<div class="r-list-sep"></div>'))
     displayAnnouncement('[公告] DEXON BBS 搬家預告', 'mayday'+(dev?'.html':''), 'Admin')
     displayAnnouncement('[公告] 領取免費的 DEXON 代幣 &amp; DEXON BBS 使用教學', 'about'+(dev?'.html':''), 'Admin')
+  }
+
+  if (+window.localStorage.getItem('focus-state')===2){
+    const post =  $('.r-list-container > .r-ent > div > a[href="'+window.localStorage.getItem('focus-href')+'"]')
+    focusOnPost(post.parent().parent()[0], true)
+    window.localStorage.setItem('focus-href', '')
+    window.localStorage.setItem('focus-state', 0)
   }
 
   // atircles list attach dropdown list
@@ -267,31 +285,5 @@ const displayAnnouncement = (title, href, author) => {
   $('.r-list-container.action-bar-margin.bbs-screen').append(elem)
 }
 
-const main = async ({ _dexon, _dett }) => {
-  // set _dett to global
-  dett = _dett
-  if (window.dev) dev = true
-
-  await renderArticles()
-
-  _dexon.identityManager.on('login', ({account, wallet}) => {
-    render(account)
-    dett.setWallet(wallet)
-  })
-  _dexon.identityManager.init()
-
-  // keyboard mode
-  if (+window.localStorage.getItem('hotkey-mode')) {
-    keyboardHook()
-
-    if (+sessionStorage.getItem('focus-state')===2){
-      const post =  $('.r-list-container > .r-ent > div > a[href="'+sessionStorage.getItem('focus-href')+'"]')
-
-      focusOnPost(post.parent().parent()[0], true)
-      sessionStorage.removeItem('focus-href')
-      sessionStorage.removeItem('focus-state')
-    }
-  }
-}
 
 _layoutInit().then(main)

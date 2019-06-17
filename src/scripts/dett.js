@@ -14,7 +14,7 @@ const BBSContract = '0x663002C4E41E5d04860a76955A7B9B8234475952'
 const BBSExtContract = '0xec368ba43010056abb3e5afd01957ea1fdbd3d8f'
 const BBSAdminContract = '0x88eb672e01c1a2a6f398b9d52c7dab5f87ca8c2c'
 const BBSEditContract = '0x826cb3e5aa484869d9511aad3ead74d382608147'
-const BBSPBContract = '0x1BEB78368d5182F1f4a9868b3c78270e54976a86'
+const BBSPBContract = '0xb6bE4987F1f7448FCe4abB06f23A571EFB4BaF10'
 const BBSCacheContract = '0xff9cae0ecec479b87472df77b1f5d8d182ab7658'
 
 const fromBlock = '1170000'
@@ -154,7 +154,7 @@ class Dett {
     this.__contractsFromInjectedWeb3.dettBBSPB = this.dettweb3 ? new this.dettweb3.eth.Contract(ABIBBSPB, BBSPBContract) : null
 
     // trigger selection of dettBBS* contracts
-    this.setWallet(null)
+    // this.setWallet(null)
 
     this.BBS = new web3.eth.Contract(ABIBBS, BBSContract)
     this.BBSExt = new web3.eth.Contract(ABIBBSExt, BBSExtContract)
@@ -269,7 +269,16 @@ class Dett {
   }
 
   async checkIdAvailable(id) {
-    return +(await this.BBSPB.methods.name2addr(web3.utils.fromAscii(id)).call())
+    // return !+(await this.BBSPB.methods.name2addr(web3.utils.fromAscii(id.toLowerCase())).call())
+    try {
+      // dry run is a dirty but works
+      await this.BBSPB.methods.register(id).estimateGas({
+        value: '0x7' + 'f'.repeat(63),
+      })
+      return true
+    } catch (e) {
+      return false
+    }
   }
 
   async registerName(id, registerFee) {

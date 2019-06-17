@@ -18,6 +18,9 @@ let account = ''
 let lastError
 let metaCache
 
+const $topBar = $('#topbar')
+const $bbsUser = $topBar.find('#bbs-user')
+
 const attachDropdown = () => {
   $('.user-menu > .trigger').click((e) => {
       var isShown = e.target.parentElement.classList.contains('shown');
@@ -55,11 +58,6 @@ const render = async (_account) => {
   account = _account ? _account : ''
 
   if (account){
-    // show User
-    $("#bbs-login").hide()
-    $("#bbs-more").hide()
-    $("#bbs-user-menu").show()
-
     const addrDisp = parseUser(account)
     const nickname = await dett.getMetaByAddress(account)
     if (nickname.name) {
@@ -67,6 +65,11 @@ const render = async (_account) => {
     } else {
       $('#bbs-user').text(addrDisp)
     }
+
+    // show User
+    $("#bbs-login").hide()
+    $("#bbs-more").hide()
+    $("#bbs-user-menu").show()
   } else {
     // show Login/Register
     $("#bbs-login").show()
@@ -201,14 +204,35 @@ const initLoginForm = async _dexon => {
 }
 
 window._layoutInit = async () => {
+  // init dexon account first
   const _dexon = new Dexon(window.dexon)
   // populate login form event / initial state
-  // also setup identityManager‘
-  await initLoginForm(_dexon)
+  // also setup identityManager
+  if (loginForm[0]) {
+    await initLoginForm(_dexon)
+  }
+
+  // lightweight, sync version is used until dett object is initialized
+  function renderTransient(account) {
+    lastError = null
+    render(account)
+  }
+  _dexon.on('update', renderTransient)
 
   const _dett = new Dett()
-  await _dett.init(_dexon.dexonWeb3, Web3)
   dett = _dett
+
+  // "upgrade" it into async version with meta handling
+  _dexon.off('update', renderTransient)
+  _dexon.on('update', async account => {
+    render(account)
+    if (account) {
+      metaCache = await _dett.getMetaByAddress(account)
+      render(account)
+    }
+  })
+
+  await _dett.init(_dexon.dexonWeb3, Web3)
 
   _dexon.identityManager.on('login', ({account}) => {
     render(account, _dexon)

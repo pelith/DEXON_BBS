@@ -20,7 +20,7 @@ const render = (_account) => {
     $("#reply-btn").hide()
   }
 
-  // account not exist or not equal prevent account
+  // account not exist or not equal previous account
   if (!_account || (_account !== dett.account)){
     hideReplyTypeBtn()
     hideReply()
