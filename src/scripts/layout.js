@@ -107,6 +107,7 @@ const initLoginForm = async _dexon => {
     if (!lastError && !_dexon.selectedAddress) {
       _dexon.login()
     }
+    $('#bbs-modal-login').prop('disabled', false)
     $('#seedConfigArea').hide()
   })
 
@@ -116,6 +117,7 @@ const initLoginForm = async _dexon => {
       manager.seed = seedphrase
       await updateViewForSeed(seedphrase)
     }
+    $('#bbs-modal-login').prop('disabled', false)
     $('#seedConfigArea').show()
   })
 
@@ -159,7 +161,7 @@ window._layoutInit = async () => {
       loginForm.find('.--injectedProviderStatus').text('正常')
       loginForm.find('.--injectedAccountAddress').text(account)
       _dexon.identityManager.injectedAddress = account
-      // render(account, _dexon)
+      render(account, _dexon)
     } else {
       if (getLoginType() == 'injected') {
         optInjected.prop('checked', false)
@@ -173,7 +175,6 @@ window._layoutInit = async () => {
   _dexon.on('error', (err) => {
     lastError = err
   })
-
 
   _dexon.on('updateNetwork', ({id, isValid}) => {
     if (isValid) {
@@ -197,26 +198,27 @@ window._layoutInit = async () => {
     render(account)
   })
 
-  $('#bbs-login').click(evt => {
-    evt.preventDefault()
-    if (lastError) {
-      // the network error is handled in the modal
-    } else {
-      // the modal will be shown instead
-      // _dexon.login()
+  let loginType = window.localStorage.getItem('dett-login-type')
+  if (loginType){
+    if (loginType== 'injected') {
+      console.log(_dexon.identityManager.injectedAddress)
+      render(_dexon.identityManager.injectedAddress, _dexon)
     }
-  })
+    else if (loginType== 'seed') {
+      render(_dexon.identityManager.seedAddress, _dexon)
+    }
+  }
 
   $('#bbs-modal-login').click(() => {
-    if (getLoginType() == '') {
-      return
-    } else if (getLoginType() == 'injected') {
+    if (getLoginType() == 'injected') {
       account = _dexon.identityManager.injectedAddress
     } else if (getLoginType() == 'seed') {
       account = _dexon.identityManager.seedAddress
     } else {
       console.warn('Unsupported login type', getLoginType())
     }
+
+    window.localStorage.setItem('dett-login-type',getLoginType())
     console.log('init account', account)
     // TODO: remember account last used
     render(account, _dexon)
