@@ -4,7 +4,7 @@ import {htmlEntities, getUrlParameter, parseUser} from './utils.js'
 
 let dett = null
 let focusPost
-let dev = false // for parcel debug use
+let currentPage = null
 
 const render = (_account) => {
   dett.account = _account
@@ -18,12 +18,8 @@ const render = (_account) => {
   }
 }
 
-const main = async ({ _dexon, _dett }) => {
-  // set _dett to global
-  dett = _dett
+const renderArticle = async () => {
 
-  // for dev
-  if (+window.localStorage.getItem('dev')) dev = true
 
   // Get milestones
   let milestones = await dett.BBSCache.methods.getMilestones().call()
@@ -41,6 +37,7 @@ const main = async ({ _dexon, _dett }) => {
     const p = getUrlParameter('p')
     if (p && p.match(/[0-9]+/g) && (1 <= +p && +p <= milestones.length)) {
       const _p = +p
+      currentPage = _p
       if (_p === 1) { // first page
         $("#prevpage").addClass('disabled')
         $("#nextpage").removeClass('disabled')
@@ -82,21 +79,6 @@ const main = async ({ _dexon, _dett }) => {
     $('.r-list-container.action-bar-margin.bbs-screen').append($('<div class="r-list-sep"></div>'))
     displayAnnouncement('[公告] DEXON BBS 搬家預告', 'mayday'+(dev?'.html':''), 'Admin')
     displayAnnouncement('[公告] 領取免費的 DEXON 代幣 &amp; DEXON BBS 使用教學', 'about'+(dev?'.html':''), 'Admin')
-  }
-
-  _dexon.identityManager.on('login', (account) => {
-    render(account)
-  })
-  _dexon.identityManager.init()
-
-  if (+window.localStorage.getItem('hotkey-mode')) keyboardHook()
-
-  if (+sessionStorage.getItem('focus-state')===2){
-    const post =  $('.r-list-container > .r-ent > div > a[href="'+sessionStorage.getItem('focus-href')+'"]')
-
-    focusOnPost(post.parent().parent()[0], true)
-    sessionStorage.setItem('focus-href', '')
-    sessionStorage.setItem('focus-state', 0)
   }
 
   // atircles list attach dropdown list
@@ -191,6 +173,8 @@ const keyboardHook = () => {
     if (e.keyCode == rightCode && focusPost) {
       const href = $('.title > a', focusPost).attr('href')
       sessionStorage.setItem('focus-href', href)
+      if (currentPage)
+        sessionStorage.setItem('focus-page', currentPage)
       sessionStorage.setItem('focus-state', 1)
       window.location = href
     }
@@ -282,6 +266,32 @@ const displayAnnouncement = (title, href, author) => {
     </div>`)
 
   $('.r-list-container.action-bar-margin.bbs-screen').append(elem)
+}
+
+const main = async ({ _dexon, _dett }) => {
+  // set _dett to global
+  dett = _dett
+
+  await renderArticle()
+
+  _dexon.identityManager.on('login', ({account, wallet}) => {
+    render(account)
+    dett.setWallet(wallet)
+  })
+  _dexon.identityManager.init()
+
+  // keyboard mode
+  if (+window.localStorage.getItem('hotkey-mode')) {
+    keyboardHook()
+
+    if (+sessionStorage.getItem('focus-state')===2){
+      const post =  $('.r-list-container > .r-ent > div > a[href="'+sessionStorage.getItem('focus-href')+'"]')
+
+      focusOnPost(post.parent().parent()[0], true)
+      sessionStorage.removeItem('focus-href')
+      sessionStorage.removeItem('focus-state')
+    }
+  }
 }
 
 _layoutInit().then(main)

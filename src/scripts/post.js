@@ -91,8 +91,9 @@ const main = async ({ _dexon }) => {
   dett = new Dett()
   await dett.init(_dexon.dexonWeb3, Web3)
 
-  _dexon.identityManager.on('login', (account) => {
+  _dexon.identityManager.on('login', ({account, wallet}) => {
     render(account)
+    dett.setWallet(wallet)
   })
   _dexon.identityManager.init()
 

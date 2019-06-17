@@ -100,6 +100,8 @@ const initLoginForm = async _dexon => {
     const address = wallet.getAddressString()
     toggleDescStatus($el, true)
     loginForm.find('.--seedAccountAddress').text(address)
+    // TODO: move the logic into identityManager
+    manager.wallet = wallet
     manager.seedAddress = address
   }
 
@@ -206,7 +208,7 @@ window._layoutInit = async () => {
   const _dett = new Dett()
   await _dett.init(_dexon.dexonWeb3, Web3)
 
-  _dexon.identityManager.on('login', account => {
+  _dexon.identityManager.on('login', ({account}) => {
     render(account, _dexon)
   })
 
@@ -220,6 +222,10 @@ window._layoutInit = async () => {
   hotkey()
 
   attachDropdown()
+
+  // for parcel debug use
+  if (+window.localStorage.getItem('dev'))
+    window.dev = true
 
   return { _dexon, _dett }
 }

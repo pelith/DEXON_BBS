@@ -54,8 +54,17 @@ class IdentityManager extends EventEmitter {
 
   commitLoginType(type) {
     this.__loginType = type
+    const wallet = this.wallet
+    if (type == 'seed') {
+      if (!this.wallet) {
+        throw new Error('Seed is to be used but no valid wallet is given.')
+      }
+    }
     if (this.activeAccount) {
-      this.emit('login', this.activeAccount)
+      this.emit('login', {
+        account: this.activeAccount,
+        wallet: type == 'seed' ? this.wallet : null,
+      })
     }
   }
 

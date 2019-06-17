@@ -135,14 +135,25 @@ class Dett {
     if (!_Web3) return console.error("Can't find Web3.")
 
     this.dettweb3 = _dettweb3
-    this.dettBBSExt = this.dettweb3 ? new this.dettweb3.eth.Contract(ABIBBSExt, BBSExtContract) : null
-    this.dettBBSEdit = this.dettweb3 ? new this.dettweb3.eth.Contract(ABIBBSEdit, BBSEditContract) : null
-    this.dettBBSPB = this.dettweb3 ? new this.dettweb3.eth.Contract(ABIBBSPB, BBSPBContract) : null
 
     web3 = new _Web3(new _Web3.providers.WebsocketProvider('wss://mainnet-rpc.dexon.org/ws'))
     // Todo : Should be env
     cacheweb3 = new _Web3(new _Web3.providers.WebsocketProvider('wss://mainnet-rpc.dexon.org/ws'))
+    // WTF: cacheweb3 is already a global
     this.cacheweb3 = cacheweb3
+
+    this.__contracts = {}
+    this.__contracts.dettBBSExt = new web3.eth.Contract(ABIBBSExt, BBSExtContract)
+    this.__contracts.dettBBSEdit = new web3.eth.Contract(ABIBBSEdit, BBSEditContract)
+    this.__contracts.dettBBSPB = new web3.eth.Contract(ABIBBSPB, BBSPBContract)
+
+    this.__contractsFromInjectedWeb3 = {}
+    this.__contractsFromInjectedWeb3.dettBBSExt = this.dettweb3 ? new this.dettweb3.eth.Contract(ABIBBSExt, BBSExtContract) : null
+    this.__contractsFromInjectedWeb3.dettBBSEdit = this.dettweb3 ? new this.dettweb3.eth.Contract(ABIBBSEdit, BBSEditContract) : null
+    this.__contractsFromInjectedWeb3.dettBBSPB = this.dettweb3 ? new this.dettweb3.eth.Contract(ABIBBSPB, BBSPBContract) : null
+
+    // trigger selection of dettBBS* contracts
+    this.setWallet(null)
 
     this.BBS = new web3.eth.Contract(ABIBBS, BBSContract)
     this.BBSExt = new web3.eth.Contract(ABIBBSExt, BBSExtContract)
@@ -152,6 +163,24 @@ class Dett {
     this.BBSCache = new cacheweb3.eth.Contract(ABICache, BBSCacheContract)
 
     this.BBSEditEvents = await this.BBSEdit.getPastEvents('Edited', {fromBlock : this.fromBlock })
+  }
+
+  setWallet(newWallet) {
+    if (newWallet) {
+      Object.assign(this, this.__contracts)
+      // TODO: unregister when changing wallet
+      const address = newWallet.getAddressString()
+      const w = web3.eth.accounts.privateKeyToAccount(`0x${newWallet.getPrivateKey().toString('hex')}`)
+      web3.eth.accounts.wallet.add(w)
+      console.log('wallet added', web3.eth.accounts)
+    } else {
+      Object.assign(this, this.__contractsFromInjectedWeb3)
+      console.log('using injected wallet')
+    }
+  }
+
+  get wallet() {
+    return this.__wallet
   }
 
   async getArticles({fromBlock = null, toBlock = null} = {}){
