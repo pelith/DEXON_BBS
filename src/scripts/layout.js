@@ -54,7 +54,7 @@ const render = (_account) => {
 
   if (account){
     // show User
-    // $("#bbs-login").hide()
+    $("#bbs-login").hide()
     $("#bbs-more").hide()
     $("#bbs-user-menu").show()
   } else {
@@ -73,7 +73,7 @@ const render = (_account) => {
   }
 }
 
-const getLoginType = () => {
+const getLoginFormType = () => {
   return loginForm[0].accountSource.value || ''
 }
 
@@ -102,12 +102,15 @@ const initLoginForm = async _dexon => {
     manager.seedAddress = address
   }
 
-  // TODO: auto login if last used account is detected
   optInjected.click(() => {
+    // no error but no address => we need the user to login manually
     if (!lastError && !_dexon.selectedAddress) {
       _dexon.login()
+      // still disable the login button
+      $('#bbs-modal-login').prop('disabled', true)
+    } else {
+      $('#bbs-modal-login').prop('disabled', false)
     }
-    $('#bbs-modal-login').prop('disabled', false)
     $('#seedConfigArea').hide()
   })
 
@@ -145,13 +148,9 @@ const initLoginForm = async _dexon => {
     loginForm.find('[name="seed"]').val(manager.seed)
     await updateViewForSeed(manager.seed)
   }
-}
 
-window._layoutInit = async () => {
-  const _dexon = new Dexon(window.dexon)
-  await initLoginForm(_dexon)
-
-  _dexon.on('update', (account) => {
+  // wallet change <-> (login form display & identityManager)
+  _dexon.on('update', account => {
     lastError = null
     optInjected.prop('disabled', false)
 
@@ -160,10 +159,14 @@ window._layoutInit = async () => {
       loginForm.find('.wrapper--injected .desc-err').hide()
       loginForm.find('.--injectedProviderStatus').text('正常')
       loginForm.find('.--injectedAccountAddress').text(account)
-      _dexon.identityManager.injectedAddress = account
-      render(account, _dexon)
+
+      // re-emit login event if we are using wallet
+      manager.injectedAddress = account
+      if (manager.loginType == 'injected') {
+        manager.commitLoginType('injected')
+      }
     } else {
-      if (getLoginType() == 'injected') {
+      if (getLoginFormType() == 'injected') {
         optInjected.prop('checked', false)
       }
       toggleDescStatus(loginForm.find('.wrapper--injected'), false)
@@ -178,50 +181,35 @@ window._layoutInit = async () => {
 
   _dexon.on('updateNetwork', ({id, isValid}) => {
     if (isValid) {
-      $('#bbs-login').text('登入')
       optInjected.prop('disabled', false)
       // login info is updated in separate event
     } else {
-      $('#bbs-login').text('登入 ⚠')
-      if (getLoginType() == 'injected') {
+      if (getLoginFormType() == 'injected') {
+      // the wrong network makes this option no longer valid
         optInjected.prop('checked', false)
       }
-      loginForm.find('.--injectedProviderStatus').text('無法使用')
+      loginForm.find('.--injectedProviderStatus').text('⚠ 無法使用')
       optInjected.prop('disabled', true)
       toggleDescStatus(loginForm.find('.wrapper--injected'), false)
       loginForm.find('.wrapper--injected .desc-err').text('在錯誤的網路上。\n請打開錢包，並將網路切到 "DEXON Mainnet"。')
     }
   })
+}
 
-  _dexon.on('_setMeta', meta => {
-    metaCache = meta
-    render(account)
+window._layoutInit = async () => {
+  const _dexon = new Dexon(window.dexon)
+  // populate login form event / initial state
+  // also setup identityManager
+  await initLoginForm(_dexon)
+
+  _dexon.identityManager.on('login', account => {
+    render(account, _dexon)
   })
 
-  let loginType = window.localStorage.getItem('dett-login-type')
-  if (loginType){
-    if (loginType== 'injected') {
-      console.log(_dexon.identityManager.injectedAddress)
-      render(_dexon.identityManager.injectedAddress, _dexon)
-    }
-    else if (loginType== 'seed') {
-      render(_dexon.identityManager.seedAddress, _dexon)
-    }
-  }
-
   $('#bbs-modal-login').click(() => {
-    if (getLoginType() == 'injected') {
-      account = _dexon.identityManager.injectedAddress
-    } else if (getLoginType() == 'seed') {
-      account = _dexon.identityManager.seedAddress
-    } else {
-      console.warn('Unsupported login type', getLoginType())
-    }
-
-    window.localStorage.setItem('dett-login-type',getLoginType())
-    console.log('init account', account)
-    // TODO: remember account last used
-    render(account, _dexon)
+    const loginType = getLoginFormType()
+    window.localStorage.setItem('dett-login-type', loginType)
+    _dexon.identityManager.commitLoginType(loginType)
     $('#loginModal').modal('hide')
   })
 

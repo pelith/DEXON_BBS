@@ -38,12 +38,41 @@ class IdentityManager extends EventEmitter {
   constructor(provider) {
     super()
     this.injectedProvider = provider
-    this.__usingSeed = false
+    this.injectedAddress = null
+    this.seedAddress = null
+    this.__loginType = null
     this.__seed = localStorage.getItem('dett-seed') || null
   }
 
-  async initWeb3ForSeed() {
-    // TODO
+  init() {
+    // recover last used login type
+    const savedLoginType = localStorage.getItem('dett-login-type')
+    if (savedLoginType) {
+      this.commitLoginType(savedLoginType)
+    }
+  }
+
+  commitLoginType(type) {
+    this.__loginType = type
+    if (this.activeAccount) {
+      this.emit('login', this.activeAccount)
+    }
+  }
+
+  get loginType() {
+    return this.__loginType
+  }
+
+  get activeAccount() {
+    const t = this.loginType
+    if (t == 'injected') {
+      return this.injectedAddress
+    } else if (t == 'seed') {
+      return this.seedAddress
+    } else if (t != null) {
+      console.warn('[IdentityManager] Unsupported login type', t)
+      return ''  // NULL?
+    }
   }
 
   get seed() {

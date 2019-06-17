@@ -92,12 +92,13 @@ const keyboardHook = () => {
 }
 
 const main = async ({ _dexon }) => {
-  _dexon.on('update',(account) => {
-    render(account)
-  })
-
   dett = new Dett()
   await dett.init(_dexon.dexonWeb3, Web3)
+
+  _dexon.identityManager.on('login', (account) => {
+    render(account)
+  })
+  _dexon.identityManager.init()
 
   // get reply tx
   const rtx = getUrlParameter('rtx')

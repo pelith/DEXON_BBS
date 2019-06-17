@@ -23,10 +23,6 @@ const main = async ({ _dexon }) => {
   // for dev
   if (+window.localStorage.getItem('dev')) dev = true
 
-  _dexon.on('update',(account) => {
-    render(account)
-  })
-
   dett = new Dett()
   await dett.init(_dexon.dexonWeb3, Web3)
 
@@ -98,15 +94,10 @@ const main = async ({ _dexon }) => {
     sessionStorage.setItem('focus-state', 0)
   }
 
-  if (dett.account) {
-    // const meta = await dett.getMetaByAddress(dett.account)
-    // _dexon.emit('_setMeta', meta)
-  }
-
-  if (dett.account) {
-    const meta = await dett.getMetaByAddress(dett.account)
-    _dexon.emit('_setMeta', meta)
-  }
+  _dexon.identityManager.on('login', (account) => {
+    render(account)
+  })
+  _dexon.identityManager.init()
 
   attachDropdown()
 }
