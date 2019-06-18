@@ -22,7 +22,7 @@ jobs:
             - DEXON_BBS-yarn-packages-v2-
       - run:
           name: DEXON_BBS - Install Dependencies
-          command: yarn install --frozen-lockfile
+          command: yarn install --ignore-scripts --frozen-lockfile
       - save_cache:
           name: DEXON_BBS - Save Yarn Package Cache
           key: DEXON_BBS-yarn-packages-v2-{{ .Branch }}-{{ checksum "yarn.lock" }}
@@ -55,9 +55,9 @@ jobs:
       - restore_cache:
           name: DEXON_BBS_Cache - Restore dist Cache
           keys:
-            - DEXON_BBS_Cache-dist-cache-v6-{{ .Branch }}-{{ checksum "./DEXON_BBS_Cache/dist/output.json" }}
-            - DEXON_BBS_Cache-dist-cache-v6-{{ .Branch }}-
-            - DEXON_BBS_Cache-dist-cache-v6-
+            - DEXON_BBS_Cache-dist-cache-v7-{{ .Branch }}-{{ checksum "./DEXON_BBS_Cache/dist/output.json" }}
+            - DEXON_BBS_Cache-dist-cache-v7-{{ .Branch }}-
+            - DEXON_BBS_Cache-dist-cache-v7-
       - run:
           name: DEXON_BBS_Cache - Build-Cache
           command: |
@@ -67,7 +67,7 @@ jobs:
             cp -R ./dist/s gh-pages/
       - save_cache:
           name: DEXON_BBS_Cache - Save dist Cache
-          key: DEXON_BBS_Cache-dist-cache-v6-{{ .Branch }}-{{ checksum "./DEXON_BBS_Cache/dist/output.json" }}
+          key: DEXON_BBS_Cache-dist-cache-v7-{{ .Branch }}-{{ checksum "./DEXON_BBS_Cache/dist/output.json" }}
           paths:
             - ./DEXON_BBS_Cache/dist
       - deploy:
