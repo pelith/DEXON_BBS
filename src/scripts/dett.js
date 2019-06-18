@@ -297,7 +297,6 @@ class Dett {
         value: registerFee,
         chainId:237
       }))
-      window.location.reload()
     }
     catch(err){
       alert(err)

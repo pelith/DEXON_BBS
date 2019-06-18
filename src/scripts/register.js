@@ -99,7 +99,12 @@ const main = async ({ _dexon, _dett }) => {
 
   const elNickname = $('#register-nickname')
   elNickname.on('input', evt => checkRules($(evt.currentTarget).val()))
-  $('#register-submit').click(() => doNewRegister(elNickname.val()))
+  $('#register-submit').click(async () => {
+    await doNewRegister(elNickname.val())
+    alert('註冊成功！')
+    elNickname.val('')
+    window.location.reload()
+  })
 
   registerFee = await dett.getRegisterFee()
   checkRules(elNickname.val())
