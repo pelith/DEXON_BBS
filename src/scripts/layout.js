@@ -1,6 +1,4 @@
-import { fromMasterSeed } from 'ethereumjs-wallet/hdkey'
-import { mnemonicToSeed, generateMnemonic } from 'bip39'
-
+import { generateMnemonic } from 'bip39'
 import patchWeb3 from './patch-web3.js'
 
 patchWeb3()
@@ -9,9 +7,9 @@ import Dexon from './dexon.js'
 import Dett from './dett.js'
 import {parseUser} from './utils.js'
 
-const loginForm = $('#loginForm')
-const optInjected = loginForm.find('[name="accountSource"][value="injected"]')
-const optSeed = loginForm.find('[name="accountSource"][value="seed"]')
+const $loginForm = $('#loginForm')
+const optInjected = $loginForm.find('[name="accountSource"][value="injected"]')
+const optSeed = $loginForm.find('[name="accountSource"][value="seed"]')
 
 let dett = null
 let account = ''
@@ -54,7 +52,7 @@ const hotkey = () => {
   })
 }
 
-const render = async (_account) => {
+const renderTopbar = async (_account) => {
   account = _account ? _account : ''
 
   if (account){
@@ -79,34 +77,30 @@ const render = async (_account) => {
 }
 
 const getLoginFormType = () => {
-  return loginForm[0].accountSource.value || ''
+  return $loginForm[0].accountSource.value || ''
 }
 
-const initLoginForm = async _dexon => {
+const initLoginForm = async ($elem, _dexon) => {
   const manager = _dexon.identityManager
 
   // TODO: handle the case where no provider is available
-  loginForm.find('.--injectedProviderName').text(_dexon.providerName)
+  $elem.find('.--injectedProviderName').text(_dexon.providerName)
 
   const generateSeed = () => {
     // generate then commit
     const seedphrase = generateMnemonic()
-    loginForm.find('[name="seed"]').val(seedphrase)
+    $elem.find('[name="seed"]').val(seedphrase)
     return seedphrase
   }
 
   const updateViewForSeed = async (seedphrase) => {
-    const $el = loginForm.find('.wrapper--seed')
+    const $el = $elem.find('.wrapper--seed')
     const [$elOk, $elErr] = toggleDescStatus($el, false)
     $elErr.text('助記詞產生中...')
-    const seed = await mnemonicToSeed(seedphrase)
-    const wallet = fromMasterSeed(seed).derivePath(`m/44'/60'/0'/0`).getWallet()
-    const address = wallet.getAddressString()
+    await manager.setHdWallet(seedphrase)
+    const { seedAddress, walllet } = manager
     toggleDescStatus($el, true)
-    loginForm.find('.--seedAccountAddress').text(address)
-    // TODO: move the logic into identityManager
-    manager.wallet = wallet
-    manager.seedAddress = address
+    $elem.find('.--seedAccountAddress').text(seedAddress)
   }
 
   optInjected.click(() => {
@@ -132,7 +126,7 @@ const initLoginForm = async _dexon => {
   })
 
   $('#commitSeedPhrase').click(async () => {
-    const newPhrase = loginForm.find('[name="seed"]').val()
+    const newPhrase = $elem.find('[name="seed"]').val()
     if (!newPhrase) {
       alert('請輸入助記詞')
       return
@@ -152,33 +146,28 @@ const initLoginForm = async _dexon => {
   // initial state
   $('#seedConfigArea').hide()
   if (manager.seed != null) {
-    loginForm.find('[name="seed"]').val(manager.seed)
+    $elem.find('[name="seed"]').val(manager.seed)
     await updateViewForSeed(manager.seed)
   }
 
-  // wallet change <-> (login form display & identityManager)
+  // wallet change <-> login form display
   _dexon.on('update', account => {
     lastError = null
     optInjected.prop('disabled', false)
 
     if (account) {
-      toggleDescStatus(loginForm.find('.wrapper--injected'), true)
-      loginForm.find('.wrapper--injected .desc-err').hide()
-      loginForm.find('.--injectedProviderStatus').text('正常')
-      loginForm.find('.--injectedAccountAddress').text(account)
+      toggleDescStatus($elem.find('.wrapper--injected'), true)
+      $elem.find('.wrapper--injected .desc-err').hide()
+      $elem.find('.--injectedProviderStatus').text('正常')
+      $elem.find('.--injectedAccountAddress').text(account)
 
     } else {
       if (getLoginFormType() == 'injected') {
         optInjected.prop('checked', false)
       }
-      toggleDescStatus(loginForm.find('.wrapper--injected'), false)
-      loginForm.find('.--injectedProviderStatus').text('需要登入')
-      loginForm.find('.wrapper--injected .desc-err').text('按這裡登入錢包')
-    }
-
-    manager.injectedAddress = account
-    if (manager.loginType == 'injected') {
-      manager.commitLoginType('injected')
+      toggleDescStatus($elem.find('.wrapper--injected'), false)
+      $elem.find('.--injectedProviderStatus').text('需要登入')
+      $elem.find('.wrapper--injected .desc-err').text('按這裡登入錢包')
     }
   })
 
@@ -195,10 +184,10 @@ const initLoginForm = async _dexon => {
       // the wrong network makes this option no longer valid
         optInjected.prop('checked', false)
       }
-      loginForm.find('.--injectedProviderStatus').text('⚠ 無法使用')
+      $elem.find('.--injectedProviderStatus').text('⚠ 無法使用')
       optInjected.prop('disabled', true)
-      toggleDescStatus(loginForm.find('.wrapper--injected'), false)
-      loginForm.find('.wrapper--injected .desc-err').text('在錯誤的網路上。\n請打開錢包，並將網路切到 "DEXON Mainnet"。')
+      toggleDescStatus($elem.find('.wrapper--injected'), false)
+      $elem.find('.wrapper--injected .desc-err').text('在錯誤的網路上。\n請打開錢包，並將網路切到 "DEXON Mainnet"。')
     }
   })
 }
@@ -207,19 +196,30 @@ window._layoutInit = async () => {
   // init dexon account first
   const _dexon = new Dexon(window.dexon)
   // populate login form event / initial state
-  // also setup identityManager
-  if (loginForm[0]) {
-    await initLoginForm(_dexon)
+  if ($topBar[0]) {
+    await initLoginForm($loginForm, _dexon)
   }
+
+  _dexon.on('update', (account) => {
+    if (account) {
+      const manager = _dexon.identityManager
+      manager.injectedAddress = account
+      if (manager.loginType == 'injected') {
+        manager.commitLoginType('injected')
+      }
+    }
+  })
 
   const _dett = new Dett()
   await _dett.init(_dexon.dexonWeb3, Web3)
 
   dett = _dett
 
-  _dexon.identityManager.on('login', ({account}) => {
-    render(account, _dexon)
-  })
+  if ($topBar[0]) {
+    _dexon.identityManager.on('login', ({account}) => {
+      renderTopbar(account, _dexon)
+    })
+  }
 
   $('#bbs-modal-login').click(() => {
     const loginType = getLoginFormType()

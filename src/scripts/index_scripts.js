@@ -26,12 +26,6 @@ const main = async ({ _dett, _dexon }) => {
 
   dett = _dett
 
-  _dexon.identityManager.on('login', ({account, wallet}) => {
-    render(account)
-    dett.setWallet(wallet)
-  })
-  _dexon.identityManager.init()
-
   let milestones = await dett.BBSCache.methods.getMilestones().call()
   milestones = milestones.map((milestone) => {
     return dett.cacheweb3.utils.hexToUtf8(milestone)
@@ -90,6 +84,13 @@ const main = async ({ _dett, _dexon }) => {
     displayAnnouncement('[公告] DEXON BBS 搬家預告', 'mayday'+(dev?'.html':''), 'Admin')
     displayAnnouncement('[公告] 領取免費的 DEXON 代幣 &amp; DEXON BBS 使用教學', 'about'+(dev?'.html':''), 'Admin')
   }
+
+  // here the articles are loaded completely; do render here
+  _dexon.identityManager.on('login', ({account, wallet}) => {
+    render(account)
+    dett.setWallet(wallet)
+  })
+  _dexon.identityManager.init()
 
   if (+window.localStorage.getItem('focus-state')===2){
     const post =  $('.r-list-container > .r-ent > div > a[href="'+window.localStorage.getItem('focus-href')+'"]')

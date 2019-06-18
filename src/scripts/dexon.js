@@ -1,3 +1,6 @@
+import { fromMasterSeed } from 'ethereumjs-wallet/hdkey'
+import { mnemonicToSeed } from 'bip39'
+
 
 class EventEmitter{
   constructor(){
@@ -67,6 +70,21 @@ class IdentityManager extends EventEmitter {
         wallet: type == 'seed' ? this.wallet : null,
       })
     }
+  }
+
+  useInjectedAddress(address) {
+    this.injectedAddress = address
+    if (this.loginType == 'injected') {
+      this.commitLoginType('injected')
+    }
+  }
+
+  async setHdWallet(seedphrase) {
+    this.seed = seedphrase
+    const seed = await mnemonicToSeed(seedphrase)
+    const wallet = fromMasterSeed(seed).derivePath(`m/44'/60'/0'/0`).getWallet()
+    this.wallet = wallet
+    this.seedAddress = wallet.getAddressString()
   }
 
   get loginType() {

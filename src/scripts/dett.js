@@ -146,7 +146,7 @@ class Dett {
     this.cacheweb3 = cacheweb3
 
     this.__contracts = this.__initContractsWith(web3)
-    this.__contractsFromInjectedWeb3 = this.__initContractsWith(this.dettweb3)
+    this.__contractsForInjectedWeb3 = this.__initContractsWith(_dettweb3)
 
     this.BBS = new web3.eth.Contract(ABIBBS, BBSContract)
     this.BBSExt = new web3.eth.Contract(ABIBBSExt, BBSExtContract)
@@ -180,7 +180,7 @@ class Dett {
       web3.eth.accounts.wallet.add(w)
     } else {
       this.dettweb3 = this.__web3Injected
-      Object.assign(this, this.__contractsFromInjectedWeb3)
+      Object.assign(this, this.__contractsForInjectedWeb3)
     }
   }
 
