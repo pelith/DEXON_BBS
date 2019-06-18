@@ -212,27 +212,10 @@ window._layoutInit = async () => {
     await initLoginForm(_dexon)
   }
 
-  // lightweight, sync version is used until dett object is initialized
-  function renderTransient(account) {
-    lastError = null
-    render(account)
-  }
-  _dexon.on('update', renderTransient)
-
   const _dett = new Dett()
-  dett = _dett
-
-  // "upgrade" it into async version with meta handling
-  _dexon.off('update', renderTransient)
-  _dexon.on('update', async account => {
-    render(account)
-    if (account) {
-      metaCache = await _dett.getMetaByAddress(account)
-      render(account)
-    }
-  })
-
   await _dett.init(_dexon.dexonWeb3, Web3)
+
+  dett = _dett
 
   _dexon.identityManager.on('login', ({account}) => {
     render(account, _dexon)

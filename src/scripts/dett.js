@@ -16,6 +16,7 @@ const BBSAdminContract = '0x88eb672e01c1a2a6f398b9d52c7dab5f87ca8c2c'
 const BBSEditContract = '0x826cb3e5aa484869d9511aad3ead74d382608147'
 const BBSPBContract = '0xb6bE4987F1f7448FCe4abB06f23A571EFB4BaF10'
 const BBSCacheContract = '0xff9cae0ecec479b87472df77b1f5d8d182ab7658'
+const BBSOriginalAddress = '0x9b985Ef27464CF25561f0046352E03a09d2C2e0C'
 
 const fromBlock = '1170000'
 const titleLength = 40
@@ -134,7 +135,8 @@ class Dett {
   async init(_dettweb3, _Web3) {
     if (!_Web3) return console.error("Can't find Web3.")
 
-    this.dettweb3 = _dettweb3
+    // XXX: should it pass in only the provider?
+    this.__web3Injected = _dettweb3
 
     web3 = new _Web3(new _Web3.providers.WebsocketProvider('wss://mainnet-rpc.dexon.org/ws'))
     // Todo : Should be env
@@ -143,18 +145,8 @@ class Dett {
     // WTF: cacheweb3 is already a global
     this.cacheweb3 = cacheweb3
 
-    this.__contracts = {}
-    this.__contracts.dettBBSExt = new web3.eth.Contract(ABIBBSExt, BBSExtContract)
-    this.__contracts.dettBBSEdit = new web3.eth.Contract(ABIBBSEdit, BBSEditContract)
-    this.__contracts.dettBBSPB = new web3.eth.Contract(ABIBBSPB, BBSPBContract)
-
-    this.__contractsFromInjectedWeb3 = {}
-    this.__contractsFromInjectedWeb3.dettBBSExt = this.dettweb3 ? new this.dettweb3.eth.Contract(ABIBBSExt, BBSExtContract) : null
-    this.__contractsFromInjectedWeb3.dettBBSEdit = this.dettweb3 ? new this.dettweb3.eth.Contract(ABIBBSEdit, BBSEditContract) : null
-    this.__contractsFromInjectedWeb3.dettBBSPB = this.dettweb3 ? new this.dettweb3.eth.Contract(ABIBBSPB, BBSPBContract) : null
-
-    // trigger selection of dettBBS* contracts
-    // this.setWallet(null)
+    this.__contracts = this.__initContractsWith(web3)
+    this.__contractsFromInjectedWeb3 = this.__initContractsWith(this.dettweb3)
 
     this.BBS = new web3.eth.Contract(ABIBBS, BBSContract)
     this.BBSExt = new web3.eth.Contract(ABIBBSExt, BBSExtContract)
@@ -166,17 +158,29 @@ class Dett {
     this.BBSEditEvents = await this.BBSEdit.getPastEvents('Edited', {fromBlock : this.fromBlock })
   }
 
+  __initContractsWith(_web3) {
+    const klass = _web3 ? _web3.eth.Contract : null
+    const options = {  // STUB
+      // FIXME: use custom transactionSigner to inject chain id
+    }
+    return {
+      dettBBSExt: klass ? new klass(ABIBBSExt, BBSExtContract, options) : null,
+      dettBBSEdit: klass ? new klass(ABIBBSEdit, BBSEditContract, options) : null,
+      dettBBSPB: klass ? new klass(ABIBBSPB, BBSPBContract, options) : null,
+    }
+  }
+
   setWallet(newWallet) {
     if (newWallet) {
+      this.dettweb3 = web3
       Object.assign(this, this.__contracts)
       // TODO: unregister when changing wallet
       const address = newWallet.getAddressString()
       const w = web3.eth.accounts.privateKeyToAccount(`0x${newWallet.getPrivateKey().toString('hex')}`)
       web3.eth.accounts.wallet.add(w)
-      console.log('wallet added', web3.eth.accounts)
     } else {
+      this.dettweb3 = this.__web3Injected
       Object.assign(this, this.__contractsFromInjectedWeb3)
-      console.log('using injected wallet')
     }
   }
 
@@ -372,24 +376,36 @@ class Dett {
   }
 
   rewardAuthor(article, value) {
-    if (!this.dettweb3) {
-      alert('Please connect to your DEXON Wallet first.')
-      return Promise.reject()
-    }
-
-    return this.dettweb3.eth.sendTransaction({
+    const txObj = {
       from: this.account,
       to: article.author,
       value: Web3.utils.toWei(value),
-    })
+      gas: 21000,
+      chainId: 237,
+    }
+
+    if (this.dettweb3 != this.__web3Injected) {
+      const ok = this.confirmTx(txObj)
+      if (!ok) {
+        return Promise.reject(new Error('User denied to send transaction with seed.'))
+      }
+    }
+
+    return this.dettweb3.eth.sendTransaction(txObj)
   }
 
   isDettTx(tx){
     return [BBSExtContract,
             BBSContract,
-            '0x9b985Ef27464CF25561f0046352E03a09d2C2e0C']
+            BBSOriginalAddress]
             .map(x => x.toLowerCase())
             .includes(tx.toLowerCase())
+  }
+
+  confirmTx(txObj) {
+    const { to, value } = txObj
+    const message = `你確定要將你的 ${Web3.utils.fromWei(value)} DXN 轉帳到 ${to}？`
+    return confirm(message)
   }
 }
 

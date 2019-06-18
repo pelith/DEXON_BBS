@@ -1,4 +1,4 @@
-import {getUrlParameter, parseUser, parseText, parseContent} from './utils.js'
+import {getUrlParameter, parseUser, parseText, parseContent, awaitTx} from './utils.js'
 
 let dev = false
 let dett = null
@@ -198,11 +198,12 @@ const renderArticle = (article) => {
   $('.--send-reward').click(evt => {
     const _ = $(evt.currentTarget)
     // _.prop('disabled', true)
-    return dett.rewardAuthor(article, _.attr('data-value').toString())
-    .on('transactionHash', txhash => {
-      console.log('tx hash', txhash)
-      // _.prop('disabled', false)
-    })
+    const txpe = dett.rewardAuthor(article, _.attr('data-value').toString())
+      .on('transactionHash', txhash => {
+        console.log('tx hash', txhash)
+        // _.prop('disabled', false)
+      })
+    return awaitTx(txpe)
   })
   $('#reward-custom-submit').click(evt => {
     const _ = $('#reward-custom-value')
@@ -211,11 +212,13 @@ const renderArticle = (article) => {
       showHideReward(false)
       return Promise.resolve()
     }
-    return dett.rewardAuthor(article, _.val())
-    .on('transactionHash', txhash => {
-      console.log('tx hash', txhash)
-      // _.prop('disabled', false)
-    })
+    const txpe = dett.rewardAuthor(article, _.val())
+      .on('transactionHash', txhash => {
+        console.log('tx hash', txhash)
+        // _.prop('disabled', false)
+      })
+
+    return awaitTx(txpe)
     .finally(() => showHideReward(false))
   })
 }
@@ -248,13 +251,13 @@ const main = async ({ _dexon, _dett }) => {
   dett = _dett
   if (window.dev) dev = true
 
-  // get tx
-  tx = getUrlParameter('tx')
-
   // cache case
   if (window.location.pathname.includes('/s/')) {
     let shortlink = window.location.pathname.split('s/')[1].replace('.html', '')
     tx = $('meta[property="dett:tx"]').attr("content")
+  } else {
+    // get tx
+    tx = getUrlParameter('tx')
   }
 
   if (!tx) return error()

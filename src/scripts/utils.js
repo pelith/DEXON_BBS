@@ -51,7 +51,6 @@ export const parseUser = (address, meta) => {
 
 const createEmbedObject = (url) => {
   const parsedUrl = new UrlParse(url)
-  // console.log(parsedUrl)
   const ret = {
     allowed: true,
     element: null
@@ -119,10 +118,14 @@ export const parseContent = (content, loc) => {
   return result
 }
 
-export const awaitTx = promiseEvent => {
+export const awaitTx = maybePromiseEvent => {
   let fulfilled = false
+  if (!maybePromiseEvent.on) {
+    // not a promievent
+    return maybePromiseEvent
+  }
   return new Promise((resolve, reject) => {
-    promiseEvent.on('confirmation', (no, receipt) => {
+    maybePromiseEvent.on('confirmation', (no, receipt) => {
       if (fulfilled) return
       fulfilled = true
       resolve(receipt)
