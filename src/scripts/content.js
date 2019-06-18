@@ -6,18 +6,27 @@ let tx = ''
 
 let isShowReply = false, isShowReplyType = false
 
-const render = (_account) => {
+const render = async (_account) => {
   if (_account){
     $('#reward-line').show()
 
     // only show reply btn at first time
     if (!$("#reply-user").text()) $("#reply-btn").show()
+
+    const nickname = await dett.getMetaByAddress(_account)
+    if (nickname.name) {
+      $("#reply-user").text(parseUser(nickname.name))
+    }
+    else
+      $("#reply-user").text(parseUser(_account))
   }
   else {
     $('#reward-line').hide()
 
     // hide reply btn
     $("#reply-btn").hide()
+
+    $("#reply-user").text('')
   }
 
   // account not exist or not equal previous account
@@ -25,11 +34,8 @@ const render = (_account) => {
     hideReplyTypeBtn()
     hideReply()
   }
-
-  dett.account = _account
-
-  $("#reply-user").text(parseUser(_account))
 }
+
 
 const showReplyType = async () => {
   $('#reply-btn').hide()

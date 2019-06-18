@@ -97,6 +97,8 @@ class IdentityManager extends EventEmitter {
       return this.injectedAddress
     } else if (t == 'seed') {
       return this.seedAddress
+    } else if (t == 'vistor') {
+      return ''
     } else if (t != null) {
       console.warn('[IdentityManager] Unsupported login type', t)
       return null  // NULL?

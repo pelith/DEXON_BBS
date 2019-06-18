@@ -3,15 +3,11 @@ import Dexon from './dexon.js'
 import {parseText, parseUser} from './utils.js'
 
 let dett = null
-let account = ''
 let registerFee = '0'
 
 const render = (_account) => {
-  account = _account
-  dett.account = account
-
-  if (account){
-    dett.getMetaByAddress(account).then(meta => {
+  if (_account){
+    dett.getMetaByAddress(_account).then(meta => {
       const {name} = meta
       $('#main-content-nickname').text(name.length ? name : '(未註冊)')
       $('.member-zone').show()
@@ -20,7 +16,7 @@ const render = (_account) => {
     $('.member-zone').hide()
   }
 
-  $('#main-content-address').text(account)
+  $('#main-content-address').text(_account)
 }
 
 // XXX: check rules originally checks against rules in order to merely update the view;
@@ -107,10 +103,10 @@ const main = async ({ _dexon, _dett }) => {
   })
 
   registerFee = await dett.getRegisterFee()
-  checkRules(elNickname.val())
+  // checkRules(elNickname.val())
 
-  const history = await dett.getRegisterHistory()
-  console.log('name history', history)
+  // const history = await dett.getRegisterHistory()
+  // console.log('name history', history)
 }
 
 _layoutInit().then(main)

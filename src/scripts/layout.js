@@ -53,11 +53,9 @@ const hotkey = () => {
 }
 
 const renderTopbar = async (_account) => {
-  account = _account ? _account : ''
-
-  if (account){
-    const addrDisp = parseUser(account)
-    const nickname = await dett.getMetaByAddress(account)
+  if (_account){
+    const addrDisp = parseUser(_account)
+    const nickname = await dett.getMetaByAddress(_account)
     if (nickname.name) {
       $('#bbs-user').text(`${nickname.name} (${addrDisp})`)
     } else {
@@ -74,6 +72,8 @@ const renderTopbar = async (_account) => {
     $("#bbs-more").show()
     $("#bbs-user-menu").hide()
   }
+
+  dett.account = _account
 }
 
 const getLoginFormType = () => {
@@ -81,6 +81,21 @@ const getLoginFormType = () => {
 }
 
 const initLoginForm = async ($elem, _dexon) => {
+
+  // restore select options
+  $('#loginModal').on('shown.bs.modal', function (e) {
+    const loginType = window.localStorage.getItem('dett-login-type')
+    if (loginType === 'injected') {
+      $loginForm.prop("accountSource")[0].checked = true
+    }
+    else if (loginType === 'seed') {
+      $loginForm.prop("accountSource")[1].checked = true
+    }
+    else if (loginType === 'vistor') {
+      $loginForm.prop("accountSource")[2].checked = true
+    }
+  })
+
   const manager = _dexon.identityManager
 
   // TODO: handle the case where no provider is available
@@ -156,6 +171,7 @@ const initLoginForm = async ($elem, _dexon) => {
     optInjected.prop('disabled', false)
 
     if (account) {
+      $('#bbs-modal-login').prop('disabled', false)
       toggleDescStatus($elem.find('.wrapper--injected'), true)
       $elem.find('.wrapper--injected .desc-err').hide()
       $elem.find('.--injectedProviderStatus').text('正常')
@@ -201,12 +217,10 @@ window._layoutInit = async () => {
   }
 
   _dexon.on('update', (account) => {
-    if (account) {
-      const manager = _dexon.identityManager
-      manager.injectedAddress = account
-      if (manager.loginType == 'injected') {
-        manager.commitLoginType('injected')
-      }
+    const manager = _dexon.identityManager
+    manager.injectedAddress = account
+    if (manager.loginType == 'injected') {
+      manager.commitLoginType('injected')
     }
   })
 

@@ -1,7 +1,6 @@
 import {awaitTx, parseText} from './utils'
 
 let web3 = null
-let cacheweb3 = null
 
 const ABIBBS = [{"constant":!1,"inputs":[{"name":"content","type":"string"}],"name":"Post","outputs":[],"payable":!1,"stateMutability":"nonpayable","type":"function"},{"anonymous":!1,"inputs":[{"indexed":!1,"name":"content","type":"string"}],"name":"Posted","type":"event"}]
 const ABIBBSExt = [{"constant":!1,"inputs":[{"name":"content","type":"string"}],"name":"Post","outputs":[],"payable":!1,"stateMutability":"nonpayable","type":"function"},{"constant":!1,"inputs":[{"name":"origin","type":"bytes32"},{"name":"vote","type":"uint256"},{"name":"content","type":"string"}],"name":"Reply","outputs":[],"payable":!1,"stateMutability":"nonpayable","type":"function"},{"anonymous":!1,"inputs":[{"indexed":!1,"name":"origin","type":"bytes32"},{"indexed":!1,"name":"vote","type":"uint256"},{"indexed":!1,"name":"content","type":"string"}],"name":"Replied","type":"event"},{"constant":!0,"inputs":[{"name":"","type":"bytes32"}],"name":"downvotes","outputs":[{"name":"","type":"uint256"}],"payable":!1,"stateMutability":"view","type":"function"},{"constant":!0,"inputs":[{"name":"","type":"bytes32"}],"name":"upvotes","outputs":[{"name":"","type":"uint256"}],"payable":!1,"stateMutability":"view","type":"function"},{"constant":!0,"inputs":[{"name":"","type":"address"},{"name":"","type":"bytes32"}],"name":"voted","outputs":[{"name":"","type":"bool"}],"payable":!1,"stateMutability":"view","type":"function"}]
@@ -140,10 +139,8 @@ class Dett {
 
     web3 = new _Web3(new _Web3.providers.WebsocketProvider('wss://mainnet-rpc.dexon.org/ws'))
     // Todo : Should be env
-    cacheweb3 = web3
-    // cacheweb3 = new _Web3(new _Web3.providers.WebsocketProvider('wss://mainnet-rpc.dexon.org/ws'))
-    // WTF: cacheweb3 is already a global
-    this.cacheweb3 = cacheweb3
+    // this.cacheweb3 = new _Web3(new _Web3.providers.WebsocketProvider('wss://mainnet-rpc.dexon.org/ws'))
+    this.cacheweb3 = web3
 
     this.__contracts = this.__initContractsWith(web3)
     this.__contractsForInjectedWeb3 = this.__initContractsWith(_dettweb3)
@@ -153,7 +150,7 @@ class Dett {
     this.BBSAdmin = new web3.eth.Contract(ABIBBSAdmin, BBSAdminContract)
     this.BBSEdit = new web3.eth.Contract(ABIBBSEdit, BBSEditContract)
     this.BBSPB = new web3.eth.Contract(ABIBBSPB, BBSPBContract)
-    this.BBSCache = new cacheweb3.eth.Contract(ABICache, BBSCacheContract)
+    this.BBSCache = new this.cacheweb3.eth.Contract(ABICache, BBSCacheContract)
 
     this.BBSEditEvents = await this.BBSEdit.getPastEvents('Edited', {fromBlock : this.fromBlock })
   }

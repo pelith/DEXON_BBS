@@ -3,7 +3,6 @@ import Dexon from './dexon.js'
 import {parseText, parseUser, getUrlParameter} from './utils.js'
 
 let dett = null
-let account = ''
 let etx = ''
 let edit = false
 
@@ -13,11 +12,14 @@ const checkTitle = () => { return $("#bbs-title").val().length > 0 }
 
 const check = () => { return (checkContent() && checkTitle()) }
 
-const render = (_account) => {
-  account = _account
-  dett.account = account
+const render = async (_account) => {
   if (_account){
-    $("#bbs-user").text(parseUser(account))
+    const nickname = await dett.getMetaByAddress(_account)
+    if (nickname.name) {
+      $("#bbs-user").text(parseUser(nickname.name))
+    } else {
+      $("#bbs-user").text(parseUser(_account))
+    }
   }
   else
     window.location = '/'

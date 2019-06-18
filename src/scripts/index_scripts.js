@@ -8,7 +8,6 @@ let focusPost
 let currentPage = null
 
 const render = (_account) => {
-  dett.account = _account
   if (_account) {
     $("#bbs-post").show()
     $(".article-menu > .trigger").show()
