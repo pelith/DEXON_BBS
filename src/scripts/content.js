@@ -169,8 +169,15 @@ const renderArticle = (article) => {
 
   $('#main-content-date').text((''+new Date(article.block.timestamp)).substr(0,24))
 
-  $('#main-content-href').attr('href', window.location.href)
-  $('#main-content-href').text(window.location.href)
+  let permalink = window.location.origin + window.location.pathname
+  if (window.location.pathname.indexOf('/s/') < 0) {
+    if (tx) {
+      permalink += '?tx=' + tx
+    }
+  }
+
+  $('#main-content-href').attr('href', permalink)
+  $('#main-content-href').text(permalink)
   $('#main-content-from').text('@'+article.transaction.blockNumber)
   $('#main-content-from').attr('href', 'https://dexonscan.app/transaction/'+tx)
 
