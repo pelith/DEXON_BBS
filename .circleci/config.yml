@@ -27,7 +27,7 @@ jobs:
           name: DEXON_BBS - Save Yarn Package Cache
           key: DEXON_BBS-yarn-packages-v3-{{ .Branch }}-{{ checksum "yarn.lock" }}
           paths:
-            - ./node_modules
+            - "node_modules"
       - restore_cache:
           name: DEXON_BBS - Restore Parcel Cache
           keys:
@@ -41,7 +41,7 @@ jobs:
           name: DEXON_BBS - Save Parcel Cache
           key: DEXON_BBS-parcel-cache-r2-{{ .Branch }}-{{ checksum "package.json" }}
           paths:
-            - ./.cache
+            - ".cache"
 
       # Run DEXON_BBS_Cache
       - restore_cache:
