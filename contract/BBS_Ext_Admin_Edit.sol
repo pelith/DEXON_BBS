@@ -49,10 +49,10 @@ contract Admin is Ownable{
 		category = _category;
 	}
 
-	function ban(bytes32 origin, bool _banned) public {
+	function ban(bytes32 origin, bool _banned, string memory reason) public {
 		require(isAdmin[msg.sender]);
 		banned[origin] = _banned;
-		emit Ban(origin, _banned, msg.sender);
+		emit Ban(origin, _banned, msg.sender, reason);
 	}
 
 	function setAdmin(address who, bool _isAdmin) public onlyOwner {
