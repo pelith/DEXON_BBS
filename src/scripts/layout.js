@@ -7,10 +7,6 @@ import Dexon from './dexon.js'
 import Dett from './dett.js'
 import {parseUser} from './utils.js'
 
-const $loginForm = $('#loginForm')
-const optInjected = $loginForm.find('[name="accountSource"][value="injected"]')
-const optSeed = $loginForm.find('[name="accountSource"][value="seed"]')
-
 let dett = null
 let account = ''
 let lastError
@@ -76,10 +72,6 @@ const renderTopbar = async (_account) => {
   dett.account = _account
 }
 
-const getLoginFormType = () => {
-  return $loginForm[0].accountSource.value || ''
-}
-
 const initLoginForm = async ($elem, _dexon) => {
 
   // restore select options
@@ -97,6 +89,12 @@ const initLoginForm = async ($elem, _dexon) => {
   })
 
   const manager = _dexon.identityManager
+  const optInjected = $elem.find('[name="accountSource"][value="injected"]')
+  const optSeed = $elem.find('[name="accountSource"][value="seed"]')
+
+  const getLoginFormType = () => {
+    return $elem[0].accountSource.value || ''
+  }
 
   // TODO: handle the case where no provider is available
   $elem.find('.--injectedProviderName').text(_dexon.providerName)
@@ -158,6 +156,13 @@ const initLoginForm = async ($elem, _dexon) => {
     }
   })
 
+  $('#bbs-modal-login').click(() => {
+    const loginType = getLoginFormType()
+    window.localStorage.setItem('dett-login-type', loginType)
+    manager.commitLoginType(loginType)
+    $('#loginModal').modal('hide')
+  })
+
   // initial state
   $('#seedConfigArea').hide()
   if (manager.seed != null) {
@@ -213,7 +218,10 @@ window._layoutInit = async () => {
   const _dexon = new Dexon(window.dexon)
   // populate login form event / initial state
   if ($topBar[0]) {
-    await initLoginForm($loginForm, _dexon)
+    await new Promise(resolve => {
+      $('#fragments').load($('#fragmentsSrc').attr('href'), resolve)
+    })
+    await initLoginForm($('#loginForm'), _dexon)
   }
 
   _dexon.on('update', (account) => {
@@ -234,13 +242,6 @@ window._layoutInit = async () => {
       renderTopbar(account, _dexon)
     })
   }
-
-  $('#bbs-modal-login').click(() => {
-    const loginType = getLoginFormType()
-    window.localStorage.setItem('dett-login-type', loginType)
-    _dexon.identityManager.commitLoginType(loginType)
-    $('#loginModal').modal('hide')
-  })
 
   hotkey()
 
