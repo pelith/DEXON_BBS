@@ -31,15 +31,15 @@ jobs:
       - restore_cache:
           name: DEXON_BBS - Restore Parcel Cache
           keys:
-            - DEXON_BBS-parcel-cache-v1-{{ .Branch }}-{{ checksum "package.json" }}
-            - DEXON_BBS-parcel-cache-v1-{{ .Branch }}-
-            - DEXON_BBS-parcel-cache-v1-
+            - DEXON_BBS-parcel-cache-r2-{{ .Branch }}-{{ checksum "package.json" }}
+            - DEXON_BBS-parcel-cache-r2-{{ .Branch }}-
+            - DEXON_BBS-parcel-cache-r2-
       - run:
           name: DEXON_BBS - Build
           command: npm run build
       - save_cache:
           name: DEXON_BBS - Save Parcel Cache
-          key: DEXON_BBS-parcel-cache-v1-{{ .Branch }}-{{ checksum "package.json" }}
+          key: DEXON_BBS-parcel-cache-r2-{{ .Branch }}-{{ checksum "package.json" }}
           paths:
             - ./.cache
 
