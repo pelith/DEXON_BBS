@@ -17,29 +17,29 @@ jobs:
       - restore_cache:
           name: DEXON_BBS - Restore Yarn Package Cache
           keys:
-            - DEXON_BBS-yarn-packages-v3-{{ .Branch }}-{{ checksum "yarn.lock" }}
-            - DEXON_BBS-yarn-packages-v3-{{ .Branch }}-
-            - DEXON_BBS-yarn-packages-v3-
+            - DEXON_BBS-yarn-packages-r4-{{ .Branch }}-{{ checksum "yarn.lock" }}
+            - DEXON_BBS-yarn-packages-r4-{{ .Branch }}-
+            - DEXON_BBS-yarn-packages-r4-
       - run:
           name: DEXON_BBS - Install Dependencies
           command: yarn install --ignore-scripts --frozen-lockfile
       - save_cache:
           name: DEXON_BBS - Save Yarn Package Cache
-          key: DEXON_BBS-yarn-packages-v3-{{ .Branch }}-{{ checksum "yarn.lock" }}
+          key: DEXON_BBS-yarn-packages-r4-{{ .Branch }}-{{ checksum "yarn.lock" }}
           paths:
             - "node_modules"
       - restore_cache:
           name: DEXON_BBS - Restore Parcel Cache
           keys:
-            - DEXON_BBS-parcel-cache-r2-{{ .Branch }}-{{ checksum "package.json" }}
-            - DEXON_BBS-parcel-cache-r2-{{ .Branch }}-
-            - DEXON_BBS-parcel-cache-r2-
+            - DEXON_BBS-parcel-cache-r3-{{ .Branch }}-{{ checksum "package.json" }}
+            - DEXON_BBS-parcel-cache-r3-{{ .Branch }}-
+            - DEXON_BBS-parcel-cache-r3-
       - run:
           name: DEXON_BBS - Build
           command: npm run build
       - save_cache:
           name: DEXON_BBS - Save Parcel Cache
-          key: DEXON_BBS-parcel-cache-r2-{{ .Branch }}-{{ checksum "package.json" }}
+          key: DEXON_BBS-parcel-cache-r3-{{ .Branch }}-{{ checksum "package.json" }}
           paths:
             - ".cache"
 
