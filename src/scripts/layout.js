@@ -73,24 +73,23 @@ const renderTopbar = async (_account) => {
 }
 
 const initLoginForm = async ($elem, _dexon) => {
+  const manager = _dexon.identityManager
+  const optInjected = $elem.find('[name="accountSource"][value="injected"]')
+  const optSeed = $elem.find('[name="accountSource"][value="seed"]')
 
   // restore select options
   $('#loginModal').on('shown.bs.modal', function (e) {
     const loginType = window.localStorage.getItem('dett-login-type')
     if (loginType === 'injected') {
-      $loginForm.prop("accountSource")[0].checked = true
+      $elem.prop("accountSource")[0].checked = true
     }
     else if (loginType === 'seed') {
-      $loginForm.prop("accountSource")[1].checked = true
+      $elem.prop("accountSource")[1].checked = true
     }
     else if (loginType === 'vistor') {
-      $loginForm.prop("accountSource")[2].checked = true
+      $elem.prop("accountSource")[2].checked = true
     }
   })
-
-  const manager = _dexon.identityManager
-  const optInjected = $elem.find('[name="accountSource"][value="injected"]')
-  const optSeed = $elem.find('[name="accountSource"][value="seed"]')
 
   const getLoginFormType = () => {
     return $elem[0].accountSource.value || ''
