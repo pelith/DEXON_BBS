@@ -32,28 +32,25 @@ contract Ownable {
 contract shortURLandMilestone is Ownable {
     mapping(bytes32 => bytes32) public links;
 
-    uint256[] milestones;
+    bytes32[] milestones;
 
-    uint256 public time;
+    event Link(bytes32 long, bytes32 short);
 
-    event Link(bytes32 long, bytes32 short, uint256 time);
-
-    function link(bytes32 long, bytes32 short, uint256 cur) public onlyOwner {
+    function link(bytes32 long, bytes32 short) public onlyOwner {
         links[long] = short;
         links[short] = long;
-        emit Link(long, short, cur);
+        emit Link(long, short);
     }
 
-    function addMilestone(uint256 milestone, uint256 cur) public onlyOwner {
+    function addMilestone(bytes32 milestone) public onlyOwner {
         milestones.push(milestone);
-        time = cur;
     }
 
     function clearMilestone() public onlyOwner {
         delete milestones;
     }
 
-    function getMilestones() public view returns(uint256[]) {
+    function getMilestones() public view returns(bytes32[]) {
         return milestones;
     }
 }
