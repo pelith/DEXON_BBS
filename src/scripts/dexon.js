@@ -60,7 +60,7 @@ class IdentityManager extends EventEmitter {
     const wallet = this.wallet
     if (type == 'seed') {
       if (!this.wallet) {
-        throw new Error('Seed is to be used but no valid wallet is given.')
+        throw new Error('Seed is to be used but no valid wallet is given. (should call setHdWallet first?)')
       }
     }
 

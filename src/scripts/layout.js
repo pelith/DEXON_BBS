@@ -85,6 +85,7 @@ const initLoginForm = async ($elem, _dexon) => {
     }
     else if (loginType === 'seed') {
       $elem.prop("accountSource")[1].checked = true
+      optSeed.click()
     }
     else if (loginType === 'vistor') {
       $elem.prop("accountSource")[2].checked = true
@@ -105,11 +106,10 @@ const initLoginForm = async ($elem, _dexon) => {
     return seedphrase
   }
 
-  const updateViewForSeed = async (seedphrase) => {
+  const updateViewForSeed = async () => {
     const $el = $elem.find('.wrapper--seed')
     const [$elOk, $elErr] = toggleDescStatus($el, false)
-    $elErr.text('助記詞產生中...')
-    await manager.setHdWallet(seedphrase)
+    $elErr.text('正在由助記詞還原地址...')
     const { seedAddress, walllet } = manager
     toggleDescStatus($el, true)
     $elem.find('.--seedAccountAddress').text(seedAddress)
@@ -124,14 +124,15 @@ const initLoginForm = async ($elem, _dexon) => {
     } else {
       $('#bbs-modal-login').prop('disabled', false)
     }
+    // FIXME: also hide when logout option is chosen
     $('#seedConfigArea').hide()
   })
 
   optSeed.click(async () => {
     if (manager.seed == null) {
       const seedphrase = generateSeed()
-      manager.seed = seedphrase
-      await updateViewForSeed(seedphrase)
+      await manager.setHdWallet(seedphrase)
+      await updateViewForSeed()
     }
     $('#bbs-modal-login').prop('disabled', false)
     $('#seedConfigArea').show()
@@ -143,10 +144,13 @@ const initLoginForm = async ($elem, _dexon) => {
       alert('請輸入助記詞')
       return
     }
-    manager.seed = newPhrase
-    await updateViewForSeed(newPhrase)
+    await manager.setHdWallet(newPhrase)
+    await updateViewForSeed()
   })
-  $('#generateSeedPhrase').click(generateSeed)
+  $('#generateSeedPhrase').click(() => {
+    generateSeed()
+    $elem.find('.--seedAccountAddress').text('[請將助記詞妥善備份後按確認]')
+  })
   $('#deleteSeedPhrase').click(() => {
     const ok = confirm('確定刪除助記詞？此動作無法恢復！')
     if (ok) {
@@ -166,7 +170,7 @@ const initLoginForm = async ($elem, _dexon) => {
   $('#seedConfigArea').hide()
   if (manager.seed != null) {
     $elem.find('[name="seed"]').val(manager.seed)
-    await updateViewForSeed(manager.seed)
+    updateViewForSeed()
   }
 
   // wallet change <-> login form display
@@ -215,6 +219,13 @@ const initLoginForm = async ($elem, _dexon) => {
 window._layoutInit = async () => {
   // init dexon account first
   const _dexon = new Dexon(window.dexon)
+  const manager = _dexon.identityManager
+
+  // recover seed state; login form can make use of the wallet object
+  if (manager.seed != null) {
+    await manager.setHdWallet(manager.seed)
+  }
+
   // populate login form event / initial state
   if ($topBar[0]) {
     await new Promise(resolve => {
@@ -224,7 +235,6 @@ window._layoutInit = async () => {
   }
 
   _dexon.on('update', (account) => {
-    const manager = _dexon.identityManager
     manager.injectedAddress = account
     if (manager.loginType == 'injected') {
       manager.commitLoginType('injected')
@@ -237,7 +247,7 @@ window._layoutInit = async () => {
   dett = _dett
 
   if ($topBar[0]) {
-    _dexon.identityManager.on('login', ({account}) => {
+    manager.on('login', ({account}) => {
       renderTopbar(account, _dexon)
     })
   }
