@@ -137,3 +137,18 @@ export const awaitTx = maybePromiseEvent => {
     })
   })
 }
+
+export function web3ErrorToString(err) {
+  const msg = err.message
+  if (!err.message) {
+    return err.toString()
+  }
+  const grp = msg.match(/^Node error: (.+)/)
+  try {
+    // TODO: add proper translation from code property
+    return JSON.parse(grp[1]).message
+
+  } catch (_) {
+    return msg
+  }
+}

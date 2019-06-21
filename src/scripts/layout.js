@@ -68,8 +68,6 @@ const renderTopbar = async (_account) => {
     $("#bbs-more").show()
     $("#bbs-user-menu").hide()
   }
-
-  dett.account = _account
 }
 
 const initLoginForm = async ($elem, _dexon) => {
@@ -241,16 +239,19 @@ window._layoutInit = async () => {
     }
   })
 
-  const _dett = new Dett()
-  await _dett.init(_dexon.dexonWeb3, Web3)
+  _dexon.init()
 
+  const _dett = new Dett()
   dett = _dett
 
-  if ($topBar[0]) {
-    manager.on('login', ({account}) => {
+  manager.on('login', ({account}) => {
+    dett.account = account
+    if ($topBar[0]) {
       renderTopbar(account, _dexon)
-    })
-  }
+    }
+  })
+
+  await _dett.init(_dexon.dexonWeb3, Web3)
 
   hotkey()
 

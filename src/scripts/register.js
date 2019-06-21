@@ -1,6 +1,6 @@
 import Dexon from './dexon.js'
 
-import {parseText, parseUser} from './utils.js'
+import {parseText, parseUser, web3ErrorToString} from './utils.js'
 
 let dett = null
 let registerFee = '0'
@@ -96,17 +96,23 @@ const main = async ({ _dexon, _dett }) => {
   const elNickname = $('#register-nickname')
   elNickname.on('input', evt => checkRules($(evt.currentTarget).val()))
   $('#register-submit').click(async () => {
-    await doNewRegister(elNickname.val())
+    try {
+      await doNewRegister(elNickname.val())
+    } catch (err) {
+      console.log(err)
+      alert('註冊失敗\n' + web3ErrorToString(err))
+      return
+    }
     alert('註冊成功！')
     elNickname.val('')
     window.location.reload()
   })
 
   registerFee = await dett.getRegisterFee()
-  // checkRules(elNickname.val())
+  checkRules(elNickname.val())
 
-  // const history = await dett.getRegisterHistory()
-  // console.log('name history', history)
+  const history = await dett.getRegisterHistory()
+  console.log('name history', history)
 }
 
 _layoutInit().then(main)

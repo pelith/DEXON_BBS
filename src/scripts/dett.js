@@ -286,18 +286,14 @@ class Dett {
     const gas = await this.dettBBSPB.methods.register(id).estimateGas({
       value: registerFee,
     })
-    try {
-      await awaitTx(this.dettBBSPB.methods.register(id).send({
-        from: this.account,
-        // FIXME: this gas estimation is WRONG, why?
-        gas: gas * 2,
-        value: registerFee,
-        chainId:237
-      }))
-    }
-    catch(err){
-      alert(err)
-    }
+    await awaitTx(this.dettBBSPB.methods.register(id).send({
+      from: this.account,
+      // FIXME: this gas estimation is WRONG, why?
+      gas: gas * 2,
+      value: registerFee,
+      chainId:237
+    }))
+    // handle the error elsewhere
   }
 
   getMetaByAddress(address) {

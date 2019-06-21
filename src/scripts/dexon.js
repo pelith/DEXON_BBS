@@ -153,8 +153,6 @@ class Dexon extends EventEmitter {
 
     this.isOfficial = (this.dexon && this.dexon == _dexon)
     this.identityManager = identityManager || new IdentityManager(this.dexon)
-
-    this.init()
   }
 
   init() {
