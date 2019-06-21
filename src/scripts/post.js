@@ -13,6 +13,7 @@ const checkTitle = () => { return $("#bbs-title").val().length > 0 }
 const check = () => { return (checkContent() && checkTitle()) }
 
 const render = async (_account) => {
+  dett.account = _account
   if (_account){
     const nickname = await dett.getMetaByAddress(_account)
     if (nickname.name) {
