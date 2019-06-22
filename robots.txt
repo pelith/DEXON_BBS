@@ -1,7 +1,7 @@
 User-agent: *
-Disallow: /post
+Disallow: /post$
 Disallow: /post.html
-Disallow: /content
+Disallow: /content$
 Disallow: /content.html
 
 Sitemap: https://dett.cc/sitemap.xml
