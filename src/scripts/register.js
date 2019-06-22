@@ -112,14 +112,16 @@ const main = async ({ _dexon, _dett }) => {
   checkRules(elNickname.val())
 
   const history = await dett.getRegisterHistory()
-  history.reverse().slice(0, 8).forEach(({returnValues}) => {
+  history.reverse().slice(0, 8).forEach(({returnValues}, i) => {
     const { playerAddress, playerName } = returnValues
     const tmpl = $('#tmpl-register-history-entry')[0]
     const inst = document.importNode(tmpl.content, true)
+    $(inst.querySelector('.--idx')).text(history.length - i)
     $(inst.querySelector('.--addr')).text(parseUser(playerAddress))
     $(inst.querySelector('.--id')).text(Web3.utils.hexToAscii(playerName))
     $('#register-history-container').append(inst)
   })
+
   // console.log('name history', history)
 }
 
