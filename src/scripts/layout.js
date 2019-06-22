@@ -137,11 +137,12 @@ const initLoginForm = async ($elem, _dexon) => {
   })
 
   $('#commitSeedPhrase').click(async () => {
-    const newPhrase = $elem.find('[name="seed"]').val()
+    const newPhrase = $elem.find('[name="seed"]').val().trim()
     if (!newPhrase) {
       alert('請輸入助記詞')
       return
     }
+    $elem.find('[name="seed"]').val(newPhrase)
     await manager.setHdWallet(newPhrase)
     await updateViewForSeed()
   })

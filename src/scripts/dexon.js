@@ -45,6 +45,9 @@ class IdentityManager extends EventEmitter {
     this.seedAddress = null
     this.__loginType = null
     this.__seed = localStorage.getItem('dett-seed') || null
+    if (this.__seed != null) {
+      this.seed = this.__seed
+    }
   }
 
   init() {
@@ -114,7 +117,7 @@ class IdentityManager extends EventEmitter {
       localStorage.removeItem('dett-seed')
       return
     }
-    this.__seed = s
+    this.__seed = s.trim()
     localStorage.setItem('dett-seed', s)
   }
 }
