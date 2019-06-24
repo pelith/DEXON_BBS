@@ -72,21 +72,32 @@ const renderTopbar = async (_account) => {
 
 const initLoginForm = async ($elem, _dexon) => {
   const manager = _dexon.identityManager
-  const optInjected = $elem.find('[name="accountSource"][value="injected"]')
-  const optSeed = $elem.find('[name="accountSource"][value="seed"]')
+  const bbsLoginButton = $('#bbs-modal-login')
+  const optAll = $elem.find('[name="accountSource"]')
+  console.log('optAll', optAll)
+  const optInjected = optAll.filter('[value="injected"]')
+  const optSeed = optAll.filter('[value="seed"]')
 
   // restore select options
-  $('#loginModal').on('shown.bs.modal', function (e) {
+  $('#loginModal').on('show.bs.modal', function (e) {
     const loginType = window.localStorage.getItem('dett-login-type')
+    const $visitorWrapper = $elem.find('.wrapper--vistor')
+    updateViewFromType(loginType)
     if (loginType === 'injected') {
       $elem.prop("accountSource")[0].checked = true
+      $visitorWrapper.show()
+      bbsLoginButton.text('切換')
     }
     else if (loginType === 'seed') {
       $elem.prop("accountSource")[1].checked = true
       optSeed.click()
+      $visitorWrapper.show()
+      bbsLoginButton.text('切換')
     }
     else if (loginType === 'vistor') {
       $elem.prop("accountSource")[2].checked = true
+      $visitorWrapper.hide()
+      bbsLoginButton.text('登入')
     }
   })
 
@@ -113,6 +124,14 @@ const initLoginForm = async ($elem, _dexon) => {
     $elem.find('.--seedAccountAddress').text(seedAddress)
   }
 
+  const updateViewFromType = type => {
+    if (type == 'seed') {
+      $('#seedConfigArea').show()
+    } else {
+      $('#seedConfigArea').hide()
+    }
+  }
+
   optInjected.click(() => {
     // no error but no address => we need the user to login manually
     if (!lastError && !_dexon.selectedAddress) {
@@ -122,8 +141,6 @@ const initLoginForm = async ($elem, _dexon) => {
     } else {
       $('#bbs-modal-login').prop('disabled', false)
     }
-    // FIXME: also hide when logout option is chosen
-    $('#seedConfigArea').hide()
   })
 
   optSeed.click(async () => {
@@ -133,8 +150,9 @@ const initLoginForm = async ($elem, _dexon) => {
       await updateViewForSeed()
     }
     $('#bbs-modal-login').prop('disabled', false)
-    $('#seedConfigArea').show()
   })
+
+  optAll.click(evt => updateViewFromType(evt.currentTarget.value))
 
   $('#commitSeedPhrase').click(async () => {
     const newPhrase = $elem.find('[name="seed"]').val().trim()
@@ -158,7 +176,7 @@ const initLoginForm = async ($elem, _dexon) => {
     }
   })
 
-  $('#bbs-modal-login').click(() => {
+  bbsLoginButton.click(() => {
     const loginType = getLoginFormType()
     window.localStorage.setItem('dett-login-type', loginType)
     manager.commitLoginType(loginType)
@@ -174,7 +192,6 @@ const initLoginForm = async ($elem, _dexon) => {
   }
 
   toggleDescStatus($elem.find('.wrapper--injected'), false)
-  $elem.find('.--injectedProviderName').text('(無)')
   $elem.find('.--injectedProviderStatus').text('未偵測到錢包')
   $elem.find('.wrapper--injected .desc-err').text('需要先安裝 DEXON Wellet 或 MetaMask 等擴充套件來連線到 DEXON。')
 
