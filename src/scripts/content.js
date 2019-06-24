@@ -156,9 +156,7 @@ const keyboardHook = () => {
   })
 }
 
-const renderArticle = (article) => {
-  const contentNodeList = parseContent(article.content, 'post')
-
+const renderArticle = (article, isPreRendered) => {
   document.title = article.title + ' - Gossiping - DEXON BBS'
 
   const authorLink = $('<a class="--link-to-addr hover" target="_blank"></a>')
@@ -168,9 +166,16 @@ const renderArticle = (article) => {
 
   $('#main-content-author').append(authorLink)
 
-  $('#main-content-title').text(article.title)
 
   const elContent = $('#main-content-content')
+  if (isPreRendered) {
+    // remove all pre-rendered content; if real HTML is rendered instead,
+    // no render should be done here
+    elContent.empty()
+  } else {
+    $('#main-content-title').text(article.title)
+  }
+  const contentNodeList = parseContent(article.content, 'post')
   contentNodeList.forEach(el => elContent.append(el))
 
   $('#main-content-date').text((''+new Date(article.block.timestamp)).substr(0,24))
@@ -264,10 +269,13 @@ const main = async ({ _dexon, _dett }) => {
   dett = _dett
   if (window.dev) dev = true
 
+  let isPreRendered = false
+
   // cache case
   if (window.location.pathname.includes('/s/')) {
     let shortlink = window.location.pathname.split('s/')[1].replace('.html', '')
     tx = $('meta[property="dett:tx"]').attr("content")
+    isPreRendered = true
   } else {
     // get tx
     tx = getUrlParameter('tx')
@@ -287,7 +295,7 @@ const main = async ({ _dexon, _dett }) => {
   // check transaction to address is bbs contract
   if (!article) return error()
 
-  renderArticle(article)
+  renderArticle(article, isPreRendered)
 
   // render Comments
   const comments = await dett.getComments(tx)
