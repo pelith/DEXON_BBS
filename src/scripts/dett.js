@@ -349,7 +349,7 @@ class Dett {
 
     const post = '[' + title + ']' + content
 
-    const gas = await this.dexonBBSEdit.methods.edit(tx, post).estimateGas()
+    const gas = await this.dettBBSEdit.methods.edit(tx, post).estimateGas()
     try {
       await this.dettBBSEdit.methods.edit(tx, post).send({ from: this.account, gas: gas, chainId:237 })
       .on('confirmation', (confirmationNumber, receipt) => {
