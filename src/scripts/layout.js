@@ -167,10 +167,16 @@ const initLoginForm = async ($elem, _dexon) => {
 
   // initial state
   $('#seedConfigArea').hide()
+
   if (manager.seed != null) {
     $elem.find('[name="seed"]').val(manager.seed)
     updateViewForSeed()
   }
+
+  toggleDescStatus($elem.find('.wrapper--injected'), false)
+  $elem.find('.--injectedProviderName').text('(無)')
+  $elem.find('.--injectedProviderStatus').text('未偵測到錢包')
+  $elem.find('.wrapper--injected .desc-err').text('需要先安裝 DEXON Wellet 或 MetaMask 等擴充套件來連線到 DEXON。')
 
   // wallet change <-> login form display
   _dexon.on('update', account => {
