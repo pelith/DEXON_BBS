@@ -1,4 +1,4 @@
-import {getUrlParameter, parseUser, parseText, parseContent, awaitTx} from './utils.js'
+import {getUrlParameter, parseUser, parseText, formatPttDateTime, parseContent, awaitTx} from './utils.js'
 
 let dev = false
 let dett = null
@@ -164,21 +164,19 @@ const renderArticle = (article, isPreRendered) => {
                     .attr('data-address', article.transaction.from)
                     .attr('href', 'https://dexscan.app/address/' + article.transaction.from)
 
-  $('#main-content-author').append(authorLink)
-
+  $('#main-content-author').empty().append(authorLink)
 
   const elContent = $('#main-content-content')
   if (isPreRendered) {
     // remove all pre-rendered content; if real HTML is rendered instead,
     // no render should be done here
     elContent.empty()
-  } else {
-    $('#main-content-title').text(article.title)
   }
   const contentNodeList = parseContent(article.content, 'post')
   contentNodeList.forEach(el => elContent.append(el))
 
-  $('#main-content-date').text((''+new Date(article.block.timestamp)).substr(0,24))
+  $('#main-content-title').text(article.title)
+  $('#main-content-date').text(formatPttDateTime(article.block.timestamp))
 
   let permalink = window.location.origin + window.location.pathname
   if (window.location.pathname.indexOf('/s/') < 0) {

@@ -49,6 +49,10 @@ export const parseUser = (address, meta) => {
   return address.replace(/^(0x.{4}).+(.{4})$/, '$1…$2')
 }
 
+export const formatPttDateTime = ts => {
+  return (''+new Date(ts)).substr(0,24)
+}
+
 const createEmbedObject = (url) => {
   const parsedUrl = new UrlParse(url)
   const ret = {
@@ -95,10 +99,11 @@ export const parseContent = (content, loc) => {
         result.push(document.createTextNode(content.slice(last, match.index)));
       }
 
-      const el = $('<a target="_blank"></a>')
-      el.attr('href', match.url)
-      el.text(match.text)
-      result.push(el[0])
+      const el = document.createElement('a')
+      el.target = '_blank'
+      el.href = match.url
+      el.textContent = match.text
+      result.push(el)
 
       // Handle embedded links, only in post not reply
       let embedObject = loc === 'post' ? createEmbedObject(match.url) : null
