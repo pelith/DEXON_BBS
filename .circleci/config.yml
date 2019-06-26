@@ -57,9 +57,9 @@ jobs:
       - restore_cache:
           name: DEXON_BBS_Cache - Restore dist Cache
           keys:
-            - DEXON_BBS_Cache-dist-cache-r12-{{ .Branch }}-{{ checksum "./DEXON_BBS_Cache/dist/output.json" }}
-            - DEXON_BBS_Cache-dist-cache-r12-{{ .Branch }}-
-            - DEXON_BBS_Cache-dist-cache-r12-
+            - DEXON_BBS_Cache-dist-cache-r13-{{ .Branch }}-{{ checksum "./DEXON_BBS_Cache/dist/output.json" }}
+            - DEXON_BBS_Cache-dist-cache-r13-{{ .Branch }}-
+            - DEXON_BBS_Cache-dist-cache-r13-
       - run:
           name: DEXON_BBS_Cache - Build-Cache
           command: |
@@ -70,7 +70,7 @@ jobs:
             cp ./dist/sitemap.xml gh-pages/
       - save_cache:
           name: DEXON_BBS_Cache - Save dist Cache
-          key: DEXON_BBS_Cache-dist-cache-r12-{{ .Branch }}-{{ checksum "./DEXON_BBS_Cache/dist/output.json" }}
+          key: DEXON_BBS_Cache-dist-cache-r13-{{ .Branch }}-{{ checksum "./DEXON_BBS_Cache/dist/output.json" }}
           paths:
             - ./DEXON_BBS_Cache/dist
       - deploy:
