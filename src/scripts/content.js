@@ -3,11 +3,13 @@ import {getUrlParameter, parseUser, parseText, formatPttDateTime, parseContent, 
 let dev = false
 let dett = null
 let tx = ''
+let isLoggedIn = false
 
 let isShowReply = false, isShowReplyType = false
 
 const render = async (_account) => {
   if (_account){
+    isLoggedIn = true
     $('#reward-line').show()
 
     // only show reply btn at first time
@@ -31,6 +33,7 @@ const render = async (_account) => {
 
   // account not exist or not equal previous account
   if (!_account || (_account !== dett.account)){
+    isLoggedIn = false
     hideReplyTypeBtn()
     hideReply()
   }
@@ -85,7 +88,9 @@ const hideReply = () => {
   $("#reply").hide()
   $('#reply-send').hide()
   $('#reply-cancel').hide()
-  $('#reply-btn').show()
+  if (isLoggedIn) {
+    $('#reply-btn').show()
+  }
   $("#reply-content").val('')
 
   isShowReply = false

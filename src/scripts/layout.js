@@ -74,7 +74,6 @@ const initLoginForm = async ($elem, _dexon) => {
   const manager = _dexon.identityManager
   const bbsLoginButton = $('#bbs-modal-login')
   const optAll = $elem.find('[name="accountSource"]')
-  console.log('optAll', optAll)
   const optInjected = optAll.filter('[value="injected"]')
   const optSeed = optAll.filter('[value="seed"]')
 
@@ -149,10 +148,15 @@ const initLoginForm = async ($elem, _dexon) => {
       await manager.setHdWallet(seedphrase)
       await updateViewForSeed()
     }
-    $('#bbs-modal-login').prop('disabled', false)
   })
 
-  optAll.click(evt => updateViewFromType(evt.currentTarget.value))
+  optAll.click(evt => {
+    updateViewFromType(evt.currentTarget.value)
+    // already handled in separate handler
+    if (evt.currentTarget.value != 'injected') {
+      bbsLoginButton.prop('disabled', false)
+    }
+  })
 
   $('#commitSeedPhrase').click(async () => {
     const newPhrase = $elem.find('[name="seed"]').val().trim()
