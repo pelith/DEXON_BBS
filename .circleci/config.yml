@@ -3,6 +3,8 @@ jobs:
   build:
     docker:
       - image: node:8
+    environment:
+      TZ: "Asia/Taipei"
     working_directory: ~/repo
     steps:
       - checkout
@@ -55,9 +57,9 @@ jobs:
       - restore_cache:
           name: DEXON_BBS_Cache - Restore dist Cache
           keys:
-            - DEXON_BBS_Cache-dist-cache-r7-{{ .Branch }}-{{ checksum "./DEXON_BBS_Cache/dist/output.json" }}
-            - DEXON_BBS_Cache-dist-cache-r7-{{ .Branch }}-
-            - DEXON_BBS_Cache-dist-cache-r7-
+            - DEXON_BBS_Cache-dist-cache-r13-{{ .Branch }}-{{ checksum "./DEXON_BBS_Cache/dist/output.json" }}
+            - DEXON_BBS_Cache-dist-cache-r13-{{ .Branch }}-
+            - DEXON_BBS_Cache-dist-cache-r13-
       - run:
           name: DEXON_BBS_Cache - Build-Cache
           command: |
@@ -65,9 +67,10 @@ jobs:
             ln -s ../build gh-pages
             npm run build-cache
             cp -R ./dist/s gh-pages/
+            cp ./dist/sitemap.xml gh-pages/
       - save_cache:
           name: DEXON_BBS_Cache - Save dist Cache
-          key: DEXON_BBS_Cache-dist-cache-r7-{{ .Branch }}-{{ checksum "./DEXON_BBS_Cache/dist/output.json" }}
+          key: DEXON_BBS_Cache-dist-cache-r13-{{ .Branch }}-{{ checksum "./DEXON_BBS_Cache/dist/output.json" }}
           paths:
             - ./DEXON_BBS_Cache/dist
       - deploy:

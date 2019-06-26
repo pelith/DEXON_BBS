@@ -216,6 +216,11 @@ a.--link-to-addr.hover:hover:after {
   margin-bottom: .75rem;
 }
 
+#seedConfigArea {
+  padding-left: 1.5rem;
+  margin-bottom: .5rem;
+}
+
 #loginForm .wrapper {
   margin-top: .5rem;
   margin-bottom: .5rem;
@@ -231,5 +236,9 @@ a.--link-to-addr.hover:hover:after {
     font-size: .8rem;
     color: #333;
     margin-top: .25rem;
+  }
+
+  &.wrapper--vistor {
+    background: rgba(204, 102, 102, .2);
   }
 }

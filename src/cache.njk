@@ -1,8 +1,13 @@
 {% extends 'content.njk' %}
 
-{% set title = 'Cache - ' + title %}
-{% set canonicalUrl = 'https://dett.cc/cache.html' %}
-{% set description = 'Cache Cache Cache Cache Cache' %}
+{% set title = 'dett:title' %}
+{% set canonicalUrl = 'dett:url' %}
+{% set description = 'dett:desc' %}
+
+{% set __postTitle = 'dett:post:title' %}
+{% set __postAuthor = 'dett:post:author' %}
+{% set __postTime = 'dett:post:time' %}
+{% set __postContent = 'dett:post:content' %}
 
 {% block meta -%}
   {{super()}}

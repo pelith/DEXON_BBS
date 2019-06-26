@@ -91,11 +91,11 @@ const main = async ({ _dett, _dexon }) => {
   })
   _dexon.identityManager.init()
 
-  if (+window.localStorage.getItem('focus-state')===2){
-    const post =  $('.r-list-container > .r-ent > div > a[href="'+window.localStorage.getItem('focus-href')+'"]')
+  if (+sessionStorage.getItem('focus-state')===2){
+    const post =  $('.r-list-container > .r-ent > div > a[href="'+sessionStorage.getItem('focus-href')+'"]')
     focusOnPost(post.parent().parent()[0], true)
-    window.localStorage.setItem('focus-href', '')
-    window.localStorage.setItem('focus-state', 0)
+    sessionStorage.setItem('focus-href', '')
+    sessionStorage.setItem('focus-state', 0)
   }
 
   // atircles list attach dropdown list

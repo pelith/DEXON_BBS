@@ -1,13 +1,15 @@
-import {getUrlParameter, parseUser, parseText, parseContent, awaitTx} from './utils.js'
+import {getUrlParameter, parseUser, parseText, formatPttDateTime, parseContent, awaitTx} from './utils.js'
 
 let dev = false
 let dett = null
 let tx = ''
+let isLoggedIn = false
 
 let isShowReply = false, isShowReplyType = false
 
 const render = async (_account) => {
   if (_account){
+    isLoggedIn = true
     $('#reward-line').show()
 
     // only show reply btn at first time
@@ -31,6 +33,7 @@ const render = async (_account) => {
 
   // account not exist or not equal previous account
   if (!_account || (_account !== dett.account)){
+    isLoggedIn = false
     hideReplyTypeBtn()
     hideReply()
   }
@@ -85,7 +88,9 @@ const hideReply = () => {
   $("#reply").hide()
   $('#reply-send').hide()
   $('#reply-cancel').hide()
-  $('#reply-btn').show()
+  if (isLoggedIn) {
+    $('#reply-btn').show()
+  }
   $("#reply-content").val('')
 
   isShowReply = false
@@ -156,9 +161,7 @@ const keyboardHook = () => {
   })
 }
 
-const renderArticle = (article) => {
-  const contentNodeList = parseContent(article.content, 'post')
-
+const renderArticle = (article, isPreRendered) => {
   document.title = article.title + ' - Gossiping - DEXON BBS'
 
   const authorLink = $('<a class="--link-to-addr hover" target="_blank"></a>')
@@ -166,14 +169,19 @@ const renderArticle = (article) => {
                     .attr('data-address', article.transaction.from)
                     .attr('href', 'https://dexscan.app/address/' + article.transaction.from)
 
-  $('#main-content-author').append(authorLink)
-
-  $('#main-content-title').text(article.title)
+  $('#main-content-author').empty().append(authorLink)
 
   const elContent = $('#main-content-content')
+  if (isPreRendered) {
+    // remove all pre-rendered content; if real HTML is rendered instead,
+    // no render should be done here
+    elContent.empty()
+  }
+  const contentNodeList = parseContent(article.content, 'post')
   contentNodeList.forEach(el => elContent.append(el))
 
-  $('#main-content-date').text((''+new Date(article.block.timestamp)).substr(0,24))
+  $('#main-content-title').text(article.title)
+  $('#main-content-date').text(formatPttDateTime(article.block.timestamp))
 
   let permalink = window.location.origin + window.location.pathname
   if (window.location.pathname.indexOf('/s/') < 0) {
@@ -192,7 +200,7 @@ const renderArticle = (article) => {
     const date = new Date(timestamp)
     const formatDate = (date.getMonth()+1)+'/'+(''+date.getDate()).padStart(2, '0')+'/'+date.getFullYear()+' '+(''+date.getHours()).padStart(2, '0')+':'+(''+date.getMinutes()).padStart(2, '0')+':'+(''+date.getSeconds()).padStart(2, '0')
 
-    const elem = $(`<span class="f2">※ 編輯: ${parseUser(article.transaction.from)}, ${formatDate}</span><br>`)
+    const elem = $(`<span class="f2">※ 編輯: ${parseUser(article.transaction.from, article.authorMeta)}, ${formatDate}</span><br>`)
     $('.edit').append(elem)
   }
 
@@ -264,10 +272,13 @@ const main = async ({ _dexon, _dett }) => {
   dett = _dett
   if (window.dev) dev = true
 
+  let isPreRendered = false
+
   // cache case
   if (window.location.pathname.includes('/s/')) {
     let shortlink = window.location.pathname.split('s/')[1].replace('.html', '')
     tx = $('meta[property="dett:tx"]').attr("content")
+    isPreRendered = true
   } else {
     // get tx
     tx = getUrlParameter('tx')
@@ -287,7 +298,7 @@ const main = async ({ _dexon, _dett }) => {
   // check transaction to address is bbs contract
   if (!article) return error()
 
-  renderArticle(article)
+  renderArticle(article, isPreRendered)
 
   // render Comments
   const comments = await dett.getComments(tx)
