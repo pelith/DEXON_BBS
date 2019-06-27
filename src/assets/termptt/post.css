@@ -3,10 +3,10 @@
     src: url(./symmingliu.aaa394dd81dbe129da06687a75bfe002.woff)
 }
 
-@font-face {
+/*@font-face {
     font-family: DFHeiLightB5;
-    src: url(./DFHeiLightB5.b857a265811b9246a14422fb56fbabe5.woff)
-}
+    src: url(https://github.com/iamchucky/PttChrome/raw/gh-pages/fonts/DFHeiLightB5.woff)
+}*/
 
 @media (min-width: 993px) {
     .main {
@@ -18,7 +18,7 @@
         -webkit-user-select: text;
         background-color: #000
     }
-    
+
     .main * {
         font-family: inherit !important
     }
@@ -94,7 +94,7 @@
 
 
     .main {
-        font-family: Inconsolata, MingLiU, SymMingLiU, 'AR PL UMing TW', LiSongPro, monospace;
+        font-family: Inconsolata, MingLiU, 'Courier New', SymMingLiU, 'AR PL UMing TW', LiSongPro, monospace;
     }
     button {
         height: 26px;
