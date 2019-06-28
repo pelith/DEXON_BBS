@@ -15,15 +15,16 @@
 </div>
 
 <div id="main-container">
-  <div id="main-content" class="bbs-screen bbs-content">
+  <div id="main-content" class="bbs-screen bbs-content" itemscope itemtype="http://schema.org/Article">
+    <meta itemprop="image" content="{{ 'assets/meta.png' | prefixUrl }}">
     <header id="article-metaline">
-      <div class="article-metaline"><span class="article-meta-tag">作者</span><span class="article-meta-value"><span id="main-content-author">{{ __postAuthor }}</span></span></div>
+      <div class="article-metaline" itemprop="author" itemscope itemtype="http://schema.org/Person"><span class="article-meta-tag">作者</span><span class="article-meta-value"><span id="main-content-author" itemprop="name">{{ __postAuthor }}</span></span></div>
       <div class="article-metaline-right"><span class="article-meta-tag">看板</span><span class="article-meta-value">Gossiping</span></div>
-      <div class="article-metaline"><span class="article-meta-tag">標題</span><span class="article-meta-value" id="main-content-title">{{ __postTitle }}</span></div>
-      <div class="article-metaline"><span class="article-meta-tag">時間</span><time class="article-meta-value" id="main-content-date">{{ __postTime }}</time></div>
+      <div class="article-metaline"><span class="article-meta-tag">標題</span><span class="article-meta-value" id="main-content-title" itemprop="headline">{{ __postTitle }}</span></div>
+      <div class="article-metaline"><span class="article-meta-tag">時間</span><time class="article-meta-value" id="main-content-date" itemprop="datePublished" content="{{ __postTimeISO }}" time="{{ __postTimeISO }}">{{ __postTime }}</time></div>
     </header>
     <br>
-    <main id="main-content-content">{{ __postContent }}</main>
+    <main id="main-content-content" itemprop="articleBody">{{ __postContent }}</main>
     <br>
     --
     <br>
@@ -31,7 +32,7 @@
       <span class="f2">※ 打賞作者: <button class="btn --send-reward" style="width: 6em" data-value="0.01">0.01 DXN</button> <span id="reward-toggle-region-1"><button class="btn" style="width: 4em" id="reward-customize">自訂</button> </span><span id="reward-toggle-region-2" style="display: none"><input id="reward-custom-value" type="number" class="input" step="any" min="0" style="width: 6em"> <span class="f7">DXN</span> <button id="reward-custom-submit" class="btn" style="width: 4em">確定</button></span></span>
     </aside>
 
-    <div class="f2">※ 發信站: DEXON BBS(dett.cc), 來自: <a id="main-content-from" target="_blank" href="#">DEXON</a></div>
+    <div class="f2" itemprop="publisher" itemscope itemtype="http://schema.org/Organization">※ 發信站: <span itemprop="name">DEXON BBS(dett.cc)</span>, 來自: <a id="main-content-from" target="_blank" href="#">DEXON</a><meta itemprop="logo" content="assets/icon.png"></div>
     <div class="f2">※ 文章網址: <a id="main-content-href" href="#" target="_blank" rel="nofollow"></a></div>
 
     <aside id="reply" style="display: none" aria-hidden><select id="reply-type" class="bbs-content select">
