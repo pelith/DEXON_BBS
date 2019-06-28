@@ -10,7 +10,7 @@
 
 @media (min-width: 993px) {
     .main {
-        font-family: MingLiu, monospace;
+        font-family: Inconsolata, MingLiU, SymMingLiU, 'AR PL UMing TW', LiSongPro, monospace;
         font-size: 26px;
         line-height: 100%;
         height: 24.125em;
@@ -92,10 +92,6 @@
         color: #0ff
     }
 
-
-    .main {
-        font-family: Inconsolata, MingLiU, 'Courier New', SymMingLiU, 'AR PL UMing TW', LiSongPro, monospace;
-    }
     button {
         height: 26px;
         border: 0 none;
